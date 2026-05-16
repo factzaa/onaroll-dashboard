@@ -438,38 +438,40 @@ function parseData() {
     cutoffDate = d0.toISOString().slice(0,10);
   }
 
-  // สร้าง map: position → จำนวนงานที่ต้องทำต่อวัน (จาก Daily_Checklist_Master, Active เท่านั้น)
+  // สร้าง map: position → จำนวนงานที่ต้องทำต่อวัน
+  // สูตรชีท: WHERE Col2 contains 'ตำแหน่ง' AND Col8 = 'Active'
   posTaskCount = {};
   (DATA.checklist_master || []).forEach(function(r) {
-    var positions = (r["position"] || "").split(",");
+    var posField = (r["position"] || "").trim();
     var status = (r["สถานะ"] || r["status"] || "").trim();
-    if (status !== "Active") return;
-    positions.forEach(function(pos) {
+    if (status !== "Active" || !posField) return;
+    // posField อาจเป็น "บาริสต้า, ผู้ช่วยบาริสต้า" — แตกออกเป็นแต่ละตำแหน่ง
+    posField.split(",").forEach(function(pos) {
       pos = pos.trim();
-      if (!pos) return;
-      posTaskCount[pos] = (posTaskCount[pos] || 0) + 1;
+      if (pos) posTaskCount[pos] = (posTaskCount[pos] || 0) + 1;
     });
   });
+  // ใช้ช่วงวันที่จาก filter (filterFrom/filterTo) แทน cutoff 30 วัน
+  var perfFrom = filterFrom || cutoffDate;
+  var perfTo   = filterTo   || latestDate;
+
   checkMap = {};
   (DATA.checklist || []).forEach(function(r) {
-    var name = (r["Staff_Name"]||"").trim();
+    var name    = (r["Staff_Name"]||"").trim();
     var dateRaw = (r["Date"]||"").trim();
-    var date = parseDate(dateRaw);
-    var status = (r["Status"]||"").trim();
-    var recPos = (r["Position"]||"").trim();
-    if (!name || !date || date < cutoffDate) return;
-    // กรองเฉพาะงานที่ตรงกับตำแหน่งของพนักงานคนนั้น (ใช้ position จาก Employees sheet)
-    var empPos = (empMap[name] && empMap[name].position) ? empMap[name].position : recPos;
-    if (empPos && recPos && recPos !== empPos) return;
+    var date    = parseDate(dateRaw);
+    var status  = (r["Status"]||"").trim();
+    if (!name || !date) return;
+    if (date < perfFrom || date > perfTo) return;
     if (!checkMap[name]) checkMap[name] = { completed:0, total:0, byDay:{} };
     checkMap[name].total++;
     if (status === "Completed") checkMap[name].completed++;
     checkMap[name].byDay[date] = true;
   });
 
-  // รวม attendance ต่อคน
+  // รวม attendance ต่อคน ตาม filter
   var perfMap = {};
-  attAll.filter(function(r){ return r.status==="CHECK_IN" && r.date >= cutoffDate; })
+  attAll.filter(function(r){ return r.status==="CHECK_IN" && r.date >= perfFrom && r.date <= perfTo; })
     .forEach(function(r) {
       var n = r.name;
       if (!n) return;
