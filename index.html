@@ -423,16 +423,24 @@ function parseData() {
       };
     });
 
-  // posTaskCount คำนวณไว้ใน renderPerformance() ตาม filterFrom/filterTo
+  // posTaskCount: นับงาน/วัน ต่อตำแหน่ง ใช้ contains ตามสูตรชีท
+  // WHERE Col2 contains 'ตำแหน่ง' AND Col8 = 'Active'
   posTaskCount = {};
-  (DATA.checklist_master || []).forEach(function(r) {
-    var posField = (r["position"] || "").trim();
-    var status = (r["สถานะ"] || r["status"] || "").trim();
-    if (status !== "Active" || !posField) return;
-    posField.split(",").forEach(function(pos) {
-      pos = pos.trim();
-      if (pos) posTaskCount[pos] = (posTaskCount[pos] || 0) + 1;
+  var masterActive = (DATA.checklist_master || []).filter(function(r) {
+    return (r["สถานะ"] || r["status"] || "").trim() === "Active";
+  });
+  // รวบรวมตำแหน่งทั้งหมดจาก Employees
+  var allPositions = [];
+  (DATA.employees || []).forEach(function(e) {
+    if (e.position && allPositions.indexOf(e.position) === -1) allPositions.push(e.position);
+  });
+  // นับด้วย contains สำหรับแต่ละตำแหน่ง
+  allPositions.forEach(function(pos) {
+    var count = 0;
+    masterActive.forEach(function(r) {
+      if ((r["position"] || "").indexOf(pos) !== -1) count++;
     });
+    posTaskCount[pos] = count;
   });
   DATA.perf_parsed = [];
 }
