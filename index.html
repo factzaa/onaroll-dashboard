@@ -245,8 +245,8 @@ async function fetchSheet(sheetName) {
   const res = await fetch(csvUrl(sheetName));
   if (!res.ok) throw new Error("โหลด " + sheetName + " ไม่สำเร็จ (HTTP " + res.status + ")");
   const text = await res.text();
-  if (text.includes("signin") || text.includes("accounts.google")) {
-    throw new Error("Sheet ยังไม่ได้ Publish to web — กรุณาตั้งค่าก่อน");
+  if (text.includes("signin") || text.includes("accounts.google") || text.length < 10) {
+    throw new Error("Sheet \"" + sheetName + "\" ยังไม่ได้ Publish to web");
   }
   return new Promise(function(resolve, reject) {
     Papa.parse(text, {
@@ -256,6 +256,21 @@ async function fetchSheet(sheetName) {
       error: function(e) { reject(e); }
     });
   });
+}
+
+async function fetchSheetSafe(url) {
+  try {
+    var res = await fetch(url);
+    if (!res.ok) return [];
+    var text = await res.text();
+    if (text.includes("signin") || text.includes("accounts.google") || text.length < 10) return [];
+    return await new Promise(function(resolve) {
+      Papa.parse(text, { header:true, skipEmptyLines:true,
+        complete: function(r){ resolve(r.data); },
+        error: function(){ resolve([]); }
+      });
+    });
+  } catch(e) { return []; }
 }
 
 function setLoading(msg, sub) {
@@ -293,33 +308,16 @@ async function loadAllSheets() {
       setLoading("กำลังโหลด " + SHEETS[key] + "...", (i+1) + "/" + (keys.length+1) + " sheets");
       DATA[key] = await fetchSheet(SHEETS[key]);
     }
-    // โหลด Checklist จาก Spreadsheet อีกไฟล์
+    // โหลด Checklist จาก Spreadsheet อีกไฟล์ (ไม่ throw ถ้าล้มเหลว)
     setLoading("กำลังโหลด Daily_Checklist_Records...", (keys.length+1) + "/" + (keys.length+2) + " sheets");
-    try {
-      var clUrl = "https://docs.google.com/spreadsheets/d/" + CHECKLIST_SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(CHECKLIST_SHEET_NAME);
-      var clRes = await fetch(clUrl);
-      if (clRes.ok) {
-        var clText = await clRes.text();
-        DATA.checklist = await new Promise(function(resolve, reject) {
-          Papa.parse(clText, { header:true, skipEmptyLines:true,
-            complete: function(r){ resolve(r.data); }, error: function(e){ reject(e); } });
-        });
-      } else { DATA.checklist = []; }
-    } catch(e) { DATA.checklist = []; }
+    DATA.checklist = await fetchSheetSafe(
+      "https://docs.google.com/spreadsheets/d/" + CHECKLIST_SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(CHECKLIST_SHEET_NAME)
+    );
 
-    // โหลด Checklist Master (งานต้องทำต่อวัน ตามตำแหน่ง)
     setLoading("กำลังโหลด Daily_Checklist_Master...", (keys.length+2) + "/" + (keys.length+2) + " sheets");
-    try {
-      var cmUrl = "https://docs.google.com/spreadsheets/d/" + CHECKLIST_SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(CHECKLIST_MASTER_NAME);
-      var cmRes = await fetch(cmUrl);
-      if (cmRes.ok) {
-        var cmText = await cmRes.text();
-        DATA.checklist_master = await new Promise(function(resolve, reject) {
-          Papa.parse(cmText, { header:true, skipEmptyLines:true,
-            complete: function(r){ resolve(r.data); }, error: function(e){ reject(e); } });
-        });
-      } else { DATA.checklist_master = []; }
-    } catch(e) { DATA.checklist_master = []; }
+    DATA.checklist_master = await fetchSheetSafe(
+      "https://docs.google.com/spreadsheets/d/" + CHECKLIST_SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(CHECKLIST_MASTER_NAME)
+    );
     parseData();
     initFilters();
     renderSection();
