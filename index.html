@@ -326,8 +326,13 @@ async function loadAllSheets() {
 function parseDate(str) {
   if (!str) return "";
   var s = String(str).trim();
-  var m = s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
-  if (m) return m[1] + "-" + m[2].padStart(2,"0") + "-" + m[3].padStart(2,"0");
+  // YYYY-MM-DD
+  var m1 = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m1) return m1[1] + "-" + m1[2].padStart(2,"0") + "-" + m1[3].padStart(2,"0");
+  // DD/MM/YYYY หรือ D/M/YYYY (format จาก Google Sheets ไทย)
+  var m2 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m2) return m2[3] + "-" + m2[2].padStart(2,"0") + "-" + m2[1].padStart(2,"0");
+  // fallback
   var d = new Date(s);
   if (!isNaN(d)) return d.toISOString().slice(0,10);
   return s.slice(0,10);
@@ -416,7 +421,8 @@ function parseData() {
   var checkMap = {};
   (DATA.checklist || []).forEach(function(r) {
     var name = (r["Staff_Name"]||"").trim();
-    var date = (r["Date"]||"").trim().slice(0,10);
+    var dateRaw = (r["Date"]||"").trim();
+    var date = parseDate(dateRaw);
     var status = (r["Status"]||"").trim();
     if (!name || !date || date < cutoffDate) return;
     if (!checkMap[name]) checkMap[name] = { completed:0, total:0, byDay:{} };
