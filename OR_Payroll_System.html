@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OR Payroll System</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;font-size:14px}
+:root{
+  --navy:#1a2b5e;--blue:#2979d4;--blue-light:#e8f1fd;--blue-pale:#f0f6ff;
+  --sky:#29b6f6;--surface:#fff;--surface2:#f7fafd;--bg:#f0f4f8;
+  --text:#1a2332;--muted:#5a7184;--light:#92a8bb;
+  --border:#dde6ef;--border2:#b8cedd;
+  --green:#00897b;--green-bg:#e0f5f2;
+  --red:#e53935;--red-bg:#fdecea;
+  --orange:#f57c00;--orange-bg:#fff3e0;
+  --amber:#ffb300;--amber-bg:#fff8e1;
+  --r:12px;--r-sm:8px;
+  --shadow:0 2px 8px rgba(26,43,94,.08);
+  --shadow-md:0 4px 20px rgba(26,43,94,.12);
+}
+
+/* ─── TOPBAR ─── */
+.topbar{
+  background:#fff;border-bottom:3px solid var(--blue);
+  padding:0 28px;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:var(--shadow);position:sticky;top:0;z-index:50;gap:16px;
+}
+.topbar-logo{display:flex;align-items:center;gap:12px}
+.topbar-logo-icon{width:38px;height:38px;background:linear-gradient(135deg,#1a2b5e,#2979d4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
+.topbar-logo h1{font-size:16px;font-weight:700;color:var(--navy)}
+.topbar-logo p{font-size:10px;color:var(--muted)}
+.topbar-nav{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:4px}
+.tab-btn{padding:8px 18px;border-radius:var(--r-sm);border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;transition:all .2s;color:var(--muted);background:transparent;display:flex;align-items:center;gap:6px}
+.tab-btn.active{background:#fff;color:var(--navy);box-shadow:var(--shadow)}
+.tab-btn:hover:not(.active){background:rgba(41,121,212,.08);color:var(--blue)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.period-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:8px 14px;display:flex;align-items:center;gap:12px}
+.period-box .label{font-size:10px;font-weight:600;color:var(--light);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:2px}
+.period-box input{border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--text);padding:0;cursor:pointer}
+.period-box input:focus{outline:none}
+.divider{width:1px;height:30px;background:var(--border)}
+.total-payout{text-align:right}
+.total-payout .label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.total-payout .amount{font-size:22px;font-weight:700;color:var(--navy)}
+.btn-sync{background:var(--blue);color:#fff;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 2px 8px rgba(41,121,212,.3)}
+.btn-sync:hover{background:#1565c0;transform:rotate(180deg)}
+
+/* ─── MAIN ─── */
+.main{padding:24px 28px;max-width:1800px;margin:0 auto}
+
+/* ─── CARD ─── */
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:14px;font-weight:600;color:var(--navy);display:flex;align-items:center;gap:8px}
+.card-icon{width:28px;height:28px;border-radius:8px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:14px}
+
+/* ─── TABLE ─── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1400px}
+th{padding:11px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--light);background:var(--surface2);border-bottom:2px solid var(--border);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:var(--blue-pale)}
+.emp-cell{display:flex;align-items:center;gap:10px}
+.emp-avatar{width:40px;height:40px;border-radius:10px;object-fit:cover;border:2px solid var(--border);flex-shrink:0}
+.emp-name{font-weight:600;font-size:13px;color:var(--text)}
+.emp-id{font-size:10px;color:var(--light);font-weight:400}
+input.field{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:7px 10px;font-family:inherit;font-size:12px;color:var(--text);background:#fff;transition:border-color .2s;width:100%}
+input.field:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(41,121,212,.1)}
+select.field{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:7px 10px;font-family:inherit;font-size:12px;color:var(--text);background:#fff;cursor:pointer}
+select.field:focus{outline:none;border-color:var(--blue)}
+.badge-type{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.3px}
+.badge-daily{background:var(--blue-light);color:var(--blue)}
+.badge-monthly{background:var(--green-bg);color:var(--green)}
+.net-amount{font-size:16px;font-weight:700;color:var(--navy)}
+.btn-save{width:36px;height:36px;border-radius:var(--r-sm);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;background:var(--surface2);color:var(--light)}
+.btn-save:hover{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(41,121,212,.3)}
+.btn-save.dirty{background:var(--amber-bg);color:var(--amber)}
+.btn-save.saved{background:var(--green-bg);color:var(--green)}
+.sync-chip{display:inline-flex;align-items:center;gap:4px;background:var(--blue-light);color:var(--blue);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600}
+.sub-label{font-size:10px;color:var(--light);margin-top:2px;display:block}
+.late-chip{background:var(--red-bg);color:var(--red);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600;display:inline-block}
+
+/* ─── PAYMENT VIEW ─── */
+.payment-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;padding:20px}
+.payment-card{border:1px solid var(--border);border-radius:var(--r);padding:18px;display:flex;align-items:center;gap:14px;transition:box-shadow .2s;background:var(--surface2)}
+.payment-card:hover{box-shadow:var(--shadow-md);background:#fff}
+.payment-avatar{width:52px;height:52px;border-radius:12px;object-fit:cover;border:2px solid var(--border);flex-shrink:0}
+.payment-info{flex:1;min-width:0}
+.payment-name{font-weight:600;font-size:14px;color:var(--text)}
+.payment-bank{font-size:11px;color:var(--muted);margin-top:2px}
+.payment-acc{font-size:12px;font-family:monospace;color:var(--text);background:var(--bg);border-radius:6px;padding:4px 8px;display:flex;align-items:center;justify-content:space-between;margin-top:6px;letter-spacing:.1em}
+.payment-amount{text-align:right;flex-shrink:0}
+.payment-net{font-size:18px;font-weight:700;color:var(--navy)}
+.payment-label{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:600}
+.btn-copy{border:none;background:transparent;cursor:pointer;color:var(--blue);padding:2px;border-radius:4px;transition:all .2s;display:flex}
+.btn-copy:hover{background:var(--blue-light)}
+.total-bar{background:linear-gradient(135deg,var(--navy),#2d4080);color:#fff;border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.total-bar .t-label{font-size:12px;opacity:.7;font-weight:500}
+.total-bar .t-amount{font-size:24px;font-weight:700}
+
+/* ─── HISTORY VIEW ─── */
+.hist-filter{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)}
+.hist-month-sel{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:7px 12px;font-family:inherit;font-size:13px;background:#fff;cursor:pointer}
+.hist-month-sel:focus{outline:none;border-color:var(--blue)}
+table.hist-table{min-width:600px}
+
+/* ─── PROFILE VIEW ─── */
+.profile-grid{display:grid;grid-template-columns:280px 1fr;gap:20px;padding:20px}
+.profile-sidebar-card{display:flex;flex-direction:column;gap:14px}
+.profile-emp-btn{border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;background:#fff;transition:all .2s;text-align:left;width:100%}
+.profile-emp-btn:hover{border-color:var(--blue);background:var(--blue-pale)}
+.profile-emp-btn.active{border-color:var(--blue);background:var(--blue-light);box-shadow:0 0 0 3px rgba(41,121,212,.12)}
+.profile-emp-btn img{width:42px;height:42px;border-radius:10px;object-fit:cover;flex-shrink:0}
+.profile-emp-btn .p-name{font-weight:600;font-size:13px;color:var(--text)}
+.profile-emp-btn .p-pos{font-size:11px;color:var(--muted);margin-top:2px}
+.profile-emp-btn .p-total{font-size:12px;font-weight:700;color:var(--navy);margin-top:4px}
+
+.profile-main{display:flex;flex-direction:column;gap:16px}
+.profile-header-card{background:linear-gradient(135deg,var(--navy) 0%,#2d4080 100%);border-radius:var(--r);padding:24px;color:#fff;display:flex;align-items:center;gap:20px}
+.profile-header-avatar{width:80px;height:80px;border-radius:16px;object-fit:cover;border:3px solid rgba(255,255,255,.3);flex-shrink:0}
+.profile-header-info h2{font-size:22px;font-weight:700}
+.profile-header-info p{font-size:12px;opacity:.65;margin-top:3px}
+.profile-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.profile-kpi{background:rgba(255,255,255,.12);border-radius:10px;padding:12px 14px}
+.profile-kpi .pk-label{font-size:10px;opacity:.65;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.profile-kpi .pk-value{font-size:20px;font-weight:700}
+.profile-kpi .pk-sub{font-size:10px;opacity:.55;margin-top:2px}
+
+.chart-section{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.chart-section h3{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.monthly-history-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.monthly-history-table th{padding:9px 12px;background:var(--surface2);border-bottom:2px solid var(--border);text-align:left;font-size:10px;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:.4px}
+.monthly-history-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.monthly-history-table tr:last-child td{border-bottom:none}
+.monthly-history-table tr:hover td{background:var(--blue-pale)}
+.bar-cell{padding:10px 12px!important}
+.bar-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden;min-width:80px}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--sky));border-radius:4px;transition:width .5s}
+
+/* ─── MISC ─── */
+.loading-overlay{position:fixed;inset:0;background:rgba(240,244,248,.96);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.loading-overlay.show{display:flex}
+.spinner{width:42px;height:42px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:300;border-radius:var(--r);padding:12px 24px;font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-md);opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.toast.success{background:var(--green);color:#fff}
+.toast.error{background:var(--red);color:#fff}
+.empty-state{text-align:center;padding:48px;color:var(--light);font-size:14px}
+.btn{border:none;cursor:pointer;font-family:inherit;font-weight:600;border-radius:var(--r-sm);padding:8px 18px;font-size:12px;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(41,121,212,.25)}
+.btn-primary:hover{background:#1565c0}
+.btn-outline{background:#fff;color:var(--muted);border:1.5px solid var(--border)}
+.btn-outline:hover{background:var(--surface2);border-color:var(--border2)}
+.section{display:none}.section.active{display:block}
+svg{display:inline-block;vertical-align:middle}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <p style="color:var(--muted);font-weight:500">กำลังซิงค์ข้อมูล...</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="topbar-logo-icon">OR</div>
+    <div>
+      <h1>OR Payroll</h1>
+      <p>ระบบจัดการเงินเดือน</p>
+    </div>
+  </div>
+
+  <div class="topbar-nav">
+    <button class="tab-btn active" onclick="switchTab('entry',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      คีย์ข้อมูล
+    </button>
+    <button class="tab-btn" onclick="switchTab('payment',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      โอนเงิน
+    </button>
+    <button class="tab-btn" onclick="switchTab('history',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      ประวัติการจ่าย
+    </button>
+    <button class="tab-btn" onclick="switchTab('profile',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      สรุปรายบุคคล
+    </button>
+  </div>
+
+  <div class="topbar-right">
+    <div class="period-box">
+      <div>
+        <span class="label">รอบจ่าย</span>
+        <input type="month" id="month-selector">
+      </div>
+      <div class="divider"></div>
+      <div>
+        <span class="label">เริ่ม</span>
+        <input type="date" id="date-start">
+      </div>
+      <div style="color:var(--light);font-size:12px;padding:0 4px">→</div>
+      <div>
+        <span class="label">สิ้นสุด</span>
+        <input type="date" id="date-end">
+      </div>
+      <button class="btn-sync" onclick="refreshData()" title="ซิงค์ข้อมูล">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" id="sync-icon"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
+    </div>
+    <div class="total-payout">
+      <div class="label">Total Payout</div>
+      <div class="amount" id="total-payout" style="font-size:20px;font-weight:700;color:var(--navy)">฿0.00</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- TAB: ENTRY -->
+  <div class="section active" id="tab-entry">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-icon">✏️</div>
+          ตารางคีย์ข้อมูลเงินเดือน
+        </div>
+        <span style="font-size:11px;color:var(--light)" id="period-label"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="min-width:180px">พนักงาน</th>
+              <th style="text-align:center">ประเภท</th>
+              <th style="text-align:right;min-width:100px">ค่าจ้าง/วัน</th>
+              <th style="text-align:center;color:var(--blue)">วันงาน <span class="sync-chip">SYNC</span></th>
+              <th style="text-align:right;min-width:120px;color:#6a4fcf">OT ชม. / เรท</th>
+              <th style="text-align:right;min-width:100px;color:var(--red)">สาย / หัก</th>
+              <th style="text-align:right;min-width:100px;color:var(--amber)">เงินเบิก</th>
+              <th style="min-width:200px">เงินพิเศษ / หักอื่นๆ</th>
+              <th style="text-align:right;min-width:120px;color:var(--navy)">สุทธิ</th>
+              <th style="text-align:center;width:50px"></th>
+            </tr>
+          </thead>
+          <tbody id="entry-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: PAYMENT -->
+  <div class="section" id="tab-payment">
+    <div class="total-bar">
+      <div>
+        <div class="t-label">ยอดโอนทั้งหมด</div>
+        <div class="t-amount" id="payment-total">฿0.00</div>
+      </div>
+      <div style="font-size:12px;opacity:.6" id="payment-period"></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon">💳</div> รายการโอนเงิน</div>
+      </div>
+      <div class="payment-grid" id="payment-grid"></div>
+    </div>
+  </div>
+
+  <!-- TAB: HISTORY -->
+  <div class="section" id="tab-history">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon">📊</div> ประวัติการจ่ายเงิน</div>
+        <div class="hist-filter" style="padding:0;border:none">
+          <select class="hist-month-sel" id="hist-month-filter" onchange="renderHistory()">
+            <option value="">— ทุกเดือน —</option>
+          </select>
+          <select class="hist-month-sel" id="hist-emp-filter" onchange="renderHistory()">
+            <option value="">— ทุกคน —</option>
+          </select>
+          <button class="btn btn-outline" onclick="fetchHistory()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            รีเฟรช
+          </button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="hist-table">
+          <thead>
+            <tr>
+              <th>พนักงาน</th>
+              <th style="text-align:center">เดือน</th>
+              <th style="text-align:center">รอบจ่าย</th>
+              <th style="text-align:center">ประเภท</th>
+              <th style="text-align:right">ค่าจ้าง</th>
+              <th style="text-align:right">OT</th>
+              <th style="text-align:right;color:var(--red)">หัก</th>
+              <th style="text-align:right;color:var(--navy)">สุทธิ</th>
+              <th style="text-align:right">บันทึกเมื่อ</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: PROFILE -->
+  <div class="section" id="tab-profile">
+    <div class="profile-grid">
+      <div class="profile-sidebar-card" id="profile-emp-list">
+        <div style="font-size:11px;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:.5px;padding:4px 2px">เลือกพนักงาน</div>
+      </div>
+      <div class="profile-main" id="profile-main">
+        <div class="empty-state">👤 เลือกพนักงานจากรายการทางซ้าย</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SHEET_ID = '1aTkdKkfMXkKutMuVJBew4k5PfPoIkQsr6pmtUAQtPlE';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvProkNuSUhJSGgO2M94x_ybX_S-9ZtRx75RsBKIMQgmuSw23P_-7z8XPAflKMq6XR9g/exec';
+
+let employees = [], summaryData = [], historyData = [], localInputs = {};
+let dateStart = '', dateEnd = '', selectedMonth = '';
+let currentTab = 'entry', selectedProfileEmp = null;
+
+const fmt = n => new Intl.NumberFormat('th-TH',{style:'currency',currency:'THB'}).format(n||0);
+const fmtShort = n => new Intl.NumberFormat('th-TH',{minimumFractionDigits:0,maximumFractionDigits:0}).format(n||0);
+
+function showLoading(v){ document.getElementById('loading').classList.toggle('show',v); }
+function toast(msg, type='success'){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast show '+type;
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+async function fetchSheet(tab){
+  try{
+    const res=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tab)}`);
+    const txt=await res.text();
+    const m=txt.match(/\{.*\}/s);
+    return JSON.parse(m[0]).table;
+  }catch(e){return null;}
+}
+
+function switchTab(name, btn){
+  currentTab=name;
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(name==='history') fetchHistory();
+  if(name==='profile') renderProfileList();
+  if(name==='payment') renderPayment();
+}
+
+function calcNet(id){
+  const i=localInputs[id]; if(!i) return 0;
+  const basic = i.salaryType==='Monthly' ? Number(i.baseRate) : (Number(i.baseRate)*Number(i.daysWorked));
+  const ot = Number(i.otHours)*Number(i.otRate);
+  return (basic+ot+Number(i.otherEarn)) - (Number(i.lateDeduction)+Number(i.advancePay)+Number(i.otherDed));
+}
+
+function updateTotals(){
+  let t=0; employees.forEach(e=>t+=calcNet(e.id));
+  document.getElementById('total-payout').textContent=fmt(t);
+  document.getElementById('payment-total').textContent=fmt(t);
+}
+
+function updateField(id,f,v){
+  if(!localInputs[id]) return;
+  localInputs[id][f]=v;
+  const el=document.getElementById('net-'+id);
+  if(el) el.textContent=fmt(calcNet(id));
+  updateTotals();
+  const btn=document.getElementById('btn-save-'+id);
+  if(btn) btn.className='btn-save dirty';
+}
+window.updateField=updateField;
+
+async function saveToLog(id){
+  const btn=document.getElementById('btn-save-'+id);
+  btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .8s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/></svg>';
+  const i=localInputs[id], emp=employees.find(e=>e.id===id);
+  const payload={month:selectedMonth,cycle:`${dateStart} ถึง ${dateEnd}`,empId:id,name:emp.name,nickname:emp.nickname,...i,total:calcNet(id)};
+  try{
+    await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'SAVE_SINGLE_LOG',payload})});
+    btn.className='btn-save saved';
+    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+    toast(`บันทึก ${emp.nickname} สำเร็จ`);
+  }catch(e){ toast('บันทึกล้มเหลว','error'); btn.className='btn-save'; }
+}
+window.saveToLog=saveToLog;
+
+function renderEntry(){
+  const tbody=document.getElementById('entry-tbody');
+  if(!tbody) return;
+  tbody.innerHTML=employees.map(emp=>{
+    const i=localInputs[emp.id]; if(!i) return '';
+    const net=calcNet(emp.id);
+    return `<tr>
+      <td>
+        <div class="emp-cell">
+          <img src="${emp.image}" class="emp-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(emp.nickname)}&background=e8f1fd&color=2979d4'">
+          <div><div class="emp-name">${emp.nickname}</div><div class="emp-id">${emp.name}</div></div>
+        </div>
+      </td>
+      <td style="text-align:center">
+        <select class="field" style="width:auto" onchange="updateField('${emp.id}','salaryType',this.value)">
+          <option value="Daily" ${i.salaryType==='Daily'?'selected':''}>รายวัน</option>
+          <option value="Monthly" ${i.salaryType==='Monthly'?'selected':''}>รายเดือน</option>
+        </select>
+      </td>
+      <td style="text-align:right"><input type="number" class="field" style="width:90px;text-align:right" value="${i.baseRate}" oninput="updateField('${emp.id}','baseRate',this.value)"></td>
+      <td style="text-align:center">
+        <div style="font-size:20px;font-weight:700;color:var(--blue)">${i.daysWorked}</div>
+        <span class="sub-label">วัน</span>
+      </td>
+      <td style="text-align:right">
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          <input type="number" class="field" style="width:70px;text-align:right" value="${i.otHours}" oninput="updateField('${emp.id}','otHours',this.value)" placeholder="ชม.">
+          <input type="number" class="field" style="width:70px;text-align:right" value="${i.otRate}" oninput="updateField('${emp.id}','otRate',this.value)" placeholder="เรท">
+        </div>
+      </td>
+      <td style="text-align:right">
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          <span class="late-chip">${i.lateMins} ครั้ง</span>
+          <input type="number" class="field" style="width:80px;text-align:right;color:var(--red)" value="${i.lateDeduction}" oninput="updateField('${emp.id}','lateDeduction',this.value)" placeholder="หักสาย">
+        </div>
+      </td>
+      <td><input type="number" class="field" style="text-align:right;color:var(--amber)" value="${i.advancePay}" oninput="updateField('${emp.id}','advancePay',this.value)" placeholder="เบิกล่วงหน้า"></td>
+      <td>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;gap:4px">
+            <input type="number" class="field" style="width:75px;color:var(--green)" value="${i.otherEarn}" oninput="updateField('${emp.id}','otherEarn',this.value)" placeholder="+พิเศษ">
+            <input type="text" class="field" value="${i.otherEarnNote}" oninput="updateField('${emp.id}','otherEarnNote',this.value)" placeholder="หมายเหตุ">
+          </div>
+          <div style="display:flex;gap:4px">
+            <input type="number" class="field" style="width:75px;color:var(--red)" value="${i.otherDed}" oninput="updateField('${emp.id}','otherDed',this.value)" placeholder="-หักอื่นๆ">
+            <input type="text" class="field" value="${i.otherDedNote}" oninput="updateField('${emp.id}','otherDedNote',this.value)" placeholder="หมายเหตุ">
+          </div>
+        </div>
+      </td>
+      <td style="text-align:right">
+        <span class="net-amount" id="net-${emp.id}">${fmt(net)}</span>
+      </td>
+      <td style="text-align:center">
+        <button id="btn-save-${emp.id}" class="btn-save" onclick="saveToLog('${emp.id}')" title="บันทึก">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+  updateTotals();
+  const lbl=document.getElementById('period-label');
+  if(lbl) lbl.textContent=`รอบ ${dateStart} — ${dateEnd}`;
+  document.getElementById('payment-period').textContent=`รอบ ${dateStart} — ${dateEnd}`;
+}
+
+function renderPayment(){
+  const grid=document.getElementById('payment-grid'); if(!grid) return;
+  grid.innerHTML=employees.map(emp=>{
+    const net=calcNet(emp.id);
+    return `<div class="payment-card">
+      <img src="${emp.image}" class="payment-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(emp.nickname)}&background=e8f1fd&color=2979d4'">
+      <div class="payment-info">
+        <div class="payment-name">${emp.nickname}</div>
+        <div class="payment-bank">${emp.bank||'—'}</div>
+        <div class="payment-acc">
+          <span>${emp.acc||'ไม่ระบุ'}</span>
+          ${emp.acc?`<button class="btn-copy" onclick="copyAcc('${emp.acc}')" title="คัดลอก"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>`:''}
+        </div>
+      </div>
+      <div class="payment-amount">
+        <div class="payment-label">ยอดโอน</div>
+        <div class="payment-net">${fmt(net)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  updateTotals();
+}
+window.copyAcc=function(acc){
+  navigator.clipboard.writeText(acc).then(()=>toast('คัดลอกเลขบัญชีแล้ว'));
+}
+
+async function fetchHistory(){
+  showLoading(true);
+  try{
+    const res=await fetch(`${APPS_SCRIPT_URL}?action=GET_PAYROLL_HISTORY&t=${Date.now()}`);
+    historyData=await res.json();
+    // populate filters
+    const months=[...new Set(historyData.map(h=>h['เดือน']).filter(Boolean))].sort().reverse();
+    const empNames=[...new Set(historyData.map(h=>h['ชื่อเล่น']||h['ชื่อ-นามสกุล']).filter(Boolean))].sort();
+    const mSel=document.getElementById('hist-month-filter');
+    const eSel=document.getElementById('hist-emp-filter');
+    mSel.innerHTML='<option value="">— ทุกเดือน —</option>'+months.map(m=>`<option value="${m}" ${m===selectedMonth?'selected':''}>${m}</option>`).join('');
+    eSel.innerHTML='<option value="">— ทุกคน —</option>'+empNames.map(n=>`<option value="${n}">${n}</option>`).join('');
+    renderHistory();
+  }catch(e){toast('โหลดประวัติไม่สำเร็จ','error');}
+  showLoading(false);
+}
+
+function renderHistory(){
+  const mf=document.getElementById('hist-month-filter')?.value||'';
+  const ef=document.getElementById('hist-emp-filter')?.value||'';
+  let rows=historyData.filter(h=>(!mf||h['เดือน']===mf)&&(!ef||(h['ชื่อเล่น']===ef||h['ชื่อ-นามสกุล']===ef)));
+  rows=[...rows].reverse();
+  const tbody=document.getElementById('history-tbody');
+  if(!tbody) return;
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="9" class="empty-state">ไม่มีข้อมูล</td></tr>';return;}
+  tbody.innerHTML=rows.map(h=>{
+    const net=Number(h['ยอดจ่ายสุทธิ'])||0;
+    const basic=Number(h['ค่าจ้างพื้นฐาน'])||0;
+    const days=Number(h['จำนวนวันทำงาน'])||0;
+    const otH=Number(h['จำนวนชม. OT'])||0;
+    const otR=Number(h['เรท OT ต่อชม.'])||0;
+    const ot=otH*otR;
+    const ded=(Number(h['ยอดหักสาย/ขาด'])||0)+(Number(h['ยอดเงินเบิก'])||0)+(Number(h['ยอดหักอื่นๆ'])||0);
+    const ts=h['Timestamp']?new Date(h['Timestamp']).toLocaleString('th-TH',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+    return `<tr>
+      <td><div class="emp-cell"><div><div class="emp-name">${h['ชื่อเล่น']||h['ชื่อ-นามสกุล']}</div><div class="emp-id">${h['เดือน']||''}</div></div></div></td>
+      <td style="text-align:center"><span style="background:var(--blue-light);color:var(--blue);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600">${h['เดือน']||'—'}</span></td>
+      <td style="text-align:center;font-size:11px;color:var(--muted)">${h['รอบจ่าย']||'—'}</td>
+      <td style="text-align:center"><span style="background:var(--surface2);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;color:var(--muted)">${h['ประเภทการจ้าง']||'—'}</span></td>
+      <td style="text-align:right;font-weight:600">${fmt(basic)}</td>
+      <td style="text-align:right;color:#6a4fcf">${ot>0?fmt(ot):'—'}</td>
+      <td style="text-align:right;color:var(--red)">${ded>0?'-'+fmt(ded):'—'}</td>
+      <td style="text-align:right;font-weight:700;color:var(--navy);font-size:14px">${fmt(net)}</td>
+      <td style="text-align:right;font-size:11px;color:var(--light)">${ts}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderProfileList(){
+  const list=document.getElementById('profile-emp-list');
+  list.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:.5px;padding:4px 2px">เลือกพนักงาน</div>';
+  const totals={};
+  employees.forEach(emp=>{
+    const empHist=historyData.filter(h=>String(h['รหัสพนักงาน'])===String(emp.id));
+    totals[emp.id]=empHist.reduce((s,h)=>s+(Number(h['ยอดจ่ายสุทธิ'])||0),0);
+  });
+  employees.forEach(emp=>{
+    const btn=document.createElement('button');
+    btn.className='profile-emp-btn'+(selectedProfileEmp?.id===emp.id?' active':'');
+    btn.innerHTML=`
+      <img src="${emp.image}" style="width:42px;height:42px;border-radius:10px;object-fit:cover;flex-shrink:0" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(emp.nickname)}&background=e8f1fd&color=2979d4'">
+      <div style="flex:1;min-width:0">
+        <div class="p-name">${emp.nickname}</div>
+        <div class="p-pos">${emp.name}</div>
+        <div class="p-total">${fmt(totals[emp.id])}</div>
+      </div>`;
+    btn.onclick=()=>{ selectedProfileEmp=emp; renderProfileMain(emp,totals[emp.id]); document.querySelectorAll('.profile-emp-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); };
+    list.appendChild(btn);
+  });
+  if(selectedProfileEmp) renderProfileMain(selectedProfileEmp, totals[selectedProfileEmp.id]||0);
+}
+
+function renderProfileMain(emp, grandTotal){
+  const empHist=historyData.filter(h=>String(h['รหัสพนักงาน'])===String(emp.id)).sort((a,b)=>a['เดือน']>b['เดือน']?1:-1);
+  const months=empHist.length;
+  const avgPay=months>0?grandTotal/months:0;
+  const maxPay=empHist.reduce((mx,h)=>Math.max(mx,Number(h['ยอดจ่ายสุทธิ'])||0),0);
+
+  const main=document.getElementById('profile-main');
+  main.innerHTML=`
+    <div class="profile-header-card">
+      <img src="${emp.image}" class="profile-header-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(emp.nickname)}&background=2d4080&color=fff&size=160'">
+      <div class="profile-header-info" style="flex:1">
+        <h2>${emp.nickname}</h2>
+        <p>${emp.name} &nbsp;|&nbsp; ${emp.bank||'—'} ${emp.acc||''}</p>
+        <div class="profile-kpi-grid">
+          <div class="profile-kpi">
+            <div class="pk-label">รับรวมทั้งหมด</div>
+            <div class="pk-value">${fmtShort(grandTotal)}</div>
+            <div class="pk-sub">บาท</div>
+          </div>
+          <div class="profile-kpi">
+            <div class="pk-label">เฉลี่ย/เดือน</div>
+            <div class="pk-value">${fmtShort(avgPay)}</div>
+            <div class="pk-sub">บาท (${months} เดือน)</div>
+          </div>
+          <div class="profile-kpi">
+            <div class="pk-label">สูงสุดในเดือน</div>
+            <div class="pk-value">${fmtShort(maxPay)}</div>
+            <div class="pk-sub">บาท</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <h3>
+        <span style="width:24px;height:24px;background:var(--blue-light);border-radius:6px;display:inline-flex;align-items:center;justify-content:center">📅</span>
+        ประวัติการรับเงินรายเดือน
+      </h3>
+      ${empHist.length===0
+        ? '<div class="empty-state">ยังไม่มีประวัติการจ่ายเงิน</div>'
+        : `<table class="monthly-history-table">
+          <thead>
+            <tr>
+              <th>เดือน</th>
+              <th>รอบจ่าย</th>
+              <th style="text-align:center">ประเภท</th>
+              <th style="text-align:right">ค่าจ้าง</th>
+              <th style="text-align:right;color:#6a4fcf">OT</th>
+              <th style="text-align:right;color:var(--red)">หัก</th>
+              <th style="text-align:right;color:var(--navy)">สุทธิ</th>
+              <th style="min-width:120px">กราฟ</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${empHist.slice().reverse().map(h=>{
+              const net=Number(h['ยอดจ่ายสุทธิ'])||0;
+              const basic=Number(h['ค่าจ้างพื้นฐาน'])||0;
+              const days=Number(h['จำนวนวันทำงาน'])||0;
+              const otH=Number(h['จำนวนชม. OT'])||0;
+              const otR=Number(h['เรท OT ต่อชม.'])||0;
+              const ot=otH*otR;
+              const ded=(Number(h['ยอดหักสาย/ขาด'])||0)+(Number(h['ยอดเงินเบิก'])||0)+(Number(h['ยอดหักอื่นๆ'])||0);
+              const pct=maxPay>0?Math.round(net/maxPay*100):0;
+              return `<tr>
+                <td style="font-weight:600">${h['เดือน']||'—'}</td>
+                <td style="font-size:11px;color:var(--light)">${h['รอบจ่าย']||'—'}</td>
+                <td style="text-align:center"><span style="background:var(--surface2);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600;color:var(--muted)">${h['ประเภทการจ้าง']||'—'}</span></td>
+                <td style="text-align:right">${fmt(basic)}</td>
+                <td style="text-align:right;color:#6a4fcf">${ot>0?fmt(ot):'—'}</td>
+                <td style="text-align:right;color:var(--red)">${ded>0?'-'+fmt(ded):'—'}</td>
+                <td style="text-align:right;font-weight:700;color:var(--navy)">${fmt(net)}</td>
+                <td class="bar-cell">
+                  <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+          <tfoot>
+            <tr style="background:var(--blue-pale)">
+              <td colspan="6" style="padding:10px 12px;font-weight:700;color:var(--navy)">รวมทั้งหมด</td>
+              <td style="padding:10px 12px;text-align:right;font-weight:700;font-size:16px;color:var(--navy)">${fmt(grandTotal)}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>`
+      }
+    </div>`;
+}
+
+async function refreshData(){
+  showLoading(true);
+  const icon=document.getElementById('sync-icon');
+  if(icon) icon.style.animation='spin .8s linear infinite';
+  dateStart=document.getElementById('date-start').value;
+  dateEnd=document.getElementById('date-end').value;
+  selectedMonth=document.getElementById('month-selector').value;
+  try{
+    const resSum=await fetch(`${APPS_SCRIPT_URL}?action=GET_CALC_SUMMARY&start=${dateStart}&end=${dateEnd}&t=${Date.now()}`);
+    summaryData=await resSum.json();
+    const resHist=await fetch(`${APPS_SCRIPT_URL}?action=GET_PAYROLL_HISTORY&t=${Date.now()}`);
+    historyData=await resHist.json();
+    employees.forEach(emp=>{
+      const sum=summaryData.find(s=>String(s.empId)===String(emp.id))||{};
+      const log=historyData.filter(h=>h['เดือน']===selectedMonth&&String(h['รหัสพนักงาน'])===String(emp.id)).pop()||{};
+      localInputs[emp.id]={
+        salaryType: log['ประเภทการจ้าง']||'Daily',
+        baseRate: log['ค่าจ้างพื้นฐาน']!==undefined?Number(log['ค่าจ้างพื้นฐาน']):350,
+        otHours: log['จำนวนชม. OT']!==undefined?Number(log['จำนวนชม. OT']):(Number(sum.ot)||0),
+        otRate: log['เรท OT ต่อชม.']!==undefined?Number(log['เรท OT ต่อชม.']):25,
+        lateMins: log['จำนวนครั้งที่สาย']!==undefined?Number(log['จำนวนครั้งที่สาย']):(Number(sum.lateCount)||0),
+        lateDeduction: log['ยอดหักสาย/ขาด']!==undefined?Number(log['ยอดหักสาย/ขาด']):0,
+        advancePay: log['ยอดเงินเบิก']!==undefined?Number(log['ยอดเงินเบิก']):0,
+        otherEarn: log['เงินพิเศษ/โบนัส']!==undefined?Number(log['เงินพิเศษ/โบนัส']):0,
+        otherEarnNote: log['หมายเหตุเงินพิเศษ']||'',
+        otherDed: log['ยอดหักอื่นๆ']!==undefined?Number(log['ยอดหักอื่นๆ']):0,
+        otherDedNote: log['หมายเหตุเงินหัก']||'',
+        daysWorked: log['จำนวนวันทำงาน']!==undefined?Number(log['จำนวนวันทำงาน']):(Number(sum.workDays)||0)
+      };
+    });
+    renderEntry();
+    toast('ซิงค์ข้อมูลสำเร็จ');
+  }catch(e){toast('ซิงค์ไม่สำเร็จ กรุณาลองใหม่','error');}
+  if(icon) icon.style.animation='';
+  showLoading(false);
+}
+window.refreshAppState=refreshData;
+
+window.addEventListener('load', async()=>{
+  const now=new Date();
+  document.getElementById('month-selector').value=now.toISOString().slice(0,7);
+  document.getElementById('date-start').value=new Date(now.getFullYear(),now.getMonth()-1,21).toISOString().slice(0,10);
+  document.getElementById('date-end').value=new Date(now.getFullYear(),now.getMonth(),20).toISOString().slice(0,10);
+
+  showLoading(true);
+  const empT=await fetchSheet('Employees');
+  if(empT){
+    employees=empT.rows.filter(r=>r.c&&r.c[0]?.v&&r.c[0].v!=='รหัสพนักงาน').map(r=>({
+      id:String(r.c[0]?.v||''),
+      name:r.c[1]?.v||'',
+      nickname:r.c[2]?.v||'',
+      bank:r.c[6]?.v||'',
+      acc:String(r.c[7]?.v||''),
+      image:r.c[15]?.v||''
+    }));
+    employees.forEach(emp=>{localInputs[emp.id]={salaryType:'Daily',baseRate:350,otHours:0,otRate:25,lateMins:0,lateDeduction:0,advancePay:0,otherEarn:0,otherEarnNote:'',otherDed:0,otherDedNote:'',daysWorked:0};});
+  }
+  showLoading(false);
+  refreshData();
+});
+</script>
+</body>
+</html>
