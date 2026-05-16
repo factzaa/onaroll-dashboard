@@ -452,10 +452,10 @@ function parseData() {
 
   function calcGrade(score) {
     if (score >= 90) return { label:"A (ยอดเยี่ยม)", key:"A" };
-    if (score >= 80) return { label:"B (ดีมาก)",     key:"B" };
-    if (score >= 70) return { label:"C (มาตรฐาน)",   key:"C" };
-    if (score >= 60) return { label:"D (ควรปรับปรุง)",key:"D" };
-    return             { label:"F (ต่ำกว่าเกณฑ์)",  key:"F" };
+    if (score >= 80) return { label:"B (ดีมาก)",      key:"B" };
+    if (score >= 60) return { label:"C (มาตรฐาน)",    key:"C" };
+    if (score >= 40) return { label:"D (ควรปรับปรุง)", key:"D" };
+    return             { label:"F (ไม่ผ่านเกณฑ์)",   key:"F" };
   }
 
   DATA.perf_parsed = [];
