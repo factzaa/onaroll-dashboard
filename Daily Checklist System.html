@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Checklist Hub Pro - Intelligence Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap');
+        :root { --primary: #2563eb; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --dark: #0f172a; }
+        body { font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif; background-color: #f8fafc; color: #1e293b; -webkit-tap-highlight-color: transparent; }
+        
+        .app-header { 
+            background: linear-gradient(135deg, var(--dark) 0%, #1e293b 100%); 
+            border-bottom-left-radius: 3.5rem; border-bottom-right-radius: 3.5rem; 
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12); 
+        }
+
+        /* 🟦 Stat Boxes */
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 1.25rem; }
+        .premium-stat-box {
+            position: relative; aspect-ratio: 1 / 0.8; border-radius: 1.5rem;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 0.5rem; color: white; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.08); cursor: pointer;
+        }
+        .premium-stat-box:active { transform: scale(0.92); }
+        .active-filter { ring: 3px solid white; ring-offset: 2px; transform: scale(1.05); z-index: 10; }
+        .stat-done { background: linear-gradient(145deg, #3b82f6, #1d4ed8); border-bottom: 4px solid #1e40af; }
+        .stat-fix { background: linear-gradient(145deg, #f59e0b, #d97706); border-bottom: 4px solid #b45309; }
+        .stat-pending { background: linear-gradient(145deg, #f43f5e, #be123c); border-bottom: 4px solid #9f1239; }
+        .stat-label { font-size: 0.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.1rem; opacity: 0.85; }
+        .stat-value { font-size: 2.2rem; font-weight: 900; font-style: italic; line-height: 1; }
+
+        /* 💊 Navigation */
+        .nav-tabs-container { display: flex; align-items: center; justify-content: center; padding: 6px; background-color: rgba(255, 255, 255, 0.1); border-radius: 9999px; margin-top: 1.2rem; width: fit-content; margin-left: auto; margin-right: auto; backdrop-blur-md; }
+        .tab-btn { padding: 8px 16px; border-radius: 9999px; font-size: 10px; font-weight: 800; color: rgba(255, 255, 255, 0.5); transition: all 0.3s; cursor: pointer; border: none; background: transparent; }
+        .tab-active { background-color: white !important; color: var(--dark) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+        /* 💊 Task UI */
+        .task-capsule { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 1.2rem 1.4rem; background: white; border-radius: 2.5rem; 
+            margin-bottom: 0.8rem; border: 1px solid #f1f5f9; 
+            box-shadow: 0 4px 12px -5px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease; text-align: left;
+        }
+        .border-done { border-left: 6px solid var(--success); }
+        .border-fix { border-left: 6px solid var(--warning); }
+        .border-pending { border-left: 6px solid #e2e8f0; }
+
+        .confirm-btn {
+            width: 3.5rem; height: 3.5rem; border-radius: 9999px; border-width: 4px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s; flex-shrink: 0;
+        }
+        .btn-ready { @apply border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-200 cursor-pointer active:scale-90; }
+        .btn-not-ready { @apply border-slate-100 bg-white text-slate-100 cursor-not-allowed opacity-50; }
+
+        .thumb-square { width: 44px; height: 44px; min-width: 44px; border-radius: 0.85rem; object-fit: cover; border: 2px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.06); margin-left: 0.6rem; }
+        
+        .image-gallery { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 5px; }
+        .image-gallery::-webkit-scrollbar { display: none; }
+        .gallery-item { flex: 0 0 85%; aspect-ratio: 1 / 1; scroll-snap-align: center; border-radius: 2rem; overflow: hidden; border: 3px solid white; background-color: #f1f5f9; }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+        .dot { width: 5px; height: 5px; border-radius: 50%; background-color: #e2e8f0; transition: all 0.3s ease; }
+        .dot.active { background-color: var(--primary); width: 15px; border-radius: 4px; }
+
+        .date-capsule-container {
+            @apply flex items-center bg-white rounded-full border border-slate-200 shadow-sm px-4 py-2 relative overflow-hidden;
+            max-width: 160px;
+        }
+        .date-input-premium {
+            @apply font-black text-blue-600 text-xs outline-none bg-transparent border-none p-0 cursor-pointer;
+            -webkit-appearance: none; appearance: none;
+            width: 100%; text-align: center;
+            z-index: 10;
+        }
+        .date-input-premium::-webkit-calendar-picker-indicator {
+            position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+        }
+
+        .filter-pill { @apply flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-tight border border-blue-100 shadow-sm animate-in zoom-in; }
+        .modal-zoom { animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    </style>
+</head>
+<body class="min-h-screen pb-40 font-black text-center">
+
+    <header class="app-header pt-12 pb-8 px-6 text-white relative font-black text-left">
+        <div class="flex justify-between items-start mb-6">
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='Main_Hub.html'" class="p-3 bg-white/10 rounded-2xl border border-white/10 text-white transition-all active:scale-95"><svg class="w-6 h-6 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-width="2.5" /></svg></button>
+                <div><h1 class="text-2xl font-black uppercase tracking-tighter leading-tight italic text-white">รายงานภาพรวม<br/><span class="text-blue-400 font-black text-xs uppercase tracking-widest">การทำงาน</span></h1></div>
+            </div>
+            <div class="text-right flex flex-col items-end">
+                <p id="header-staff-name" class="text-[10px] font-black text-white/50 italic uppercase tracking-tighter mb-1">Verified Staff: -</p>
+                <div class="flex items-end gap-1">
+                    <span id="header-percent" class="text-5xl font-black italic tracking-tighter text-white leading-none">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-2 space-y-2">
+            <div class="flex justify-between items-center text-[8px] font-black uppercase tracking-[0.2em] opacity-40">
+                <span>Job Efficiency Goal</span>
+                <span id="job-status-text" class="text-emerald-400 italic">Connected</span>
+            </div>
+            <div class="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div id="header-progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-emerald-400 transition-all duration-1000" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <div class="nav-tabs-container mt-8 font-black">
+            <button onclick="changeTab('Opening')" id="tab-Opening" class="tab-btn font-black">เปิดร้าน</button>
+            <button onclick="changeTab('ShiftChange')" id="tab-ShiftChange" class="tab-btn font-black">ระหว่างวัน</button>
+            <button onclick="changeTab('Closing')" id="tab-Closing" class="tab-btn font-black">ปิดร้าน</button>
+            <button onclick="changeTab('Dashboard')" id="tab-Dashboard" class="tab-btn tab-active font-black font-black">แดชบอร์ด</button>
+        </div>
+    </header>
+
+    <main class="max-w-xl mx-auto p-5 -mt-6 relative z-10 text-left font-black">
+        
+        <div id="dashboard-view" class="space-y-6">
+            <div class="flex justify-between items-center mb-4 font-black">
+                <div class="flex flex-col text-left">
+                    <p class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">สถานะปัจจุบัน</p>
+                    <span id="display-user-pos" class="text-xs font-black text-blue-600 italic uppercase">POS: Staff</span>
+                </div>
+                <div class="date-capsule-container font-black">
+                    <input type="date" id="dash-date-picker" onchange="fetchData()" class="date-input-premium font-black">
+                </div>
+            </div>
+
+            <div class="stat-grid font-black">
+                <div id="filter-done" onclick="setFilter('done')" class="premium-stat-box stat-done font-black"><span class="stat-label">เสร็จสิ้น</span><span id="count-done" class="stat-value">00</span></div>
+                <div id="filter-fix" onclick="setFilter('fix')" class="premium-stat-box stat-fix font-black"><span class="stat-label font-black">รอแก้ไข</span><span id="count-fix" class="stat-value">00</span></div>
+                <div id="filter-pending" onclick="setFilter('pending')" class="premium-stat-box stat-pending font-black"><span class="stat-label font-black font-black">ค้างอยู่</span><span id="count-pending" class="stat-value font-black">00</span></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 text-center mb-6 font-black">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h3 class="text-[9px] font-black text-slate-400 uppercase tracking-widest italic text-left">Personnel Analytics</h3>
+                    <p class="text-[7px] text-blue-500 font-bold uppercase animate-pulse">💡 แตะที่แท่งกราฟเพื่อดูงานรายคน</p>
+                </div>
+                <div class="h-44 font-black relative" style="z-index: 1;">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="space-y-3 pb-20 font-black">
+                <div class="flex justify-between items-center px-4 h-8">
+                    <h3 class="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">Timeline Analytics</h3>
+                    <div id="filter-status-container" class="flex gap-2 items-center">
+                        <div id="status-badge" class="hidden"><button onclick="setFilter('all')" class="filter-pill font-black"><span id="status-filter-text">FILTER</span> ✕</button></div>
+                        <div id="staff-badge" class="hidden"><button onclick="setStaffFilter(null)" class="filter-pill !bg-blue-600 !text-white !border-none font-black"><span id="staff-filter-text">STAFF</span> ✕</button></div>
+                        <button id="clear-all-btn" onclick="clearAllFilters()" class="hidden text-[9px] text-blue-600 font-black uppercase underline">ล้างการกรอง</button>
+                    </div>
+                </div>
+                <div id="timeline-list" class="space-y-1.5 font-black"></div>
+            </div>
+        </div>
+
+        <div id="checklist-view" class="hidden space-y-4 pb-24 font-black text-center">
+            <div id="checklist-container" class="space-y-6"></div>
+            <div id="empty-state" class="hidden py-40 text-center text-slate-300 italic font-black uppercase tracking-widest">Everything is clear.</div>
+        </div>
+    </main>
+
+    <!-- 📜 Action Modal -->
+    <div id="action-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[500] hidden flex items-center justify-center p-4 font-black">
+        <div class="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden flex flex-col max-h-[90vh] shadow-2xl modal-zoom font-black text-left">
+            <div id="fix-banner" class="hidden bg-orange-500 py-3 text-white text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3">
+                <span class="animate-pulse font-black font-black">🚨 REVISION MODE / กรุณาดำเนินการแก้ไขงาน</span>
+            </div>
+            <div class="p-6 bg-slate-50 border-b flex justify-between items-center font-black">
+                <div><h3 id="modal-header-text" class="font-black text-slate-900 uppercase italic tracking-tighter text-xs font-black">Task Information</h3><p id="modal-task-title" class="text-[10px] text-blue-600 font-bold uppercase mt-1 font-black">TASK NAME</p></div>
+                <button onclick="closeModal()" class="p-2 border rounded-xl text-slate-400 font-black font-black font-black transition-all active:scale-95">✕</button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-white font-black text-left">
+                <div class="space-y-3 font-black">
+                    <div class="flex justify-between items-center px-1 font-black"><label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Evidence Review</label><span id="gallery-count" class="text-[9px] font-black text-blue-600">1 / 1</span></div>
+                    <div id="modal-gallery" class="image-gallery font-black" onscroll="updateGalleryDots(this)"></div>
+                    <div id="pagination-dots" class="flex justify-center gap-1.5 mt-2"></div>
+                </div>
+                <div id="revision-note-box" class="hidden bg-orange-50 p-5 rounded-3xl border border-orange-200 font-black">
+                    <p class="text-[9px] font-black text-orange-600 uppercase tracking-widest mb-1 italic underline">คำสั่งจากเจ้าของร้าน:</p>
+                    <p id="prev-comment" class="text-xs text-orange-800 font-bold italic leading-relaxed">-</p>
+                </div>
+                <div id="staff-fix-zone" class="hidden space-y-4 pt-4 border-t-2 border-slate-50 font-black">
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2 font-black">แนบหลักฐานการแก้ไข (ถ่ายใหม่)</label>
+                    <div id="fix-photo-strip" class="photo-strip font-black"></div>
+                    <button onclick="document.getElementById('fix-camera').click()" class="w-full py-4 bg-orange-50 border-2 border-dashed border-orange-200 rounded-2xl flex flex-col items-center justify-center gap-1 active:scale-95 transition-all text-orange-400">
+                        <svg class="w-6 h-6 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-width="2"></path><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" stroke-width="2"></path></svg>
+                        <span class="text-[8px] font-black uppercase font-black">แตะถ่ายรูปยืนยันการแก้</span>
+                        <input type="file" id="fix-camera" accept="image/*" capture="environment" class="hidden font-black" onchange="handleAddFixPhoto(this)">
+                    </button>
+                    <textarea id="staff-fix-note" rows="2" class="w-full p-4 rounded-2xl border-2 border-slate-100 outline-none text-sm font-bold font-black" placeholder="ระบุสิ่งที่แก้ไข..."></textarea>
+                </div>
+                <div id="manager-input-zone" class="space-y-3 font-black text-left">
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2 font-black">Manager's Feedback</label>
+                    <textarea id="manager-input" rows="2" class="w-full p-4 rounded-2xl bg-slate-50 border-2 border-slate-100 focus:border-blue-500 outline-none text-sm font-black font-black font-black" placeholder="ระบุคอมเมนต์..."></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 bg-slate-50 rounded-2xl border text-center font-black"><span class="text-[9px] font-black text-slate-400 uppercase block mb-1">พนักงาน</span><p id="modal-staff-name" class="font-black text-slate-700 italic font-black">-</p></div>
+                    <div id="rating-zone" class="p-4 bg-slate-50 rounded-2xl border text-center font-black font-black font-black"><span class="text-[9px] font-black text-slate-400 uppercase block mb-1 font-black">ประเมิน</span><select id="manager-rating" class="bg-transparent font-black text-blue-600 outline-none text-xs w-full text-center font-black"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select></div>
+                </div>
+            </div>
+            <div class="p-6 bg-slate-50 border-t space-y-3 font-black">
+                <div id="manager-actions" class="flex gap-3 font-black">
+                    <button onclick="saveManagerReview('Fix Required')" class="flex-1 py-4 bg-rose-500 text-white rounded-2xl font-black text-[10px] uppercase shadow-lg font-black transition-all active:scale-95">สั่งแก้ไขงาน</button>
+                    <button onclick="saveManagerReview('Completed')" class="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-black text-[10px] uppercase shadow-lg font-black transition-all active:scale-95">อนุมัติผ่าน</button>
+                </div>
+                <button id="btn-submit-fix" onclick="submitStaffFix()" class="hidden w-full py-5 bg-orange-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all active:scale-95">ยืนยันการแก้ไขและส่งงานใหม่</button>
+                <button onclick="sendToLine()" class="w-full py-4 bg-[#06C755] text-white rounded-2xl font-black text-[10px] uppercase shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 10.3c0-4.5-4.5-8.3-10-8.3S4 5.8 4 10.3c0 4 3.5 7.4 8.3 8.1l-1.1 2.2c-.1.2 0 .5.2.6.1.1.2.1.3.1.1 0 .2 0 .3-.1l2.5-1.9c4.3-.8 9.5-4.2 9.5-9z"/></svg>
+                    ส่งความเห็นเข้า LINE
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden font-black" onchange="handleImageCaptured(this)">
+    <div id="toast" class="fixed top-10 left-1/2 -translate-x-1/2 z-[1000] px-10 py-6 rounded-full shadow-2xl bg-slate-900 text-white font-black text-center min-w-[300px] border-b-4 border-blue-600 opacity-0 pointer-events-none transition-all font-black"></div>
+
+    <script>
+        Chart.register(ChartDataLabels);
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxxjcQkhViS0-_7HVY_Ud9ADeKfXxBrq30hegHai_AGrjgQm_oTliQuMB1dpLe75Zc/exec';
+        const IMGBB_KEY = '412005bc434fd396c0f0163133dfa205';
+
+        let masterTasks = [], todayRecordsMap = {}, fullHistory = [];
+        let activeTab = 'Dashboard', currentStatusFilter = 'all', currentStaffFilter = null, myChart = null;
+        let pendingPhotos = {}, fixPhotos = [], currentTaskId = "";
+
+        const userName = localStorage.getItem('user_name') || "Verified Staff";
+        const userPos = localStorage.getItem('user_pos') || "Staff";
+
+        // 🚀 🆕 ฟังก์ชันรวมสำหรับการทำ ID ให้ปลอดภัยและเหมือนกันทั้งระบบ
+        const getSafeId = (id) => {
+            if (!id) return "";
+            return String(id).normalize('NFC').replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/\s+/g, '').toLowerCase().trim().replace(/[^a-z0-9ก-๙]/g, '');
+        };
+
+        const normalize = (val) => {
+            if (!val) return "";
+            return String(val).normalize('NFC').replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/\s+/g, ' ').trim();
+        };
+
+        const getSmartVal = (obj, ...keys) => {
+            if (!obj) return null;
+            for (let k of keys) {
+                if (obj[k] !== undefined && obj[k] !== "") return obj[k];
+                const cleanK = normalize(k).toLowerCase().replace(/_/g, '');
+                for (let key in obj) { if(normalize(key).toLowerCase().replace(/_/g, '') === cleanK) return obj[key]; }
+            }
+            return null;
+        };
+
+        const normalizeDate = (val) => {
+            if (!val) return "";
+            try {
+                const d = new Date(val);
+                if (!isNaN(d.getTime())) {
+                    let yr = d.getFullYear(); if (yr > 2500) yr -= 543;
+                    return `${yr}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                }
+            } catch(e) {}
+            return String(val).split(' ')[0];
+        };
+
+        const formatToThaiTime = (val) => {
+            if (!val || val === "-" || val === "Pending") return "-";
+            try {
+                const d = new Date(val);
+                if (isNaN(d.getTime())) return String(val).substring(11, 16);
+                return d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
+            } catch (e) { return "-"; }
+        };
+
+        window.onload = () => {
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            document.getElementById('dash-date-picker').value = todayStr;
+            document.getElementById('header-staff-name').innerText = `Staff: ${userName}`;
+            document.getElementById('display-user-pos').innerText = `Status: ${userPos.toUpperCase()}`;
+            fetchData();
+        };
+
+        async function fetchData() {
+            const icon = document.getElementById('sync-icon');
+            icon?.classList.add('animate-spin');
+            try {
+                const [resMaster, resRecords, resHistory] = await Promise.all([
+                    fetch(`${API_URL}?action=GET_MASTER_TASKS&t=${Date.now()}`).then(r => r.json()),
+                    fetch(`${API_URL}?action=GET_TODAY_PROGRESS&t=${Date.now()}`).then(r => r.json()),
+                    fetch(`${API_URL}?action=GET_TODAY_RECORDS&t=${Date.now()}`).then(r => r.json())
+                ]);
+                masterTasks = Array.isArray(resMaster) ? resMaster : [];
+                todayRecordsMap = resRecords || {};
+                fullHistory = Array.isArray(resHistory) ? resHistory : [];
+                
+                if(activeTab === 'Dashboard') {
+                   setTimeout(renderDashboard, 100); 
+                } else {
+                   renderChecklist();
+                }
+                document.getElementById('job-status-text').innerText = "Connected";
+            } catch(e) { document.getElementById('job-status-text').innerText = "System Offline"; }
+            finally { icon?.classList.remove('animate-spin'); }
+        }
+
+        function changeTab(tabId) {
+            activeTab = tabId;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+            document.getElementById(`tab-${tabId}`).classList.add('tab-active');
+            const isDash = tabId === 'Dashboard';
+            document.getElementById('dashboard-view').classList.toggle('hidden', !isDash);
+            document.getElementById('checklist-view').classList.toggle('hidden', isDash);
+            if(isDash) setTimeout(renderDashboard, 100); else renderChecklist();
+        }
+
+        function renderChecklist() {
+            const container = document.getElementById('checklist-container');
+            if(!container) return;
+            const map = { 'opening': 'Opening', 'เปิดร้าน': 'Opening', 'shiftchange': 'ShiftChange', 'ระหว่างวัน': 'ShiftChange', 'closing': 'Closing', 'ปิดร้าน': 'Closing' };
+            
+            const list = masterTasks.filter(t => {
+                const taskStatus = normalize(getSmartVal(t, 'Status', 'สถานะ')).toLowerCase();
+                const isActive = taskStatus === "" || taskStatus === "active" || taskStatus === "ใช้งาน";
+                if (!isActive) return false;
+
+                const rawId = t.checklist_id || t.id;
+                const safeId = getSafeId(rawId);
+                const latest = todayRecordsMap[safeId];
+                const groupName = normalize(t.time_block || t.Group || "").toLowerCase();
+                const belongsToTab = map[groupName] === activeTab;
+                
+                const taskPos = normalize(getSmartVal(t, 'Position', 'ตำแหน่ง')).toLowerCase();
+                const userPosLower = normalize(userPos).toLowerCase();
+                const userRole = localStorage.getItem('user_role')?.toLowerCase();
+                
+                const isForMe = (userRole === 'admin' || userRole === 'manager') || 
+                               (taskPos === "" || taskPos === "all" || taskPos === "ทั้งหมด" || taskPos.includes(userPosLower));
+
+                return belongsToTab && isForMe && (!latest || latest.status === "Fix Required");
+            });
+
+            if (list.length === 0) { container.innerHTML = ""; document.getElementById('empty-state').classList.remove('hidden'); return; }
+            document.getElementById('empty-state').classList.add('hidden');
+            const grouped = list.reduce((acc, t) => { const z = normalize(t.zone || t.โซน || 'ทั่วไป'); if(!acc[z]) acc[z] = []; acc[z].push(t); return acc; }, {});
+            container.innerHTML = Object.keys(grouped).map(z => `<div class="mb-8 font-black"><h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-4 flex items-center gap-3 font-black"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full font-black"></span> ${z}</h3>${grouped[z].map(t => createTaskCard(t)).join('')}</div>`).join('');
+        }
+
+        function createTaskCard(t) {
+            const rawId = t.checklist_id || t.id;
+            const safeId = getSafeId(rawId);
+            const latest = todayRecordsMap[safeId];
+            const isFix = latest?.status === "Fix Required";
+            const borderClass = isFix ? 'border-fix bg-orange-50/20' : 'border-slate-100 bg-white';
+            const photos = pendingPhotos[safeId] || [];
+            
+            const reqVal = normalize(getSmartVal(t, 'Require_Photo', 'ต้องแนบรูป') || "NO").toUpperCase();
+            const isPhotoRequired = (reqVal === "YES");
+            const isReady = !isPhotoRequired || photos.length > 0;
+
+            return `
+                <div class="task-capsule ${borderClass} font-black mb-3">
+                    <div class="flex-1 pr-2 font-black">
+                        <div class="flex items-center gap-2 mb-1">
+                            ${isPhotoRequired ? `<span class="bg-rose-500 text-white text-[7px] px-2 py-0.5 rounded-full uppercase">Photo Required</span>` : `<span class="bg-slate-100 text-slate-400 text-[7px] px-2 py-0.5 rounded-full uppercase font-black">Standard Task</span>`}
+                        </div>
+                        <h4 class="font-black text-slate-700 text-sm leading-tight font-black">${t.task_name || t.รายการงาน}</h4>
+                        ${isFix ? `<p class="text-[10px] text-orange-600 italic font-bold mt-1 font-black">🚩 "${latest.comment}"</p>` : ''}
+                        <div class="flex flex-wrap gap-2 mt-4 font-black">
+                            ${photos.filter(src => src.startsWith('http')).map(src => `<img src="${src}" class="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-sm font-black">`).join('')}
+                            <button onclick="openCamera('${rawId}')" class="w-12 h-12 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 font-black">
+                                <svg class="w-5 h-5 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-width="2.5"/><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" stroke-width="2.5"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="${isReady ? `submitNormalTask('${rawId}', '${t.task_name || t.รายการงาน}', '${t.time_block || t.Group}', '${t.zone || t.โซน}')` : `showToast('🚨 งานนี้จำเป็นต้องแนบรูป', 'error')`}" 
+                        class="confirm-btn ${isReady ? 'btn-ready' : 'btn-not-ready'} font-black">
+                        <svg class="w-7 h-7 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="4"/></svg>
+                    </button>
+                </div>`;
+        }
+
+        async function submitNormalTask(id, name, block, zone) {
+            const safeId = getSafeId(id);
+            const photos = pendingPhotos[safeId] || [];
+            showToast("⏳ บันทึกงาน...");
+            const payload = { action: 'SUBMIT_CHECKLIST', staffName: userName, position: userPos, items: [{ id, taskName: name, timeBlock: block, zone, photoUrl: photos.join(','), staffNote: "-" }] };
+            await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            showToast("✅ บันทึกสำเร็จ!"); fetchData();
+        }
+
+        function renderDashboard() {
+            try {
+                const selectedDate = document.getElementById('dash-date-picker').value;
+                if(!selectedDate) return;
+                const daily = fullHistory.filter(r => normalizeDate(getSmartVal(r, 'Date', 'วันที่')) === selectedDate);
+                const latestToday = {};
+                daily.forEach(r => {
+                    const safeId = getSafeId(getSmartVal(r, 'Checklist_ID', 'id'));
+                    const timestamp = getSmartVal(r, 'Timestamp', 'เวลา');
+                    if(!latestToday[safeId] || (timestamp && new Date(timestamp) > new Date(getSmartVal(latestToday[safeId], 'Timestamp', 'เวลา')))) latestToday[safeId] = r;
+                });
+                
+                const done = Object.values(latestToday).filter(x => normalize(getSmartVal(x, 'Status', 'สถานะ')) === "Completed").length;
+                const fix = Object.values(latestToday).filter(x => normalize(getSmartVal(x, 'Status', 'สถานะ')) === "Fix Required").length;
+                
+                const activeMasterCount = masterTasks.filter(t => {
+                    const taskStatus = normalize(getSmartVal(t, 'Status', 'สถานะ')).toLowerCase();
+                    return taskStatus === "" || taskStatus === "active" || taskStatus === "ใช้งาน";
+                }).length;
+
+                const percent = activeMasterCount > 0 ? Math.round((done / activeMasterCount) * 100) : 0;
+                
+                document.getElementById('header-percent').innerText = percent + "%";
+                document.getElementById('header-progress-bar').style.width = percent + "%";
+                document.getElementById('count-done').innerText = done.toString().padStart(2, '0');
+                document.getElementById('count-fix').innerText = fix.toString().padStart(2, '0');
+                document.getElementById('count-pending').innerText = Math.max(0, activeMasterCount - done - fix).toString().padStart(2, '0');
+                
+                updateFilterUI(); 
+                renderTimeline(latestToday, daily); 
+                renderPerformanceChart(daily);
+            } catch(err) { console.error("Dashboard Update Failed", err); }
+        }
+
+        function updateFilterUI() {
+            const hasStatus = currentStatusFilter !== 'all';
+            const hasStaff = currentStaffFilter !== null;
+            
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.classList.toggle('hidden', !hasStatus);
+            if(hasStatus) document.getElementById('status-filter-text').innerText = { done: 'เสร็จสิ้น', fix: 'รอแก้ไข', pending: 'ค้างอยู่' }[currentStatusFilter] || 'FILTER';
+            
+            const staffBadge = document.getElementById('staff-badge');
+            staffBadge.classList.toggle('hidden', !hasStaff);
+            if(hasStaff) document.getElementById('staff-filter-text').innerText = currentStaffFilter;
+            
+            document.getElementById('clear-all-btn').classList.toggle('hidden', !hasStatus && !hasStaff);
+            
+            ['filter-done','filter-fix','filter-pending'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.toggle('active-filter', id === `filter-${currentStatusFilter}`);
+            });
+        }
+
+        function setFilter(f) { 
+            if(currentStatusFilter === f) currentStatusFilter = 'all'; 
+            else currentStatusFilter = f;
+            renderDashboard(); 
+        }
+        
+        function setStaffFilter(staff) { 
+            setTimeout(() => { 
+                currentStaffFilter = staff ? normalize(staff) : null; 
+                renderDashboard(); 
+            }, 100); 
+        }
+
+        function clearAllFilters() { currentStatusFilter = 'all'; currentStaffFilter = null; renderDashboard(); }
+
+        function renderTimeline(latestDataMap, allDailyData) {
+            const list = document.getElementById('timeline-list');
+            if(!list) return;
+
+            let itemsToShow = [];
+            if (currentStatusFilter === 'pending') {
+                itemsToShow = masterTasks.filter(task => {
+                    const taskStatus = normalize(getSmartVal(task, 'Status', 'สถานะ')).toLowerCase();
+                    const isActive = taskStatus === "" || taskStatus === "active" || taskStatus === "ใช้งาน";
+                    if(!isActive) return false;
+
+                    const safeId = getSafeId(task.checklist_id || task.id);
+                    return !latestDataMap[safeId];
+                }).map(t => ({ isPendingTask: true, Checklist_ID: t.checklist_id || t.id, Task_Name: t.task_name || t.รายการงาน || t.รายการ, Staff_Name: "ยังไม่ได้ระบุ", Status: "Pending", Timestamp: "-", Photo_URL: "" }));
+            } else {
+                itemsToShow = currentStaffFilter ? allDailyData : Object.values(latestDataMap);
+                if (currentStatusFilter === 'done') itemsToShow = itemsToShow.filter(x => normalize(getSmartVal(x, 'Status', 'สถานะ')) === "Completed");
+                else if (currentStatusFilter === 'fix') itemsToShow = itemsToShow.filter(x => normalize(getSmartVal(x, 'Status', 'สถานะ')) === "Fix Required");
+            }
+
+            if (currentStaffFilter && currentStatusFilter !== 'pending') {
+                itemsToShow = itemsToShow.filter(x => normalize(getSmartVal(x, 'Staff_Name', 'พนักงาน')) === currentStaffFilter);
+            }
+            
+            list.innerHTML = itemsToShow.length === 0 ? '<p class="py-10 text-center text-slate-300 italic font-black">ไม่พบข้อมูลประวัติ</p>' :
+                itemsToShow.sort((a,b) => {
+                    if (a.isPendingTask) return 1;
+                    const timeA = new Date(getSmartVal(a, 'Timestamp', 'เวลา') || 0);
+                    const timeB = new Date(getSmartVal(b, 'Timestamp', 'เวลา') || 0);
+                    return timeB - timeA;
+                }).map(r => {
+                    const status = normalize(getSmartVal(r, 'Status', 'สถานะ')) || "Pending";
+                    const isFix = status === "Fix Required";
+                    const isPending = status === "Pending";
+                    const timeStr = r.isPendingTask ? "-" : formatToThaiTime(getSmartVal(r, 'Timestamp', 'เวลา'));
+                    const borderClass = isPending ? 'border-pending' : (isFix ? 'border-fix' : 'border-done');
+                    const badgeClass = isPending ? 'bg-slate-100 text-slate-400' : (isFix ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600');
+                    
+                    const photoUrlRaw = getSmartVal(r, 'Photo_URL', 'รูปภาพ') || "";
+                    const thumbUrl = (photoUrlRaw.startsWith('http')) ? photoUrlRaw.split(',')[0] : "";
+
+                    return `<div class="task-capsule ${borderClass} font-black" onclick="${isPending ? "showToast('🚨 งานนี้ยังไม่มีการบันทึก')" : `openActionModal('${getSmartVal(r, 'Checklist_ID', 'id')}')`}">
+                        <div class="flex-1 pr-2 font-black">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="px-2 py-0.5 rounded-lg text-[7px] font-black uppercase ${badgeClass}">${status}</span>
+                                <span class="text-[8px] font-bold text-slate-300 italic font-black">${timeStr}</span>
+                            </div>
+                            <h4 class="font-black text-slate-700 text-xs leading-tight line-clamp-1 font-black">${getSmartVal(r, 'Task_Name', 'รายการงาน') || r.งาน || "Unknown Task"}</h4>
+                            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">👤 ${getSmartVal(r, 'Staff_Name', 'พนักงาน') || "-"}</p>
+                        </div>
+                        ${thumbUrl ? `<img src="${thumbUrl}" class="thumb-square font-black">` : ''}
+                    </div>`;
+                }).join('');
+        }
+
+        function renderPerformanceChart(data) {
+            const stats = data.reduce((acc, r) => { const name = normalize(getSmartVal(r, 'Staff_Name', 'พนักงาน') || "N/A"); acc[name] = (acc[name] || 0) + 1; return acc; }, {});
+            const ctx = document.getElementById('performanceChart')?.getContext('2d');
+            if(!ctx) return;
+            if(myChart) myChart.destroy();
+            try {
+                if (Object.keys(stats).length === 0) return;
+                myChart = new Chart(ctx, {
+                    type: 'bar', data: { labels: Object.keys(stats), datasets: [{ data: Object.values(stats), backgroundColor: '#2563eb', borderRadius: 8, barThickness: 16 }] },
+                    options: { 
+                        indexAxis: 'y', responsive: true, maintainAspectRatio: false, 
+                        plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', offset: 4, color: '#1e293b', font: { weight: '900', size: 10 }, formatter: v => v + ' งาน' } },
+                        scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: '900', size: 10 } } } },
+                        onClick: (event, elements, chart) => {
+                            if (elements.length > 0) { setStaffFilter(chart.data.labels[elements[0].index]); }
+                        }
+                    }
+                });
+            } catch(err) { console.error("Chart Render Failed"); }
+        }
+
+        async function openActionModal(taskId) {
+            currentTaskId = taskId;
+            const safeId = getSafeId(taskId);
+            const r = fullHistory.filter(x => getSafeId(getSmartVal(x, 'Checklist_ID', 'id')) === safeId).sort((a,b) => {
+                const ta = new Date(getSmartVal(a, 'Timestamp', 'เวลา') || 0);
+                const tb = new Date(getSmartVal(b, 'Timestamp', 'เวลา') || 0);
+                return tb - ta;
+            })[0];
+            
+            if(!r) { showToast("⚠️ ไม่พบข้อมูลงานชิ้นนี้", "error"); return; }
+            
+            document.getElementById('modal-task-title').innerText = getSmartVal(r, 'Task_Name', 'รายการงาน') || "-";
+            document.getElementById('modal-staff-name').innerText = getSmartVal(r, 'Staff_Name', 'พนักงาน') || "-";
+            const status = normalize(getSmartVal(r, 'Status', 'สถานะ'));
+            const isFix = status === "Fix Required";
+            
+            document.getElementById('fix-banner').classList.toggle('hidden', !isFix);
+            document.getElementById('revision-note-box').classList.toggle('hidden', !isFix);
+            document.getElementById('staff-fix-zone').classList.toggle('hidden', !isFix);
+            document.getElementById('btn-submit-fix').classList.toggle('hidden', !isFix);
+            document.getElementById('manager-input-zone').classList.toggle('hidden', isFix);
+            document.getElementById('manager-actions').classList.toggle('hidden', isFix);
+            
+            if(isFix) {
+                document.getElementById('prev-comment').innerText = `"${getSmartVal(r, 'Manager_Comment', 'คอมเมนต์จากผู้จัดการ') || "แก้ไขตามจุดที่ระบุ"}"`;
+                document.getElementById('modal-header-text').innerText = "Revision Hub";
+            } else {
+                document.getElementById('modal-header-text').innerText = "Task Information";
+            }
+
+            const photoUrls = (getSmartVal(r, 'Photo_URL', 'รูปภาพ') || "").split(',').filter(u => u.startsWith('http'));
+            document.getElementById('modal-gallery').innerHTML = photoUrls.map(u => `<div class="gallery-item"><img src="${u}"></div>`).join('');
+            document.getElementById('pagination-dots').innerHTML = photoUrls.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
+            
+            document.getElementById('action-modal').classList.remove('hidden');
+        }
+
+        async function saveManagerReview(status) {
+            const r = fullHistory.find(x => getSafeId(getSmartVal(x, 'Checklist_ID', 'id')) === getSafeId(currentTaskId));
+            showToast("⏳ บันทึกข้อมูล...");
+            const payload = { action: 'MANAGER_REVIEW', staffName: getSmartVal(r, 'Staff_Name', 'พนักงาน'), position: getSmartVal(r, 'Position', 'ตำแหน่ง'), status, comment: document.getElementById('manager-input').value, rating: document.getElementById('manager-rating').value, item: { id: currentTaskId, taskName: getSmartVal(r, 'Task_Name', 'รายการงาน'), timeBlock: getSmartVal(r, 'Time_Block', 'Group'), zone: getSmartVal(r, 'Zone', 'โซน'), photoUrl: getSmartVal(r, 'Photo_URL', 'รูปภาพ') } };
+            await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            showToast("✅ เรียบร้อย!"); closeModal(); fetchData();
+        }
+
+        async function submitStaffFix() {
+            if(fixPhotos.length === 0) return showToast("⚠️ กรุณาแนบรูปการแก้ไข", "error");
+            showToast("⏳ ส่งงานแก้ไข...");
+            const r = fullHistory.find(x => getSafeId(getSmartVal(x, 'Checklist_ID', 'id')) === getSafeId(currentTaskId));
+            const payload = { action: 'SUBMIT_FIX', staffName: userName, position: userPos, items: [{ id: currentTaskId, taskName: getSmartVal(r, 'Task_Name', 'รายการงาน'), timeBlock: getSmartVal(r, 'Time_Block', 'Group'), zone: getSmartVal(r, 'Zone', 'โซน'), photoUrl: fixPhotos.join(','), staffNote: document.getElementById('staff-fix-note').value }] };
+            await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            showToast("✅ เรียบร้อย!"); closeModal(); fetchData();
+        }
+
+        // 🚀 🆕📍 แก้ไขจุดอัปโหลดรูปภาพให้เสถียร (Handle ImgBB 400 Fix)
+        function handleImageCaptured(input) {
+            if(!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            const rawId = currentTaskId;
+            const safeId = getSafeId(rawId);
+            
+            showToast("📸 กำลังอัปโหลด...");
+            
+            const fd = new FormData();
+            fd.append('image', file, 'upload_photo.jpg'); 
+            
+            fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { 
+                method: 'POST', 
+                body: fd 
+            })
+            .then(r => r.json())
+            .then(res => {
+                if(res.success) {
+                    if(!pendingPhotos[safeId]) pendingPhotos[safeId] = [];
+                    pendingPhotos[safeId].push(res.data.url); 
+                    showToast("✅ อัปโหลดสำเร็จ");
+                    renderChecklist(); // รีเฟรชหน้าจอเพื่อแสดงพรีวิว
+                } else {
+                    throw new Error(res.error?.message || "ImgBB Rejection");
+                }
+            })
+            .catch(err => {
+                console.error("Upload Error:", err);
+                showToast("❌ อัปโหลดรูปไม่สำเร็จ", "error");
+            });
+        }
+
+        function handleAddFixPhoto(input) {
+            if(!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            showToast("📸 กำลังอัปโหลด...");
+            const fd = new FormData();
+            fd.append('image', file, 'fix_photo.jpg');
+            fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: 'POST', body: fd }).then(r => r.json()).then(res => {
+                if(res.success) {
+                    fixPhotos.push(res.data.url);
+                    document.getElementById('fix-photo-strip').innerHTML = fixPhotos.map(u => `<div class="photo-preview-item font-black"><img src="${u}" class="w-full h-full object-cover"></div>`).join('');
+                    showToast("✅ เพิ่มรูปภาพสำเร็จ");
+                } else {
+                    throw new Error("ImgBB rejection");
+                }
+            }).catch(err => {
+                showToast("❌ อัปโหลดรูปไม่สำเร็จ", "error");
+            });
+        }
+
+        function openCamera(id) { currentTaskId = id; document.getElementById('camera-input').click(); }
+        function closeModal() { document.getElementById('action-modal').classList.add('hidden'); fixPhotos = []; }
+        function showToast(m, t) { const el = document.getElementById('toast'); el.innerText = m; el.className = `fixed top-10 left-1/2 -translate-x-1/2 z-[1000] px-10 py-6 rounded-full shadow-2xl text-white font-black text-center min-w-[300px] border-b-4 opacity-100 ${t==='error'?'bg-rose-600 border-rose-900':'bg-slate-900 border-blue-600'} font-black font-black`; setTimeout(() => el.classList.replace('opacity-100', 'opacity-0'), 3500); }
+        
+        function sendToLine() { 
+            try {
+                const task = document.getElementById('modal-task-title').innerText;
+                const staff = document.getElementById('modal-staff-name').innerText;
+                const comment = document.getElementById('manager-input').value || "อัปเดตสถานะงาน";
+                const message = `🚩 แจ้งตรวจสอบงาน\nงาน: ${task}\nพนักงาน: คุณ ${staff}\n📝 "${comment}"`; 
+                window.location.href = "https://line.me/R/msg/text/?" + encodeURIComponent(message); 
+            } catch (e) {
+                console.error(e);
+                showToast("⚠️ ไม่สามารถเปิดแอป LINE ได้", "error");
+            }
+        }
+        
+        function updateGalleryDots(el) { const index = Math.round(el.scrollLeft / (el.offsetWidth * 0.85 + 10)); document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === index)); }
+    </script>
+</body>
+</html>

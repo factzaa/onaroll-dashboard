@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HR Master - ระบบจัดการพนักงาน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif; background-color: #f8fafc; color: #1e293b; -webkit-tap-highlight-color: transparent; }
+        .input-premium { @apply w-full px-5 py-3.5 rounded-2xl bg-white border border-slate-200 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all font-medium; }
+        .label-premium { @apply text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-2 block; }
+        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02); }
+        .animate-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .active-tab { @apply bg-blue-600 text-white shadow-lg shadow-blue-200; }
+        .inactive-tab { @apply bg-white text-slate-400 hover:bg-slate-50; }
+        .photo-frame { width: 180px; height: 180px; margin: 0 auto; position: relative; background-color: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 2rem; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; cursor: pointer; }
+        .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .modal-scroll::-webkit-scrollbar { width: 4px; }
+        .modal-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="p-4 md:p-8 pb-20 text-center">
+    <div class="max-w-5xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-center bg-white p-4 md:p-6 rounded-[2.5rem] shadow-sm border border-slate-100 animate-in">
+            <div class="flex items-center gap-3 md:gap-4 text-left">
+                <button onclick="window.location.href='Main_Hub.html'" class="p-3 md:p-4 bg-slate-50 rounded-2xl hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all active:scale-90 shadow-sm border border-slate-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                </button>
+                <div class="text-left">
+                    <h1 class="text-lg md:text-2xl font-black uppercase italic">HR <span class="text-blue-600">MASTER</span></h1>
+                    <p class="text-slate-400 text-[8px] md:text-[10px] font-bold uppercase tracking-widest italic">Stable Precision v1.0</p>
+                </div>
+            </div>
+            
+            <!-- ส่วนที่มีการแก้ไข: นำ hidden ออก และปรับขนาดปุ่มให้พอดีกับหน้าจอมือถือ -->
+            <div class="flex bg-slate-100 p-1 md:p-1.5 rounded-2xl gap-1 md:gap-2">
+                <button onclick="switchTab('register')" id="tab-reg" class="px-3 md:px-6 py-2 rounded-xl text-[10px] md:text-sm font-black active-tab uppercase">ลงทะเบียน</button>
+                <button onclick="switchTab('database')" id="tab-db" class="px-3 md:px-6 py-2 rounded-xl text-[10px] md:text-sm font-black inactive-tab uppercase">ฐานข้อมูล</button>
+            </div>
+
+            <button onclick="fetchEmployees()" id="refresh-btn" class="p-3 md:p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-all shadow-sm">
+                <svg id="sync-icon" class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            </button>
+        </header>
+
+        <!-- Registration Section -->
+        <section id="section-register" class="space-y-6 animate-in">
+            <form id="hrForm" onsubmit="saveEmployee(event)" class="space-y-6 text-left">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <!-- Photo -->
+                    <div class="md:col-span-4">
+                        <div class="bg-white p-8 rounded-[2.5rem] card-shadow border border-slate-100 h-full flex flex-col items-center">
+                            <div class="flex justify-between items-center w-full mb-6 border-b pb-4">
+                                <h2 class="text-[10px] font-black text-slate-900 uppercase">Profile</h2>
+                                <button type="button" onclick="clearPhoto()" id="btn-clear-photo" class="hidden text-[10px] font-bold text-rose-500 uppercase">ลบรูป</button>
+                            </div>
+                            <div class="photo-frame shadow-xl" onclick="document.getElementById('image-input').click()">
+                                <div id="upload-placeholder" class="text-center p-4">
+                                    <svg class="w-10 h-10 mx-auto text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-width="2"></path></svg>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">แตะเพื่ออัปโหลด</p>
+                                </div>
+                                <img id="img-preview" class="hidden">
+                                <input type="file" id="image-input" accept="image/*" class="hidden" onchange="handleImage(this)">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Personal -->
+                    <div class="md:col-span-8">
+                        <div class="bg-white p-8 rounded-[2.5rem] card-shadow border border-slate-100 h-full">
+                            <h2 class="text-xs font-black text-slate-900 uppercase tracking-[0.2em] mb-8 border-b pb-4">Personal Details</h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div><label class="label-premium">รหัสพนักงาน</label><input type="text" id="f-empId" required class="input-premium"></div>
+                                <div><label class="label-premium">ชื่อเล่น</label><input type="text" id="f-nickName" class="input-premium"></div>
+                                <div class="sm:col-span-2"><label class="label-premium">ชื่อจริง-นามสกุล</label><input type="text" id="f-fullName" required class="input-premium"></div>
+                                <div><label class="label-premium">ตำแหน่งงาน</label><input type="text" id="f-position" required class="input-premium"></div>
+                                <div><label class="label-premium">วันที่เริ่มงาน</label><input type="date" id="f-startDate" required class="input-premium"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                    <h2 class="text-xs font-black text-slate-900 uppercase tracking-[0.2em] mb-8 border-b pb-4 text-emerald-500">Contact & Banking</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div><label class="label-premium">เบอร์โทรศัพท์</label><input type="tel" id="f-phone" class="input-premium"></div>
+                        <div><label class="label-premium">Line ID</label><input type="text" id="f-lineId" class="input-premium"></div>
+                        <div><label class="label-premium">สาขา</label><input type="text" id="f-branch" class="input-premium"></div>
+                        <div><label class="label-premium">ธนาคาร</label><input type="text" id="f-bankName" class="input-premium"></div>
+                        <div class="md:col-span-2"><label class="label-premium">เลขบัญชีธนาคาร</label><input type="text" id="f-bankAcc" class="input-premium"></div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 p-8 sm:p-12 rounded-[3rem] text-white shadow-2xl">
+                    <h2 class="text-xs font-black text-slate-400 uppercase mb-8 border-b border-slate-800 pb-4">Settings</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+                        <div><label class="label-premium !text-slate-500">บทบาท</label><select id="f-role" class="input-premium !bg-slate-800 !text-white border-none italic"><option value="User">User</option><option value="Manager">Manager</option><option value="Admin">Admin</option></select></div>
+                        <div><label class="label-premium !text-slate-500">รหัส PIN</label><input type="password" id="f-pin" maxlength="6" class="input-premium !bg-slate-800 !text-white border-none text-center"></div>
+                        <div><label class="label-premium !text-slate-500">เวลาเริ่ม</label><input type="time" id="f-startTime" class="input-premium !bg-slate-800 !text-white border-none"></div>
+                        <div><label class="label-premium !text-slate-500">เวลาเลิก</label><input type="time" id="f-endTime" class="input-premium !bg-slate-800 !text-white border-none"></div>
+                    </div>
+                    <div class="mt-8 flex gap-6">
+                        <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="status" value="Active" checked class="accent-emerald-500 w-5 h-5"><span>Active (ใช้งาน)</span></label>
+                        <label class="flex items-center gap-2 cursor-pointer font-bold"><input type="radio" name="status" value="Inactive" class="accent-rose-500 w-5 h-5"><span>Inactive (ลาออก)</span></label>
+                    </div>
+                </div>
+                <button type="submit" id="btn-save" class="w-full py-8 rounded-[2.5rem] bg-blue-600 text-white font-black text-xl hover:bg-blue-700 transition-all uppercase tracking-widest shadow-2xl active:scale-95">ยืนยันการบันทึกข้อมูล</button>
+            </form>
+        </section>
+
+        <!-- Database Section -->
+        <section id="section-database" class="hidden space-y-6 animate-in text-left">
+            <div class="bg-white p-6 rounded-[2rem] border border-slate-100 flex items-center gap-4">
+                <input type="text" id="search-db" onkeyup="filterDatabase()" placeholder="ค้นหารหัส หรือชื่อพนักงาน..." class="flex-1 px-6 py-4 rounded-2xl bg-slate-50 outline-none font-bold">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Total: <span id="emp-count" class="text-blue-600">0</span></div>
+            </div>
+            <div id="db-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-10"></div>
+        </section>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal-detail" class="fixed inset-0 bg-slate-950/95 backdrop-blur-sm z-[500] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in text-left">
+            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-white rounded-2xl overflow-hidden border-2 border-white shadow flex items-center justify-center">
+                        <img id="m-img" src="" class="hidden w-full h-full object-cover">
+                        <span id="m-avatar" class="text-2xl font-black text-blue-600 italic">?</span>
+                    </div>
+                    <div><h3 class="text-xl font-black text-slate-900" id="m-fullName">-</h3><p class="text-xs font-bold text-blue-600 uppercase italic" id="m-position">-</p></div>
+                </div>
+                <button onclick="closeModal()" class="p-2 text-slate-400 hover:text-rose-500 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5" /></svg></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-8 space-y-8 modal-scroll bg-white">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
+                    <div class="p-4 rounded-2xl bg-slate-50 border"><span class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Emp ID</span><p class="font-black text-slate-700" id="m-empId">-</p></div>
+                    <div class="p-4 rounded-2xl bg-slate-50 border"><span class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Nickname</span><p class="font-black text-slate-700" id="m-nickName">-</p></div>
+                    <div class="p-4 rounded-2xl bg-emerald-50 border-emerald-100"><span class="text-[9px] font-bold text-emerald-500 uppercase block mb-1">Status</span><p class="font-black text-emerald-600" id="m-status">-</p></div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 text-sm">
+                    <div class="space-y-4">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase border-b pb-1">Employment</h4>
+                        <div class="flex justify-between font-bold"><span>เริ่มงาน:</span><span id="m-startDate" class="text-slate-600">-</span></div>
+                        <div class="flex justify-between font-bold"><span>บทบาท:</span><span id="m-role" class="text-blue-600">-</span></div>
+                        <div class="flex justify-between font-bold"><span>สาขา:</span><span id="m-branch" class="text-slate-600">-</span></div>
+                        <div class="flex justify-between font-bold"><span>เวลา:</span><span class="text-blue-600 font-black"><span id="m-startTime">-</span> - <span id="m-endTime">-</span></span></div>
+                    </div>
+                    <div class="space-y-4">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase border-b pb-1">Contact & Finance</h4>
+                        <div class="flex justify-between font-bold"><span>โทร:</span><span id="m-phone" class="text-slate-600">-</span></div>
+                        <div class="flex justify-between font-bold"><span>Line ID:</span><span id="m-lineId" class="text-slate-600">-</span></div>
+                        <div class="flex justify-between font-bold"><span>ธนาคาร:</span><span id="m-bankName" class="text-slate-600">-</span></div>
+                        <div class="flex justify-between font-bold"><span>เลขบัญชี:</span><span id="m-bankAcc" class="text-slate-600">-</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 bg-slate-50 border-t flex gap-4">
+                <button id="btn-edit-trigger" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-sm shadow-xl active:scale-95 transition-all">แก้ไขข้อมูล</button>
+                <button onclick="closeModal()" class="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-sm active:scale-95 transition-all">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-10 left-1/2 -translate-x-1/2 z-[1000] px-10 py-5 rounded-[2rem] shadow-2xl transition-all duration-500 opacity-0 pointer-events-none bg-slate-900 text-white font-black text-center min-w-[320px] border-b-8 border-blue-600"></div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxvProkNuSUhJSGgO2M94x_ybX_S-9ZtRx75RsBKIMQgmuSw23P_-7z8XPAflKMq6XR9g/exec';
+        const IMGBB_KEY = '412005bc434fd396c0f0163133dfa205';
+
+        const COL = { ID: 0, NAME: 1, NICK: 2, POS: 3, START: 4, TEL: 5, BANK: 6, ACC: 7, STAT: 8, LINE: 9, ROLE: 10, BRCH: 11, PIN: 12, STIME: 13, ETIME: 14, IMG: 15 };
+
+        let allEmployees = [], rawImageFile = null, isEditing = false;
+
+        window.onload = () => { fetchEmployees(); };
+
+        async function fetchEmployees() {
+            const icon = document.getElementById('sync-icon');
+            icon.classList.add('animate-spin');
+            try {
+                const res = await fetch(`${API_URL}?action=GET_EMPLOYEES&t=${Date.now()}`);
+                const data = await res.json();
+                allEmployees = Array.isArray(data) ? data : [];
+                document.getElementById('emp-count').innerText = allEmployees.length;
+                renderDatabase();
+            } catch(e) { showToast("❌ โหลดข้อมูลไม่สำเร็จ", "error"); }
+            finally { icon.classList.remove('animate-spin'); }
+        }
+
+        function getVal(emp, index) {
+            if (!emp) return "-";
+            const thaiKeys = ["รหัสพนักงาน", "ชื่อ-นามสกุล", "ชื่อเล่น", "ตำแหน่ง", "วันที่เริ่มงาน", "เบอร์โทรศัพท์", "ธนาคาร", "เลขบัญชีธนาคาร", "สถานะ", "Line_ID", "role", "branch", "pin", "start_work_time", "end_work_time", "รูปภาพพนักงาน"];
+            const key = thaiKeys[index];
+            if (emp[key] !== undefined && emp[key] !== null) return String(emp[key]).trim();
+            if (Array.isArray(emp)) return (emp[index] !== undefined && emp[index] !== null) ? String(emp[index]).trim() : "-";
+            return "-";
+        }
+
+        function formatTimeDisplay(val) {
+            if (!val || val === "-" || val === "undefined") return "-";
+            let s = String(val).trim();
+            if (s.includes('T') || s.includes('1899')) {
+                const d = new Date(val);
+                if (!isNaN(d.getTime())) {
+                    if (d.getUTCFullYear() === 1899) { d.setUTCMinutes(d.getUTCMinutes() - 17); d.setUTCSeconds(d.getUTCSeconds() - 56); }
+                    let h = d.getUTCHours() + 7; if (h >= 24) h -= 24;
+                    return `${String(h).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
+                }
+            }
+            return s.match(/(\d{1,2})[:.](\d{2})/) ? s.replace('.', ':') : s;
+        }
+
+        function safeDateInput(val) {
+            if (!val || val === "-") return "";
+            const d = new Date(val);
+            if (isNaN(d.getTime())) return "";
+            let yr = d.getFullYear(); if (yr > 2500) yr -= 543;
+            return `${yr}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function handleImage(input) {
+            if (input.files && input.files[0]) {
+                rawImageFile = input.files[0];
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('img-preview').src = e.target.result;
+                    document.getElementById('img-preview').className = "w-full h-full object-cover block animate-in";
+                    document.getElementById('upload-placeholder').classList.add('hidden');
+                    document.getElementById('btn-clear-photo').classList.remove('hidden');
+                };
+                reader.readAsDataURL(rawImageFile);
+            }
+        }
+
+        function clearPhoto() {
+            rawImageFile = null;
+            document.getElementById('img-preview').src = "";
+            document.getElementById('img-preview').classList.add('hidden');
+            document.getElementById('upload-placeholder').classList.remove('hidden');
+            document.getElementById('btn-clear-photo').classList.add('hidden');
+            document.getElementById('image-input').value = "";
+        }
+
+        function switchTab(tab) {
+            const isReg = tab === 'register';
+            document.getElementById('section-register').classList.toggle('hidden', !isReg);
+            document.getElementById('section-database').classList.toggle('hidden', isReg);
+            document.getElementById('tab-reg').className = isReg ? "px-3 md:px-6 py-2 rounded-xl text-[10px] md:text-sm font-black active-tab uppercase" : "px-3 md:px-6 py-2 rounded-xl text-[10px] md:text-sm font-black inactive-tab uppercase";
+            document.getElementById('tab-db').className = !isReg ? "px-3 md:px-6 py-2 rounded-xl text-[10px] md:text-sm font-black active-tab uppercase" : "px-3 md:px-6 py-2 rounded-xl text-[10px] md:text-sm font-black inactive-tab uppercase";
+            if (!isReg) renderDatabase();
+        }
+
+        function renderDatabase() {
+            const list = document.getElementById('db-list');
+            const search = document.getElementById('search-db').value.toLowerCase();
+            const filtered = allEmployees.filter(e => getVal(e, COL.ID).toLowerCase().includes(search) || getVal(e, COL.NAME).toLowerCase().includes(search));
+            list.innerHTML = filtered.map(e => {
+                const id = getVal(e, COL.ID);
+                const stat = getVal(e, COL.STAT);
+                const img = getVal(e, COL.IMG);
+                return `<div onclick="showEmployeeDetail('${id}')" class="bg-white p-5 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all cursor-pointer group text-left">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-14 h-14 bg-slate-100 rounded-2xl overflow-hidden border flex items-center justify-center text-blue-600 font-black shadow-inner">
+                            ${(img && img !== "-") ? `<img src="${img}" class="w-full h-full object-cover">` : getVal(e, COL.NICK).charAt(0)}
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${stat.includes('Active') ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">${stat}</span>
+                    </div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">${id}</p>
+                    <h3 class="text-xl font-black text-slate-800 line-clamp-1 italic">${getVal(e, COL.NAME)}</h3>
+                    <div class="mt-4 pt-4 border-t border-slate-50 flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
+                        <span>${getVal(e, COL.POS)}</span>
+                        <div class="p-2 bg-slate-50 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-all"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="3"/></svg></div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function filterDatabase() { renderDatabase(); }
+
+        function showEmployeeDetail(id) {
+            const e = allEmployees.find(x => getVal(x, COL.ID) === String(id).trim());
+            if (!e) return showToast("❌ ไม่พบข้อมูลพนักงาน", "error");
+            const img = getVal(e, COL.IMG);
+            if(img && img !== "-") { document.getElementById('m-img').src = img; document.getElementById('m-img').classList.remove('hidden'); document.getElementById('m-avatar').classList.add('hidden'); }
+            else { document.getElementById('m-img').classList.add('hidden'); document.getElementById('m-avatar').innerText = getVal(e, COL.NICK).charAt(0); document.getElementById('m-avatar').classList.remove('hidden'); }
+            document.getElementById('m-fullName').innerText = getVal(e, COL.NAME);
+            document.getElementById('m-position').innerText = getVal(e, COL.POS);
+            document.getElementById('m-empId').innerText = getVal(e, COL.ID);
+            document.getElementById('m-nickName').innerText = getVal(e, COL.NICK);
+            document.getElementById('m-status').innerText = getVal(e, COL.STAT);
+            document.getElementById('m-phone').innerText = getVal(e, COL.TEL);
+            document.getElementById('m-lineId').innerText = getVal(e, COL.LINE);
+            document.getElementById('m-bankName').innerText = getVal(e, COL.BANK);
+            document.getElementById('m-bankAcc').innerText = getVal(e, COL.ACC);
+            document.getElementById('m-role').innerText = getVal(e, COL.ROLE);
+            document.getElementById('m-branch').innerText = getVal(e, COL.BRCH);
+            document.getElementById('m-startTime').innerText = formatTimeDisplay(getVal(e, COL.STIME));
+            document.getElementById('m-endTime').innerText = formatTimeDisplay(getVal(e, COL.ETIME));
+            const startD = getVal(e, COL.START);
+            const d = new Date(startD);
+            document.getElementById('m-startDate').innerText = isNaN(d.getTime()) ? startD : d.toLocaleDateString('th-TH');
+            document.getElementById('btn-edit-trigger').onclick = () => fillFormForEdit(e);
+            document.getElementById('modal-detail').classList.remove('hidden');
+        }
+
+        function fillFormForEdit(e) {
+            isEditing = true; switchTab('register'); closeModal();
+            document.getElementById('f-empId').value = getVal(e, COL.ID);
+            document.getElementById('f-fullName').value = getVal(e, COL.NAME);
+            document.getElementById('f-nickName').value = getVal(e, COL.NICK);
+            document.getElementById('f-position').value = getVal(e, COL.POS);
+            document.getElementById('f-startDate').value = safeDateInput(getVal(e, COL.START));
+            document.getElementById('f-phone').value = getVal(e, COL.TEL);
+            document.getElementById('f-lineId').value = getVal(e, COL.LINE);
+            document.getElementById('f-branch').value = getVal(e, COL.BRCH);
+            document.getElementById('f-bankName').value = getVal(e, COL.BANK);
+            document.getElementById('f-bankAcc').value = getVal(e, COL.ACC);
+            document.getElementById('f-role').value = getVal(e, COL.ROLE);
+            document.getElementById('f-pin').value = getVal(e, COL.PIN);
+            document.getElementById('f-startTime').value = formatTimeDisplay(getVal(e, COL.STIME));
+            document.getElementById('f-endTime').value = formatTimeDisplay(getVal(e, COL.ETIME));
+            const curStat = getVal(e, COL.STAT);
+            document.getElementsByName('status').forEach(r => r.checked = (r.value === curStat));
+            const img = getVal(e, COL.IMG);
+            if(img && img !== "-") { document.getElementById('img-preview').src = img; document.getElementById('img-preview').className = "w-full h-full object-cover block"; document.getElementById('upload-placeholder').classList.add('hidden'); document.getElementById('btn-clear-photo').classList.remove('hidden'); } else { clearPhoto(); }
+        }
+
+        function closeModal() { document.getElementById('modal-detail').classList.add('hidden'); }
+
+        async function saveEmployee(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save'); const oldText = btn.innerText;
+            btn.disabled = true; btn.innerText = "กำลังบันทึก...";
+            let finalImgUrl = "-";
+            if(rawImageFile) {
+                const fdImg = new FormData(); fdImg.append('image', rawImageFile);
+                try { const resImg = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: 'POST', body: fdImg }); const dataImg = await resImg.json(); if(dataImg.success) finalImgUrl = dataImg.data.url; } catch(err) {}
+            } else if (isEditing) {
+                const old = allEmployees.find(x => getVal(x, COL.ID) === String(document.getElementById('f-empId').value).trim());
+                if(old) finalImgUrl = getVal(old, COL.IMG);
+            }
+
+            const data = {
+                action: 'SAVE_EMPLOYEE',
+                empId: document.getElementById('f-empId').value,
+                fullName: document.getElementById('f-fullName').value,
+                nickName: document.getElementById('f-nickName').value,
+                position: document.getElementById('f-position').value,
+                startDate: document.getElementById('f-startDate').value,
+                phone: document.getElementById('f-phone').value,
+                bankName: document.getElementById('f-bankName').value,
+                bankAcc: document.getElementById('f-bankAcc').value,
+                status: document.querySelector('input[name="status"]:checked').value,
+                lineId: document.getElementById('f-lineId').value,
+                role: document.getElementById('f-role').value,
+                branch: document.getElementById('f-branch').value,
+                pin: document.getElementById('f-pin').value,
+                startTime: document.getElementById('f-startTime').value,
+                endTime: document.getElementById('f-endTime').value,
+                image: finalImgUrl
+            };
+            
+            try {
+                await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+                showToast("✨ บันทึกข้อมูลพนักงานเรียบร้อย!", "success");
+                e.target.reset(); clearPhoto(); isEditing = false;
+                setTimeout(() => { fetchEmployees(); switchTab('database'); }, 1500);
+            } catch(err) { showToast("❌ บันทึกไม่สำเร็จ กรุณาลองใหม่", "error"); }
+            finally { btn.disabled = false; btn.innerText = oldText; }
+        }
+
+        function showToast(m, t) {
+            const el = document.getElementById('toast'); el.innerText = m;
+            el.className = `fixed top-10 left-1/2 -translate-x-1/2 z-[1000] px-10 py-5 rounded-[2rem] shadow-2xl transition-all duration-500 opacity-100 ${t==='error'?'bg-rose-600 border-rose-900':'bg-slate-900 border-blue-600'} text-white font-black text-center min-w-[320px] border-b-8`;
+            setTimeout(() => { if(el) el.style.opacity = "0"; }, 3500);
+        }
+    </script>
+</body>
+</html>

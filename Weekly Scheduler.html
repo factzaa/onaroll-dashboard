@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบริหารจัดการตารางงาน - Professional Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&family=Prompt:wght@300;400;500;600;700&display=swap');
+        
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background-color: #f4f7fa; 
+            color: #1e293b;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .premium-card {
+            background: white;
+            border-radius: 2.5rem;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .job-select {
+            @apply w-full p-2 text-[12px] font-bold border-none bg-slate-50 focus:ring-2 focus:ring-blue-100 cursor-pointer text-center rounded-xl transition-all appearance-none;
+        }
+
+        .day-col { @apply p-1 border-r border-slate-50 min-w-[100px]; }
+
+        .sticky-col {
+            @apply sticky left-0 bg-white z-20 border-r border-slate-100 shadow-[5px_0_15px_-10px_rgba(0,0,0,0.05)];
+        }
+
+        .nav-tab {
+            @apply px-8 py-3 rounded-2xl text-sm font-bold transition-all flex items-center gap-2;
+        }
+
+        .nav-tab.active { @apply bg-blue-600 text-white shadow-lg shadow-blue-100 scale-105; }
+        .nav-tab.inactive { @apply text-slate-400 hover:bg-white hover:text-slate-600; }
+
+        .report-badge {
+            @apply px-3 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider block w-full text-center shadow-sm;
+        }
+        .bg-work { @apply bg-blue-50 text-blue-600 border border-blue-100; }
+        /* 🚀 แก้ไขสี OFF ให้เป็นแดงเด่นชัด */
+        .bg-off { @apply bg-red-50 text-red-600 border border-red-200 font-black; }
+
+        .animate-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="p-4 md:p-8 pb-24 text-center">
+    <div class="max-w-7xl mx-auto space-y-8">
+        
+        <!-- Header & Navigation -->
+        <header class="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-5">
+                <!-- 🏠 Home Button (🔗 กลับไป Main_Hub.html) -->
+                <button onclick="window.location.href='Main_Hub.html'" class="p-4 bg-white rounded-2xl hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all shadow-md active:scale-90">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </button>
+                <div class="text-left">
+                    <h1 class="text-3xl font-black text-slate-900 tracking-tight uppercase leading-none" id="main-title">Job <span class="text-blue-600">Planner</span></h1>
+                    <p class="text-slate-400 text-sm font-medium mt-1 italic">จัดการตารางงานและสรุปรายสัปดาห์</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-200/60 p-1.5 rounded-[1.8rem] flex gap-2 backdrop-blur-md shadow-inner border border-white">
+                <button onclick="switchMode('manage')" id="tab-manage" class="nav-tab active">📝 จัดตารางงาน</button>
+                <button onclick="switchMode('history')" id="tab-history" class="nav-tab inactive">📊 รายงานสรุป</button>
+            </div>
+        </header>
+
+        <!-- KPI Cards Summary -->
+        <div id="summary-section" class="hidden animate-in">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                <div class="premium-card p-6 bg-slate-900 text-white border-none text-left relative overflow-hidden flex flex-col justify-center min-h-[120px]">
+                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Total Staff</span>
+                    <div class="text-3xl sm:text-4xl font-black italic tabular-nums" id="stat-total-emp">0</div>
+                </div>
+                <div class="premium-card p-6 border-l-[12px] border-red-500 text-left min-h-[120px] flex flex-col justify-center">
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">OFF Days</span>
+                    <div class="text-3xl sm:text-4xl font-black text-red-600 italic tabular-nums" id="stat-off-total">0</div>
+                </div>
+                <div class="premium-card p-6 border-l-[12px] border-blue-500 text-left min-h-[120px] flex flex-col justify-center">
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Working</span>
+                    <div class="text-3xl sm:text-4xl font-black text-blue-600 italic tabular-nums" id="stat-work-total">0</div>
+                </div>
+                <div class="premium-card p-6 border-l-[12px] border-indigo-500 text-left min-h-[120px] flex flex-col justify-center">
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Locations</span>
+                    <div class="text-3xl sm:text-4xl font-black text-indigo-600 italic tabular-nums" id="stat-branch-total">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Workspace -->
+        <div class="premium-card p-8 relative overflow-hidden" id="workspace">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
+                <div class="flex items-center gap-4 bg-slate-50 p-5 rounded-[1.8rem] border border-slate-100 shadow-inner">
+                    <label class="text-[11px] font-black uppercase text-slate-400 tracking-widest">สัปดาห์ (จันทร์):</label>
+                    <input type="date" id="week-start" onchange="handleDateChange()" class="bg-transparent font-black outline-none text-blue-600 cursor-pointer text-lg">
+                </div>
+                <div id="history-indicator" class="hidden animate-in">
+                    <span class="bg-emerald-500 text-white px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest shadow-lg flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-white animate-ping"></span> Live Report View
+                    </span>
+                </div>
+            </div>
+
+            <!-- Main Table -->
+            <div class="overflow-hidden rounded-[2.5rem] border border-slate-100 shadow-sm bg-white" id="table-container">
+                <div class="overflow-x-auto no-scrollbar">
+                    <table class="w-full text-center border-collapse">
+                        <thead class="bg-slate-900 text-white text-[10px] uppercase tracking-[0.15em]">
+                            <tr>
+                                <th class="py-8 px-10 text-left sticky left-0 bg-slate-900 z-30 min-w-[240px]">Personnel Info</th>
+                                <th class="day-col">จันทร์</th>
+                                <th class="day-col">อังคาร</th>
+                                <th class="day-col">พุธ</th>
+                                <th class="day-col">พฤหัสบดี</th>
+                                <th class="day-col">ศุกร์</th>
+                                <th class="day-col">เสาร์</th>
+                                <th class="day-col">อาทิตย์</th>
+                                <th class="px-10 min-w-[150px]">สาขา</th>
+                            </tr>
+                        </thead>
+                        <tbody id="job-table-body" class="divide-y divide-slate-50"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Daily Off Breakdown -->
+            <div id="day-breakdown" class="mt-12 hidden animate-in border-t pt-10 text-left">
+                <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-8 ml-2 flex items-center gap-3">
+                    <span class="w-2 h-8 bg-red-500 rounded-full"></span> รายชื่อพนักงาน "หยุดงาน"
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-7 gap-4" id="daily-off-list"></div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="mt-12 flex flex-col sm:flex-row justify-between items-center gap-8 border-t pt-8 border-slate-100" id="footer-actions">
+                <div class="flex items-center gap-4">
+                    <div id="status-dot" class="w-4 h-4 rounded-full bg-slate-200"></div>
+                    <p id="data-status" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Syncing...</p>
+                </div>
+                <div class="flex gap-4 w-full sm:w-auto">
+                    <button onclick="fetchEmployees()" class="px-8 py-5 font-bold text-slate-400 hover:text-blue-600 transition-all rounded-2xl">รีเฟรช</button>
+                    <button onclick="submitJobs()" id="btn-save" class="flex-1 sm:flex-none px-16 py-6 bg-blue-600 text-white font-black rounded-[2.2rem] shadow-2xl hover:bg-blue-700 active:scale-95 transition-all">
+                        บันทึกตารางงาน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[200] px-12 py-6 rounded-[2rem] shadow-2xl opacity-0 transition-all duration-500 bg-slate-950 text-white font-black text-center min-w-[350px] border-b-8 border-blue-600"></div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbz31YJnsULoFDpqYCMHBnxtMPgaxQGCCAhAWJbNBDdW3PEQUv_BQ1LH6WMUC3uPoP7G4A/exec';
+        let employees = [], currentMode = 'manage';
+        const dayKeys = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const dayLabels = { Mon:'จันทร์', Tue:'อังคาร', Wed:'พุธ', Thu:'พฤหัส', Fri:'ศุกร์', Sat:'เสาร์', Sun:'อาทิตย์' };
+
+        window.onload = async () => { initDate(); await fetchEmployees(); };
+
+        function initDate() {
+            const today = new Date();
+            const day = today.getDay();
+            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(today.setDate(diff));
+            document.getElementById('week-start').value = monday.toISOString().substring(0, 10);
+        }
+
+        async function handleDateChange() { if (currentMode === 'history') await fetchHistory(); else renderTable(); }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const isHistory = mode === 'history';
+            document.getElementById('tab-manage').className = `nav-tab ${!isHistory ? 'active' : 'inactive'}`;
+            document.getElementById('tab-history').className = `nav-tab ${isHistory ? 'active' : 'inactive'}`;
+            document.getElementById('history-indicator').style.display = isHistory ? 'block' : 'none';
+            document.getElementById('summary-section').style.display = isHistory ? 'block' : 'none';
+            document.getElementById('day-breakdown').style.display = isHistory ? 'block' : 'none';
+            document.getElementById('footer-actions').style.display = isHistory ? 'none' : 'flex';
+            if (isHistory) fetchHistory(); else renderTable();
+        }
+
+        // 🚀 ตัวช่วยแปลงรูปแบบวันที่ให้ตรงกัน
+        function normalizeDate(val) {
+            if (!val) return "";
+            try {
+                let d = new Date(val);
+                if (isNaN(d.getTime())) return String(val).split('T')[0];
+                let y = d.getFullYear();
+                if (y > 2500) y -= 543;
+                return `${y}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            } catch(e) { return String(val).split('T')[0]; }
+        }
+
+        function getSmartVal(obj, pref, fallbacks = []) {
+            if (!obj) return "";
+            const keys = [pref, ...fallbacks];
+            for (let k of keys) {
+                if (obj[k] !== undefined) return obj[k];
+                const clean = (s) => s.toString().toLowerCase().replace(/[^a-z0-9ก-๙]/g, '');
+                for (let key in obj) if (clean(key) === clean(k)) return obj[key];
+            }
+            return "";
+        }
+
+        async function fetchEmployees() {
+            updateStatus("กำลังโหลดพนักงาน...", "pending");
+            try {
+                const res = await fetch(API_URL + '?action=GET_EMPLOYEES');
+                employees = await res.json();
+                renderTable();
+                updateStatus(`${employees.length} Personnel Online`, 'success');
+            } catch(e) { updateStatus("Error Connection", "error"); }
+        }
+
+        async function fetchHistory() {
+            const weekStart = document.getElementById('week-start').value;
+            updateStatus("ดึงรายงานสัปดาห์นี้...", "pending");
+            try {
+                const res = await fetch(`${API_URL}?action=GET_JOBS`);
+                const allData = await res.json();
+                // 🚀 กรองข้อมูลเฉพาะสัปดาห์ที่เลือกก่อนนำไปแสดง
+                const filtered = allData.filter(d => normalizeDate(getSmartVal(d, 'Week_Start')) === weekStart);
+                renderTable(filtered);
+                calculateStats(filtered);
+                updateStatus(filtered.length > 0 ? "แสดงรายงานสำเร็จ" : "ไม่พบข้อมูลสัปดาห์นี้", "success");
+            } catch(e) { showToast("โหลดรายงานล้มเหลว", "error"); }
+        }
+
+        function calculateStats(data) {
+            document.getElementById('stat-total-emp').innerText = employees.length;
+            let off = 0, work = 0, branches = new Set();
+            let offMap = { Mon:[], Tue:[], Wed:[], Thu:[], Fri:[], Sat:[], Sun:[] };
+            data.forEach(j => {
+                dayKeys.forEach(d => {
+                    const v = getSmartVal(j, d);
+                    if (v === 'OFF') { off++; offMap[d].push(getSmartVal(j, 'Name', ['ชื่อเล่น', 'ชื่อพนักงาน'])); }
+                    else if (v === 'Work') { work++; }
+                });
+                const b = getSmartVal(j, 'Branch'); if(b) branches.add(b);
+            });
+            document.getElementById('stat-off-total').innerText = off;
+            document.getElementById('stat-work-total').innerText = work;
+            document.getElementById('stat-branch-total').innerText = branches.size;
+            document.getElementById('daily-off-list').innerHTML = Object.entries(offMap).map(([day, names]) => `
+                <div class="p-5 rounded-[1.8rem] bg-white border border-slate-100 shadow-sm text-left">
+                    <span class="text-[9px] font-black uppercase text-slate-300 block mb-2">${dayLabels[day]}</span>
+                    <div class="text-xs font-bold text-slate-600">${names.length ? names.join(', ') : 'ไม่มีคนหยุด'}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderTable(history = []) {
+            const body = document.getElementById('job-table-body');
+            const isReport = currentMode === 'history';
+            const weekStart = document.getElementById('week-start').value;
+
+            body.innerHTML = employees.map(e => {
+                const id = getSmartVal(e, 'Employee_ID', ['ID', 'รหัสพนักงาน']);
+                const name = getSmartVal(e, 'Full_Name', ['ชื่อ-นามสกุล']);
+                const nick = getSmartVal(e, 'Nickname', ['ชื่อเล่น']);
+                
+                // 🚀 ค้นหาข้อมูลที่ตรงทั้ง ID และ วันที่สัปดาห์
+                const saved = history.find(j => 
+                    String(getSmartVal(j, 'Employee_ID', ['ID'])) === String(id) &&
+                    normalizeDate(getSmartVal(j, 'Week_Start')) === weekStart
+                );
+
+                return `
+                    <tr class="hover:bg-slate-50 transition-all group" data-id="${id}" data-name="${nick || name}">
+                        <td class="py-7 px-10 text-left sticky-col group-hover:bg-slate-50">
+                            <div class="font-black text-blue-600 text-xl leading-none mb-1 uppercase">${nick || '-'}</div>
+                            <div class="text-[12px] font-bold text-slate-800">${name}</div>
+                        </td>
+                        ${dayKeys.map(d => {
+                            const v = saved ? (getSmartVal(saved, d) || 'Work') : 'Work';
+                            if (isReport) {
+                                let c = "bg-work", t = "ทำงาน";
+                                if(v === 'OFF') { c="bg-off"; t="OFF"; } 
+                                return `<td class="day-col py-5 px-2"><span class="report-badge ${c}">${t}</span></td>`;
+                            }
+                            // 🚀 เหลือแค่ 2 ตัวเลือก และเปลี่ยนสีตัวหนังสือเมื่อเป็น OFF
+                            return `<td class="day-col"><select class="job-select day-${d} ${v==='OFF'?'text-red-600':''}" onchange="this.classList.toggle('text-red-600', this.value === 'OFF')">
+                                <option value="Work" ${v==='Work'?'selected':''}>ทำงาน</option>
+                                <option value="OFF" ${v==='OFF'?'selected':''}>หยุด</option>
+                            </select></td>`;
+                        }).join('')}
+                        <td class="px-10">${isReport ? `<span class="text-[11px] font-bold">${getSmartVal(saved, 'Branch') || '-'}</span>` : `<input type="text" value="${getSmartVal(saved || e, 'Branch')}" class="w-full p-2 bg-slate-50 rounded-xl text-center font-bold text-[11px] branch-input">`}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function submitJobs() {
+            const weekStart = document.getElementById('week-start').value;
+            const btn = document.getElementById('btn-save'); 
+            const originalText = btn.innerText;
+            btn.disabled = true; btn.innerText = "กำลังบันทึก...";
+            
+            const rows = document.querySelectorAll('#job-table-body tr');
+            const jobs = Array.from(rows).map(r => ({
+                empId: r.dataset.id, name: r.dataset.name,
+                mon: r.querySelector('.day-Mon').value, tue: r.querySelector('.day-Tue').value, wed: r.querySelector('.day-Wed').value,
+                thu: r.querySelector('.day-Thu').value, fri: r.querySelector('.day-Fri').value, sat: r.querySelector('.day-Sat').value,
+                sun: r.querySelector('.day-Sun').value, branch: r.querySelector('.branch-input').value
+            }));
+            try {
+                await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'SAVE_JOBS', weekStart, jobs }) });
+                showToast("✅ บันทึกเรียบร้อย!"); setTimeout(() => location.reload(), 1000);
+            } catch(e) { showToast("❌ บันทึกไม่สำเร็จ", "error"); btn.disabled = false; btn.innerText = originalText; }
+        }
+
+        function updateStatus(t, s) { document.getElementById('data-status').innerText = t; document.getElementById('status-dot').className = `w-4 h-4 rounded-full ${s==='success'?'bg-emerald-500 shadow-[0_0_10px_#10b981]':s==='pending'?'bg-amber-500 animate-pulse':'bg-slate-300'}`; }
+        function showToast(m, t) { const el = document.getElementById('toast'); el.innerText = m; el.className = `fixed top-12 left-1/2 -translate-x-1/2 z-[200] px-12 py-6 rounded-[2rem] shadow-2xl opacity-100 ${t==='error'?'bg-red-600':'bg-slate-950'} text-white font-black text-center min-w-[350px] border-b-8 ${t==='error'?'border-red-900':'border-blue-600'}`; setTimeout(() => el.style.opacity = "0", 4000); }
+    </script>
+</body>
+</html>

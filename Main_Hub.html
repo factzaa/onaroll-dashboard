@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TimeHub Pro - Main Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif; 
+            background: #f4f7fa;
+            color: #1e293b;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .menu-card {
+            background: white;
+            border-radius: 2.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            cursor: pointer;
+            display: none; /* 🔒 ซ่อนไว้ก่อนจนกว่าจะตรวจสอบสิทธิ์สำเร็จ */
+        }
+
+        .menu-card:active {
+            transform: scale(0.95);
+            background: #f8fafc;
+        }
+
+        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8 flex flex-col items-center text-center font-black">
+
+    <!-- Header -->
+    <div class="w-full max-w-md flex justify-between items-center mb-10 animate-fade-in font-black">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-blue-600 rounded-[1.4rem] flex items-center justify-center text-white shadow-xl shadow-blue-100">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+            <div class="text-left font-black">
+                <h1 class="text-xl font-black text-slate-800 leading-none uppercase italic">MAIN<span class="text-blue-600">HUB</span></h1>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 font-black" id="user-display">Management Center</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2 font-black">
+            <button onclick="navigateTo('index.html')" class="p-3.5 rounded-2xl bg-white border border-slate-100 text-slate-400 hover:text-blue-600 transition-all shadow-sm active:scale-90 font-black">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <button onclick="handleLogout()" class="p-3.5 rounded-2xl bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm flex items-center gap-2 active:scale-90 font-black">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l4-4m-4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                <span class="text-[10px] font-black uppercase tracking-widest hidden sm:block">Logout</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Menu Grid -->
+    <div class="w-full max-w-md grid grid-cols-1 gap-5 animate-fade-in font-black" style="animation-delay: 0.1s">
+        
+        <!-- 🛡️ 0. MANAGER CONSOLE (🚀 NEW: เข้าได้เฉพาะ Admin/Manager) -->
+        <div id="menu-manager" onclick="navigateTo('Manager_Console.html')" class="menu-card p-6 flex items-center gap-6 shadow-lg shadow-indigo-900/10 group text-left border-2 border-indigo-600 font-black bg-indigo-50/30">
+            <div class="w-16 h-16 bg-indigo-600 rounded-[1.5rem] flex items-center justify-center text-white shadow-lg shadow-indigo-200 transition-all">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-width="2.5"></path></svg>
+            </div>
+            <div class="font-black">
+                <h2 class="text-lg font-black text-slate-800 uppercase italic">ระบบจัดการผู้บริหาร</h2>
+                <p class="text-xs font-bold text-indigo-500 uppercase tracking-widest">Audit & Manager Console</p>
+            </div>
+        </div>
+
+        <!-- 👤 1. ข้อมูลส่วนตัว (My Portal) -->
+        <div id="menu-portal" onclick="navigateTo('Employee Portal.html')" class="menu-card p-6 flex items-center gap-6 shadow-lg shadow-indigo-900/5 group text-left border-2 border-indigo-50 font-black">
+            <div class="w-16 h-16 bg-indigo-50 rounded-[1.5rem] flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="2.5"></path></svg>
+            </div>
+            <div class="font-black"><h2 class="text-lg font-black text-slate-800 uppercase italic">ข้อมูลส่วนตัวพนักงาน</h2><p class="text-xs font-bold text-slate-400 uppercase tracking-widest font-black font-black">My Portal & Petitions</p></div>
+        </div>
+
+        <!-- ✅ 2. Checklists งานประจำวัน -->
+        <div id="menu-checklist" onclick="navigateTo('Daily Checklist System.html')" class="menu-card p-6 flex items-center gap-6 shadow-lg shadow-emerald-900/5 group text-left border-2 border-emerald-50">
+            <div class="w-16 h-16 bg-emerald-100 rounded-[1.5rem] flex items-center justify-center text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-width="2.5"></path></svg>
+            </div>
+            <div><h2 class="text-lg font-black text-slate-800 uppercase italic">Checklists งานประจำวัน</h2><p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Daily Task & Inspection</p></div>
+        </div>
+
+        <!-- 💰 3. รายงานยอดขาย -->
+        <div id="menu-sales" onclick="navigateTo('Sales Tracking.html')" class="menu-card p-6 flex items-center gap-6 shadow-lg shadow-blue-900/5 group text-left">
+            <div class="w-16 h-16 bg-blue-50 rounded-[1.5rem] flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-width="2"></path></svg>
+            </div>
+            <div><h2 class="text-lg font-black text-slate-800 uppercase italic">รายงานยอดขาย</h2><p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Sales Reporting System</p></div>
+        </div>
+
+        <!-- 💸 4. บันทึกรายจ่าย -->
+        <div id="menu-expenses" onclick="navigateTo('Expenses.html')" class="menu-card p-6 flex items-center gap-6 shadow-lg shadow-rose-900/5 group text-left">
+            <div class="w-16 h-16 bg-rose-50 rounded-[1.5rem] flex items-center justify-center text-rose-600 group-hover:bg-rose-600 group-hover:text-white transition-all">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"></path></svg>
+            </div>
+            <div><h2 class="text-lg font-black text-slate-800 uppercase italic">บันทึกรายจ่าย</h2><p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Expense Management</p></div>
+        </div>
+
+        <!-- 📅 5. จัด JOB พนักงาน -->
+        <div id="menu-jobs" onclick="navigateTo('Weekly Scheduler.html')" class="menu-card p-6 flex items-center gap-6 shadow-lg shadow-indigo-900/5 group border-2 border-indigo-100 text-left">
+            <div class="w-16 h-16 bg-indigo-50 rounded-[1.5rem] flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+            <div><h2 class="text-lg font-black text-slate-800 uppercase italic">จัด JOB พนักงาน</h2><p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Weekly Scheduler</p></div>
+        </div>
+
+        <!-- 👥 6. จัดการพนักงาน -->
+        <div id="menu-hr" onclick="navigateTo('HR Management.html')" class="menu-card p-6 flex items-center gap-6 shadow-lg shadow-blue-900/5 group border-2 border-blue-50 text-left">
+            <div class="w-16 h-16 bg-blue-100 rounded-[1.5rem] flex items-center justify-center text-blue-700 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+            <div><h2 class="text-lg font-black text-slate-800 uppercase italic">จัดการพนักงาน</h2><p class="text-xs font-bold text-slate-400 uppercase tracking-widest">HR & Employee Database</p></div>
+        </div>
+
+        <!-- 📖 7. SOP Master -->
+        <div id="menu-sop" onclick="navigateTo('SOP_Master and Training.html')" class="menu-card p-6 flex items-center gap-6 shadow-lg shadow-emerald-900/5 group text-left">
+            <div class="w-16 h-16 bg-emerald-50 rounded-[1.5rem] flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-width="2"></path></svg>
+            </div>
+            <div><h2 class="text-lg font-black text-slate-800 uppercase italic">SOP Master</h2><p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Standards & Manuals</p></div>
+        </div>
+    </div>
+
+    <p class="mt-12 text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em]">Authorized Personnel Only</p>
+
+    <script>
+        window.onload = function() {
+            const userRole = localStorage.getItem('user_role');
+            const userName = localStorage.getItem('user_name');
+            let currentRole = userRole ? userRole.trim().toLowerCase() : null;
+
+            if (!currentRole) {
+                // หากไม่มีข้อมูล Login ให้แสดงทุกปุ่มและแจ้งเตือน
+                document.querySelectorAll('.menu-card').forEach(el => el.style.display = 'flex');
+                document.getElementById('user-display').innerText = "System: Guest Mode";
+                return;
+            }
+
+            document.getElementById('user-display').innerText = `Staff: ${userName} (${userRole.toUpperCase()})`;
+
+            // 🚀 อัปเดตสิทธิ์การมองเห็น (เพิ่ม menu-manager สำหรับ admin/manager เท่านั้น)
+            const permissions = {
+                'admin': ['menu-manager', 'menu-portal', 'menu-checklist', 'menu-sales', 'menu-expenses', 'menu-jobs', 'menu-hr', 'menu-sop'],
+                'manager': ['menu-manager', 'menu-portal', 'menu-checklist', 'menu-sales', 'menu-expenses', 'menu-jobs', 'menu-sop'],
+                'user': ['menu-portal', 'menu-checklist', 'menu-sop']
+            };
+
+            const allowed = permissions[currentRole] || ['menu-portal', 'menu-checklist', 'menu-sop'];
+            document.querySelectorAll('.menu-card').forEach(el => el.style.display = 'none');
+            allowed.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'flex';
+            });
+        };
+
+        function navigateTo(page) { window.location.href = page; }
+        function handleLogout() { 
+            localStorage.removeItem('user_role'); 
+            localStorage.removeItem('user_name'); 
+            localStorage.removeItem('user_id'); 
+            localStorage.removeItem('user_pos');
+            window.location.href = 'index.html'; 
+        }
+    </script>
+</body>
+</html>

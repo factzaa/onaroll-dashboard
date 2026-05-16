@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TimeHub Pro - Sales Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Prompt:wght@300;400;500;600;700;800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif; 
+            background-color: #f8fafc; 
+            color: #1e293b;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .main-card { 
+            background: white; 
+            border-radius: 3rem; 
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
+        }
+
+        .input-premium {
+            @apply w-full py-5 px-8 rounded-full border-2 border-slate-100 bg-slate-50/50 outline-none transition-all font-bold text-slate-700 text-center text-lg;
+        }
+
+        .input-premium:focus {
+            @apply border-blue-500 bg-white ring-4 ring-blue-50 shadow-xl shadow-blue-900/5;
+        }
+
+        .month-picker-premium {
+            @apply bg-white border-2 border-slate-100 rounded-full px-8 py-3 font-black outline-none text-slate-700 shadow-md shadow-blue-900/5 focus:border-blue-500 transition-all cursor-pointer text-lg appearance-none w-full sm:w-auto;
+        }
+
+        .textarea-premium {
+            @apply w-full p-6 rounded-[2.5rem] border-2 border-slate-100 bg-slate-50/50 outline-none transition-all font-medium text-slate-700 text-center text-lg min-h-[140px] resize-none leading-relaxed;
+        }
+
+        .textarea-premium:focus {
+            @apply border-blue-500 bg-white ring-4 ring-blue-50 shadow-xl shadow-blue-900/5;
+        }
+
+        .payment-card {
+            @apply relative overflow-hidden p-6 rounded-[2.5rem] bg-white border-2 border-slate-50 flex flex-col items-center gap-2 transition-all duration-300;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+        }
+
+        .payment-card:focus-within {
+            @apply border-blue-400 shadow-xl shadow-blue-900/5 -translate-y-1;
+        }
+
+        .nav-active { @apply text-blue-600 font-extrabold border-b-4 border-blue-600; }
+
+        .btn-confirm {
+            @apply w-full py-7 rounded-full font-black text-2xl shadow-2xl shadow-blue-200 flex justify-center items-center gap-3 transition-all active:scale-95 bg-blue-600 text-white hover:bg-blue-700 mt-4;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .animate-fade { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .modal-scroll::-webkit-scrollbar { width: 4px; }
+        .modal-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen pb-32 sm:pb-10">
+
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-100 sticky top-0 z-[60] px-6 py-4 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-3">
+            <button onclick="window.location.href='Main_Hub.html'" class="p-3 bg-slate-50 rounded-2xl hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all active:scale-90 shadow-sm">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <div class="text-left">
+                <h1 class="text-lg font-black tracking-tighter uppercase italic leading-none text-slate-800">Sales<span class="text-blue-600">Hub</span></h1>
+                <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">Intelligence Analytics</p>
+            </div>
+        </div>
+        
+        <div class="hidden md:flex gap-8">
+            <button onclick="switchTab('entry')" id="d-tab-entry" class="text-sm font-bold nav-active py-2 transition-all">รายงานยอด</button>
+            <button onclick="switchTab('dashboard')" id="d-tab-dashboard" class="text-sm font-bold text-slate-400 py-2 hover:text-blue-600 transition-colors">สรุปผล</button>
+            <button onclick="switchTab('data')" id="d-tab-data" class="text-sm font-bold text-slate-400 py-2 hover:text-blue-600 transition-colors">ประวัติ</button>
+        </div>
+
+        <button onclick="fetchData()" class="p-3 bg-slate-50 rounded-2xl text-slate-400 hover:text-blue-600 transition-all active:rotate-180 duration-500 shadow-sm">
+            <svg id="sync-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        </button>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full p-4 sm:p-8 text-center">
+
+        <!-- 1. ส่วนบันทึกยอดขาย -->
+        <div id="section-entry" class="space-y-8 animate-fade">
+            <div class="text-center">
+                <h2 class="text-3xl font-black text-slate-900 tracking-tight uppercase italic">Daily Sales Entry</h2>
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.4em] mt-1">ระบุข้อมูลรายรับสุทธิที่ได้รับจริง</p>
+            </div>
+
+            <form id="salesForm" onsubmit="handleSubmit(event)" class="space-y-8 text-left">
+                <div class="main-card p-8 sm:p-12 relative overflow-hidden border-t-8 border-blue-600">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-8 relative z-10">
+                        <div class="w-full sm:w-auto text-center sm:text-left space-y-2">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">📅 วันที่รายงาน</span>
+                            <input type="date" id="form-date" required class="w-full p-3 rounded-full bg-slate-50 border-2 border-slate-100 font-bold text-slate-700 outline-none focus:border-blue-400 text-center sm:text-left px-6 shadow-inner">
+                        </div>
+                        <div class="text-center sm:text-right space-y-1">
+                            <span class="text-[11px] font-black text-blue-600 uppercase tracking-[0.2em] block">ยอดขายสุทธิรวมวันนี้</span>
+                            <div class="text-6xl sm:text-8xl font-black tracking-tighter text-slate-900 italic tabular-nums leading-none">
+                                <span class="text-3xl align-top mr-1 font-bold">฿</span><span id="display-total">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-12">
+                        <div class="payment-card"><span class="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">เงินสด</span><input type="number" step="0.01" data-name="cash" oninput="calculateTotal()" placeholder="0.00" class="calc-input bg-transparent text-3xl font-black outline-none w-full text-center text-slate-800"></div>
+                        <div class="payment-card"><span class="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">เงินโอน</span><input type="number" step="0.01" data-name="transfer" oninput="calculateTotal()" placeholder="0.00" class="calc-input bg-transparent text-3xl font-black outline-none w-full text-center text-slate-800"></div>
+                        <div class="payment-card"><span class="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">VISA</span><input type="number" step="0.01" data-name="visa" oninput="calculateTotal()" placeholder="0.00" class="calc-input bg-transparent text-3xl font-black outline-none w-full text-center text-slate-800"></div>
+                        <div class="payment-card"><span class="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">Master</span><input type="number" step="0.01" data-name="master" oninput="calculateTotal()" placeholder="0.00" class="calc-input bg-transparent text-3xl font-black outline-none w-full text-center text-slate-800"></div>
+                        <div class="payment-card"><span class="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">อื่นๆ</span><input type="number" step="0.01" data-name="others" oninput="calculateTotal()" placeholder="0.00" class="calc-input bg-transparent text-3xl font-black outline-none w-full text-center text-slate-800"></div>
+                        <div class="payment-card bg-rose-50 border-rose-100/50"><span class="text-[9px] font-black uppercase text-rose-500 tracking-widest text-center">ส่วนลด (Memo)</span><input type="number" step="0.01" data-name="discount" placeholder="0.00" class="calc-input bg-transparent text-3xl font-black outline-none w-full text-center text-rose-600"></div>
+                    </div>
+                </div>
+                <div class="main-card p-8 sm:p-14 space-y-12">
+                    <div class="flex items-center gap-3 border-b border-slate-100 pb-8"><div class="w-2.5 h-10 bg-blue-600 rounded-full shadow-lg shadow-blue-200"></div><h3 class="text-base font-black text-slate-400 uppercase tracking-[0.4em] italic text-left">Administrative Information</h3></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-12 text-left">
+                        <div class="space-y-5"><label class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 flex items-center gap-3">พนักงานผู้บันทึก</label><input type="text" id="form-staff" required placeholder="ระบุชื่อจริง-ชื่อเล่น" class="input-premium py-6 shadow-sm"></div>
+                        <div class="space-y-5"><label class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 flex items-center gap-3 text-rose-500">ยอดเงินออกหน้าเครื่อง</label><input type="number" step="0.01" id="form-cash-out" placeholder="0.00" class="input-premium py-6 text-rose-600 shadow-sm font-black"></div>
+                    </div>
+                    <div class="space-y-5 text-left"><label class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 flex items-center gap-3">บันทึก/หมายเหตุ (NOTES)</label><textarea id="form-note" placeholder="รายละเอียดอื่นๆ..." class="textarea-premium shadow-sm"></textarea></div>
+                </div>
+                <button type="submit" id="submit-btn" class="btn-confirm uppercase tracking-[0.3em] shadow-blue-500/30 shadow-lg">ยืนยันและส่งรายงาน</button>
+            </form>
+        </div>
+
+        <!-- 2. ส่วนสรุปผล (Dashboard) -->
+        <div id="section-dashboard" class="hidden space-y-8 animate-fade">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h2 class="text-2xl font-black text-slate-900 uppercase italic text-center sm:text-left">Monthly Insights</h2>
+                <input type="month" id="month-filter" onchange="updateDashboard()" class="month-picker-premium">
+            </div>
+            
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div class="main-card p-4 sm:p-6 border-l-[8px] sm:border-l-[12px] border-blue-600 overflow-hidden flex flex-col justify-center min-h-[110px] sm:min-h-[140px] text-left">
+                    <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">ยอดสุทธิรวม</span>
+                    <p class="text-base sm:text-2xl font-black text-slate-800 tabular-nums break-words leading-tight" id="stat-total-month">฿0</p>
+                </div>
+                <div class="main-card p-4 sm:p-6 border-l-[8px] sm:border-l-[12px] border-orange-500 overflow-hidden flex flex-col justify-center min-h-[110px] sm:min-h-[140px] text-left">
+                    <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">เงินสดรวม</span>
+                    <p class="text-base sm:text-2xl font-black text-orange-600 tabular-nums break-words leading-tight" id="stat-cash-month">฿0</p>
+                </div>
+                <div class="main-card p-4 sm:p-6 border-l-[8px] sm:border-l-[12px] border-emerald-500 overflow-hidden flex flex-col justify-center min-h-[110px] sm:min-h-[140px] text-left">
+                    <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1 text-emerald-600">วันขายดี</span>
+                    <p class="text-sm sm:text-xl font-black text-slate-800 italic uppercase leading-none" id="stat-peak-day">-</p>
+                </div>
+                <div class="main-card p-4 sm:p-6 border-l-[8px] sm:border-l-[12px] border-indigo-500 overflow-hidden flex flex-col justify-center min-h-[110px] sm:min-h-[140px] text-left">
+                    <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">เฉลี่ยต่อวัน</span>
+                    <p class="text-base sm:text-2xl font-black text-slate-800 tabular-nums break-words leading-tight" id="stat-avg-month">฿0</p>
+                </div>
+            </div>
+
+            <div class="main-card p-6 sm:p-8 min-h-[350px] shadow-sm border-slate-100">
+                <h3 class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 border-b pb-3 text-center sm:text-left">Performance Analytics Curve</h3>
+                <div class="h-[250px] sm:h-[300px]"><canvas id="salesChart"></canvas></div>
+            </div>
+
+            <button onclick="copyDailyReport()" class="w-full py-5 bg-emerald-600 text-white rounded-full font-black flex justify-center items-center gap-3 shadow-xl shadow-emerald-100 active:scale-95 transition-all border-b-[6px] border-emerald-900">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" stroke-width="3"></path></svg>
+                คัดลอกรายงานสรุป (LINE)
+            </button>
+        </div>
+
+        <!-- 3. ส่วนประวัติ (Logs) -->
+        <div id="section-data" class="hidden space-y-6 animate-fade text-left">
+            <h2 class="text-xl font-black text-slate-900 uppercase italic tracking-widest ml-4">Audit Logs</h2>
+            <div class="main-card overflow-hidden">
+                <div class="overflow-x-auto text-left"><table class="w-full text-left border-collapse"><thead class="bg-slate-50 border-b-2"><tr><th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Personnel / Date</th><th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Net Collection</th><th class="px-6 py-5"></th></tr></thead><tbody id="logs-body" class="divide-y divide-slate-100"></tbody></table></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Detail View -->
+    <div id="modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[150] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl border flex flex-col max-h-[90vh] animate-fade">
+            <div class="p-6 border-b flex justify-between items-center bg-slate-50 flex-shrink-0">
+                <h3 class="font-black text-slate-900 uppercase italic tracking-widest text-sm">Receipt Data Details</h3>
+                <button onclick="closeModal()" class="p-2 bg-white border rounded-xl text-slate-400">✕</button>
+            </div>
+            <div id="modal-content" class="p-6 sm:p-8 overflow-y-auto modal-scroll space-y-6 flex-grow"></div>
+            <div class="p-6 bg-slate-50 border-t flex-shrink-0">
+                <button onclick="closeModal()" class="w-full py-4 bg-slate-900 text-white rounded-full font-black active:scale-95 transition-all uppercase tracking-widest text-sm shadow-xl">CLOSE PREVIEW</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Nav Bar -->
+    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 h-24 flex items-center justify-around px-8 z-[100] shadow-2xl rounded-t-[4rem]">
+        <button onclick="switchTab('dashboard')" class="flex flex-col items-center gap-1.5 transition-all text-slate-400" id="m-tab-dashboard"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-width="2.5"></path></svg><span class="text-[9px] font-black uppercase tracking-widest">Insight</span></button>
+        <button onclick="switchTab('entry')" class="flex flex-col items-center gap-1 -translate-y-10 transition-all" id="m-tab-entry"><div class="bg-blue-600 text-white p-5 rounded-[2.2rem] shadow-2xl border-[10px] border-[#f8fafc] active:scale-90 shadow-blue-200"><svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="4"></path></svg></div><span class="text-[11px] font-black uppercase text-slate-900 -mt-8 text-center font-black">REPORT</span></button>
+        <button onclick="switchTab('data')" class="flex flex-col items-center gap-1.5 transition-all text-slate-400" id="m-tab-data"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2.5"></path></svg><span class="text-[9px] font-black uppercase tracking-widest">Audit</span></button>
+    </nav>
+
+    <div id="toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-[500] px-10 py-6 rounded-[3rem] shadow-2xl transition-all duration-500 opacity-0 pointer-events-none bg-slate-900 text-white font-black text-lg uppercase italic text-center"></div>
+
+    <script>
+        const SHEET_ID = '1aTkdKkfMXkKutMuVJBew4k5PfPoIkQsr6pmtUAQtPlE';
+        const WRITE_URL = 'https://script.google.com/macros/s/AKfycbz31YJnsULoFDpqYCMHBnxtMPgaxQGCCAhAWJbNBDdW3PEQUv_BQ1LH6WMUC3uPoP7G4A/exec';
+        const READ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Daily_sales`;
+
+        let salesData = [];
+        let salesChart = null;
+        let lastActionDate = new Date().toLocaleDateString('en-CA'); // 🚀 ตัวแปรเก็บวันที่ล่าสุด
+
+        window.onload = () => {
+            const today = new Date().toLocaleDateString('en-CA');
+            document.getElementById('form-date').value = today;
+            document.getElementById('month-filter').value = new Date().toISOString().substring(0, 7);
+            fetchData();
+        };
+
+        function parseCSVLine(l) { const res = []; let c = '', q = false; for(let char of l) { if(char === '"') q = !q; else if(char === ',' && !q) { res.push(c.trim()); c = ''; } else c += char; } res.push(c.trim()); return res; }
+
+        async function fetchData() {
+            const syncIcon = document.getElementById('sync-icon');
+            if(syncIcon) syncIcon.classList.add('animate-spin');
+            try {
+                const res = await fetch(READ_URL + '&cb=' + Date.now());
+                const text = await res.text();
+                const rows = text.split(/\r?\n/);
+                if (rows.length < 1) return;
+
+                const rawHeaders = parseCSVLine(rows[0]);
+                const getCol = (names) => rawHeaders.findIndex(h => names.some(n => h.trim().toLowerCase().includes(n.toLowerCase())));
+
+                const idx = {
+                    date: getCol(["วันที่"]), total: getCol(["ยอดขายรวม"]), cash: getCol(["เงินสด"]),
+                    trans: getCol(["โอน"]), visa: getCol(["visa"]), master: getCol(["master"]),
+                    others: getCol(["อื่นๆ"]), disc: getCol(["ส่วนลด"]), cash_out: getCol(["หน้าเครื่อง"]),
+                    staff: getCol(["ผู้รับผิดชอบ"]), note: getCol(["หมายเหตุ"])
+                };
+
+                salesData = rows.slice(1).map((row, i) => {
+                    const c = parseCSVLine(row);
+                    if(c.length < 5 || c[idx.date] === "วันที่") return null;
+                    let dRaw = c[idx.date], fDate = dRaw;
+                    if(dRaw && dRaw.includes('/')) {
+                        const p = dRaw.split('/');
+                        const y = p[2]?.length === 2 ? '20'+p[2] : p[2];
+                        fDate = `${y}-${p[1]?.padStart(2,'0')}-${p[0]?.padStart(2,'0')}`;
+                    }
+                    return {
+                        id: i, date: fDate, 
+                        total: parseFloat(String(c[idx.total] || 0).replace(/,/g, '')) || 0, 
+                        cash: parseFloat(String(c[idx.cash] || 0).replace(/,/g, '')) || 0,
+                        trans: parseFloat(String(c[idx.trans] || 0).replace(/,/g, '')) || 0, 
+                        visa: parseFloat(String(c[idx.visa] || 0).replace(/,/g, '')) || 0, 
+                        master: parseFloat(String(c[idx.master] || 0).replace(/,/g, '')) || 0,
+                        others: parseFloat(String(c[idx.others] || 0).replace(/,/g, '')) || 0, 
+                        disc: parseFloat(String(c[idx.disc] || 0).replace(/,/g, '')) || 0, 
+                        cash_out: parseFloat(String(c[idx.cash_out] || 0).replace(/,/g, '')) || 0,
+                        staff: c[idx.staff] || '-', note: c[idx.note] || '-'
+                    };
+                }).filter(Boolean);
+                
+                updateDashboard(); renderLogs();
+                if(syncIcon) syncIcon.classList.remove('animate-spin');
+            } catch(e) { if(syncIcon) syncIcon.classList.remove('animate-spin'); }
+        }
+
+        function updateDashboard() {
+            const filter = document.getElementById('month-filter').value;
+            const filtered = salesData.filter(d => d.date.startsWith(filter));
+            const total = filtered.reduce((s, d) => s + d.total, 0), cash = filtered.reduce((s, d) => s + d.cash, 0);
+            const avg = filtered.length ? total / filtered.length : 0;
+            const dayFreq = {};
+            filtered.forEach(d => {
+                const dayName = new Date(d.date).toLocaleDateString('th-TH', { weekday: 'long' });
+                dayFreq[dayName] = (dayFreq[dayName] || 0) + d.total;
+            });
+            const peakDay = Object.keys(dayFreq).length ? Object.keys(dayFreq).reduce((a, b) => dayFreq[a] > dayFreq[b] ? a : b) : "-";
+
+            document.getElementById('stat-total-month').innerText = `฿${total.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+            document.getElementById('stat-cash-month').innerText = `฿${cash.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+            document.getElementById('stat-avg-month').innerText = `฿${avg.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+            document.getElementById('stat-peak-day').innerText = peakDay;
+
+            const daily = {}; filtered.forEach(d => daily[d.date] = (daily[d.date] || 0) + d.total);
+            const labels = Object.keys(daily).sort();
+            if(salesChart) salesChart.destroy();
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            salesChart = new Chart(ctx, { type: 'line', data: { labels: labels.map(k => k.split('-')[2]), datasets: [{ data: labels.map(k => daily[k]), borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.05)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#fff', pointBorderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        }
+
+        function renderLogs() {
+            document.getElementById('logs-body').innerHTML = [...salesData].sort((a,b) => b.date.localeCompare(a.date)).map(d => `
+                <tr class="hover:bg-slate-50 cursor-pointer group transition-colors" onclick="viewDetail(${d.id})">
+                    <td class="px-6 py-6 text-left">
+                        <div class="font-black text-slate-800 text-base tracking-tight">${d.date.split('-').reverse().join('/')}</div>
+                        <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">${d.staff}</div>
+                    </td>
+                    <td class="px-6 py-6 text-right">
+                        <div class="text-blue-600 font-black text-lg italic tracking-tighter">฿${d.total.toLocaleString(undefined, {minimumFractionDigits: 0})}</div>
+                    </td>
+                    <td class="px-4 py-6 text-right text-slate-300">➔</td>
+                </tr>
+            `).join('');
+        }
+
+        function viewDetail(id) {
+            const d = salesData.find(x => x.id === id); if(!d) return;
+            lastActionDate = d.date; // 🚀 อัปเดตวันที่เมื่อกดดูรายละเอียด
+            document.getElementById('modal-content').innerHTML = `
+                <div class="p-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[3rem] text-white shadow-2xl relative overflow-hidden flex-shrink-0">
+                    <span class="text-[9px] font-black uppercase opacity-60 tracking-[0.2em]">Total Collection</span>
+                    <p class="text-4xl sm:text-5xl font-black mt-2 tracking-tighter italic text-center">฿${d.total.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-left">
+                    <div class="p-4 bg-slate-50 rounded-3xl border shadow-inner"><span class="text-[8px] font-bold text-slate-400 uppercase">เงินสด</span><p class="font-black text-lg text-orange-500">฿${d.cash.toLocaleString()}</p></div>
+                    <div class="p-4 bg-slate-50 rounded-3xl border shadow-inner"><span class="text-[8px] font-bold text-slate-400 uppercase">เงินโอน</span><p class="font-black text-lg text-emerald-500">฿${d.trans.toLocaleString()}</p></div>
+                    <div class="p-4 bg-slate-50 rounded-3xl border shadow-inner"><span class="text-[8px] font-bold text-slate-400 uppercase">VISA</span><p class="font-black text-lg text-blue-600">฿${d.visa.toLocaleString()}</p></div>
+                    <div class="p-4 bg-slate-50 rounded-3xl border shadow-inner"><span class="text-[8px] font-bold text-slate-400 uppercase">Master</span><p class="font-black text-lg text-blue-600">฿${d.master.toLocaleString()}</p></div>
+                    <div class="p-4 bg-slate-50 rounded-3xl border shadow-inner"><span class="text-[8px] font-bold text-slate-400 uppercase">อื่นๆ</span><p class="font-black text-lg text-slate-600">฿${d.others.toLocaleString()}</p></div>
+                    <div class="p-4 bg-rose-50 rounded-3xl border border-rose-100 shadow-inner"><span class="text-[8px] font-bold text-rose-400 uppercase">ส่วนลด</span><p class="font-black text-lg text-rose-600">฿${d.disc.toLocaleString()}</p></div>
+                </div>
+                <div class="p-6 bg-slate-50 rounded-[2rem] border text-left space-y-3">
+                    <div class="flex justify-between items-center text-xs font-black uppercase"><span class="text-slate-400 tracking-widest">พนักงาน:</span><span>${d.staff}</span></div>
+                    <div class="flex justify-between items-center text-xs font-black uppercase"><span class="text-slate-400 tracking-widest">เงินออก:</span><span class="text-rose-600 font-black">฿${d.cash_out.toLocaleString()}</span></div>
+                    <div class="pt-3 border-t border-slate-200 mt-1 italic font-bold text-slate-500 text-xs leading-relaxed">"${d.note}"</div>
+                </div>
+            `;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function calculateTotal() {
+            const getVal = (n) => parseFloat(document.querySelector(`[data-name="${n}"]`).value) || 0;
+            const sum = (getVal('cash') + getVal('transfer') + getVal('visa') + getVal('master') + getVal('others'));
+            document.getElementById('display-total').innerText = sum.toLocaleString(undefined, {minimumFractionDigits: 2});
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn'); btn.disabled = true; btn.innerText = "กำลังบันทึก...";
+            
+            // 🚀 เก็บวันที่ไว้ก่อน reset ฟอร์ม
+            const selectedDate = document.getElementById('form-date').value;
+            lastActionDate = selectedDate; 
+
+            const payload = { action: 'SAVE_SALES', date: selectedDate, cash: parseFloat(document.querySelector('[data-name="cash"]').value) || 0, transfer: parseFloat(document.querySelector('[data-name="transfer"]').value) || 0, visa: parseFloat(document.querySelector('[data-name="visa"]').value) || 0, master: parseFloat(document.querySelector('[data-name="master"]').value) || 0, others: parseFloat(document.querySelector('[data-name="others"]').value) || 0, discount: parseFloat(document.querySelector('[data-name="discount"]').value) || 0, total: parseFloat(document.getElementById('display-total').innerText.replace(/,/g, '')), cash_out: parseFloat(document.getElementById('form-cash-out').value) || 0, staff: document.getElementById('form-staff').value, note: document.getElementById('form-note').value };
+            try {
+                await fetch(WRITE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                showToast("✨ บันทึกยอดขายเรียบร้อย!", "success");
+                setTimeout(async () => { 
+                    await fetchData(); 
+                    switchTab('dashboard'); 
+                    document.getElementById('salesForm').reset(); 
+                    // 🚀 คืนค่าวันที่เดิมให้ฟอร์ม (เพื่อไม่ให้ Copy report พัง)
+                    document.getElementById('form-date').value = selectedDate;
+                    calculateTotal(); 
+                    btn.disabled = false; 
+                    btn.innerText = "ยืนยันและส่งรายงาน"; 
+                }, 1500);
+            } catch(e) { showToast("❌ ขัดข้อง", "error"); btn.disabled = false; }
+        }
+
+        function showToast(m, t) {
+            const el = document.getElementById('toast'); el.innerText = m;
+            el.className = `fixed top-14 left-1/2 -translate-x-1/2 z-[500] px-10 py-6 rounded-[3rem] shadow-2xl transition-all duration-500 opacity-100 ${t==='error'?'bg-red-600 text-white':'bg-slate-900 text-white'} font-black text-lg uppercase italic text-center`;
+            setTimeout(() => { if(el) el.style.opacity = "0"; }, 4000);
+        }
+
+        function switchTab(id) {
+            ['entry', 'dashboard', 'data'].forEach(t => { document.getElementById('section-'+t).classList.add('hidden'); document.getElementById('m-tab-'+t)?.classList.remove('text-blue-600'); document.getElementById('d-tab-'+t)?.classList.remove('nav-active'); });
+            document.getElementById('section-'+id).classList.remove('hidden');
+            document.getElementById('m-tab-'+id)?.classList.add('text-blue-600');
+            document.getElementById('d-tab-'+id)?.classList.add('nav-active');
+            window.scrollTo(0,0);
+        }
+
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
+        function copyDailyReport() {
+            // 🚀 ตรวจสอบวันที่จากตัวแปร lastActionDate เพื่อความแม่นยำ
+            const target = lastActionDate;
+            const records = salesData.filter(d => d.date === target);
+            if (!records.length) { 
+                showToast("⚠️ ไม่พบยอดของวันที่ " + target.split('-').reverse().join('/'), "error"); 
+                return; 
+            }
+            const sum = records.reduce((a, b) => ({ total: a.total + b.total, cash: a.cash + b.cash, trans: a.trans + b.trans, visa: a.visa + b.visa, master: a.master + b.master, others: a.others + b.others, disc: a.disc + b.disc, out: a.out + b.cash_out, staffs: a.staffs.concat(b.staff) }), { total: 0, cash: 0, trans: 0, visa: 0, master: 0, others: 0, disc: 0, out: 0, staffs: [] });
+            const staffList = [...new Set(sum.staffs)].filter(s => s && s !== '-').join(', ') || '-';
+            const report = `📊 *สรุปยอดขายประจำวัน*\n📅 วันที่: ${target.split('-').reverse().join('/')}\n----------------------------------\n💰 *ยอดขายสุทธิ: ${sum.total.toLocaleString(undefined, {minimumFractionDigits: 0})} บาท*\n----------------------------------\n💵 เงินสด: ${sum.cash.toLocaleString()}\n📱 โอน: ${sum.trans.toLocaleString()}\n💳 VISA/Master: ${(sum.visa + sum.master).toLocaleString()}\n➕ อื่นๆ: ${sum.others.toLocaleString()}\n\n🧧 ส่วนลด: ${sum.disc.toLocaleString()}\n----------------------------------\n📉 *เงินออกหน้าเครื่อง: ${sum.out.toLocaleString()} บาท*\n----------------------------------\n👤 พนักงาน: ${staffList}\n\n✅ ตรวจสอบยอดเรียบร้อย\n[TimeHub Pro Intelligence System]`;
+            const el = document.createElement('textarea'); el.value = report; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+            showToast("🚀 คัดลอกรายงานสรุปเรียบร้อย!");
+        }
+    </script>
+</body>
+</html>

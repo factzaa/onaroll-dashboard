@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Enterprise Expenses Pro - Premium UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #ef4444;
+            --slate-900: #0f172a;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif; 
+            background-color: #f8fafc; 
+            color: #334155;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .premium-card {
+            background: white;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(226, 232, 240, 1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .input-master {
+            @apply w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 outline-none transition-all font-semibold text-slate-700 focus:ring-4 focus:ring-red-50 focus:bg-white;
+        }
+
+        .label-master {
+            @apply text-[11px] font-extrabold text-slate-400 uppercase tracking-widest ml-1;
+        }
+
+        .btn-tab {
+            @apply px-6 py-2 rounded-full text-sm font-bold transition-all duration-300;
+        }
+
+        .btn-tab.active {
+            @apply bg-slate-900 text-white shadow-lg scale-105;
+        }
+
+        .btn-submit {
+            @apply w-full py-6 rounded-2xl font-black text-lg bg-slate-900 text-white transition-all active:scale-[0.98] border-b-4 border-slate-950 shadow-xl flex items-center justify-center gap-3;
+        }
+
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        
+        /* 📱 Mobile Grid Adjustment */
+        .stat-grid { @apply grid grid-cols-2 lg:grid-cols-4 gap-4; }
+    </style>
+</head>
+<body class="min-h-screen pb-24 lg:pb-10">
+
+    <!-- Global Header -->
+    <header class="glass-header sticky top-0 z-[100] px-6 py-4">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <button onclick="window.location.href='Main_Hub.html'" class="p-3 bg-slate-50 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all shadow-sm">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </button>
+                <div class="hidden sm:block text-left">
+                    <h1 class="text-xl font-black tracking-tight text-slate-800 leading-none uppercase">Expense <span class="text-red-500">Pro</span></h1>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1 italic">Intelligence System</p>
+                </div>
+            </div>
+
+            <nav class="hidden md:flex bg-slate-100/50 p-1.5 rounded-full">
+                <button onclick="switchTab('entry')" id="d-tab-entry" class="btn-tab active">บันทึกรายจ่าย</button>
+                <button onclick="switchTab('dashboard')" id="d-tab-dashboard" class="btn-tab inactive ml-2">สรุปผล</button>
+                <button onclick="switchTab('data')" id="d-tab-data" class="btn-tab inactive ml-2">ประวัติ</button>
+            </nav>
+
+            <button onclick="fetchData()" class="p-3 bg-white border border-slate-100 rounded-xl text-slate-400 active:rotate-180 transition-all duration-500 shadow-sm">
+                <svg id="sync-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        
+        <section id="section-entry" class="space-y-8 animate-fade-in">
+            <div class="text-center md:text-left space-y-1">
+                <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight italic uppercase">Daily Expense</h2>
+                <p class="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em]">ระบุข้อมูลรายจ่ายและแนบหลักฐาน</p>
+            </div>
+
+            <form id="expenseForm" onsubmit="handleSubmit(event)" class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                <div class="md:col-span-8 space-y-6">
+                    <div class="premium-card p-8 space-y-8">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
+                            <div class="flex flex-col space-y-2">
+                                <label class="label-master">📅 วันที่จ่าย</label>
+                                <input type="date" id="form-date" required class="input-master">
+                            </div>
+                            <div class="flex flex-col space-y-2">
+                                <label class="label-master text-red-500">💰 จำนวนเงิน</label>
+                                <input type="number" step="0.01" id="form-amount" required placeholder="0.00" class="input-master text-2xl font-black text-red-600 bg-red-50/30">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
+                            <div class="flex flex-col space-y-2">
+                                <label class="label-master">🏷️ หมวดหมู่</label>
+                                <select id="form-category" required onchange="handleCategoryChange(this)" class="input-master appearance-none cursor-pointer"></select>
+                            </div>
+                            <div class="flex flex-col space-y-2">
+                                <label class="label-master">📝 รายการที่จ่าย</label>
+                                <input type="text" id="form-item" required placeholder="เช่น ค่าแก๊ส, ซ่อมเครื่อง" class="input-master">
+                            </div>
+                        </div>
+
+                        <div id="new-category-container" class="hidden animate-fade-in p-6 rounded-2xl bg-red-50 border border-red-100 flex items-center gap-3">
+                            <input type="text" id="new-category-input" placeholder="พิมพ์หมวดหมู่ใหม่..." class="flex-1 px-4 py-3 rounded-xl outline-none font-bold text-slate-700 shadow-inner">
+                            <button type="button" onclick="addNewCategory()" class="bg-red-500 text-white px-6 py-3 rounded-xl font-bold">เพิ่ม</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-4 space-y-6">
+                    <div class="premium-card p-6 space-y-6">
+                        <div class="flex flex-col space-y-2 text-left">
+                            <label class="label-master">👤 ผู้บันทึก</label>
+                            <input type="text" id="form-staff" required placeholder="ระบุชื่อพนักงาน" class="input-master text-center">
+                        </div>
+
+                        <div class="space-y-3 text-left">
+                            <label class="label-master">📸 สแกนใบเสร็จ</label>
+                            <div class="relative group" onclick="document.getElementById('form-image').click()">
+                                <div id="upload-placeholder" class="border-2 border-dashed border-slate-200 rounded-3xl p-8 bg-slate-50 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all">
+                                    <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2"></path></svg>
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">ถ่ายรูปหลักฐาน</span>
+                                </div>
+                                <img id="img-preview" class="hidden w-full aspect-square object-cover rounded-3xl shadow-xl">
+                                <input type="file" id="form-image" accept="image/*" capture="environment" class="hidden" onchange="handleImage(this)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="btn-submit">ยืนยันบันทึกข้อมูล</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="section-dashboard" class="hidden space-y-8 animate-fade-in">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight italic uppercase">Insights Dashboard</h2>
+                <input type="month" id="month-filter" onchange="updateDashboard()" class="px-6 py-3 rounded-full border bg-white font-black text-slate-700 shadow-sm outline-none w-full sm:w-auto">
+            </div>
+
+            <div class="stat-grid">
+                <div class="premium-card p-6 border-l-[10px] border-red-500 overflow-hidden min-h-[120px] flex flex-col justify-center text-left">
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">ยอดรวมเดือนนี้</span>
+                    <p class="text-xl sm:text-2xl font-black text-slate-800 tabular-nums" id="stat-total-month">฿0</p>
+                </div>
+                <div class="premium-card p-6 border-l-[10px] border-blue-500 overflow-hidden min-h-[120px] flex flex-col justify-center text-left">
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">เฉลี่ยต่อรายการ</span>
+                    <p class="text-xl sm:text-2xl font-black text-slate-800 tabular-nums" id="stat-avg-month">฿0</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="premium-card p-6 h-[350px]">
+                    <h3 class="text-[10px] font-black uppercase text-slate-400 mb-4 border-b pb-2 text-left">Category Ratio</h3>
+                    <div class="h-[250px]"><canvas id="categoryChart"></canvas></div>
+                </div>
+                <div class="premium-card p-6 h-[350px]">
+                    <h3 class="text-[10px] font-black uppercase text-slate-400 mb-4 border-b pb-2 text-left">Spending Trend</h3>
+                    <div class="h-[250px]"><canvas id="trendChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-data" class="hidden space-y-6 animate-fade-in">
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight italic ml-4 text-left">AUDIT LOGS</h2>
+            <div class="premium-card overflow-hidden">
+                <div class="overflow-x-auto text-left">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 border-b">
+                            <tr>
+                                <th class="px-8 py-6 text-[10px] font-black uppercase text-slate-400">Date / Item</th>
+                                <th class="px-8 py-6 text-[10px] font-black uppercase text-right text-slate-400">Amount</th>
+                                <th class="px-8"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[150] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-[3.5rem] overflow-hidden shadow-2xl border flex flex-col max-h-[90vh] animate-fade-in">
+            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="font-black text-slate-900 uppercase tracking-widest text-sm italic">Receipt Record Detail</h3>
+                <button onclick="closeModal()" class="p-2 border rounded-xl text-slate-400">✕</button>
+            </div>
+            <div id="modal-content" class="p-8 overflow-y-auto scrollbar-hide space-y-6 flex-grow text-center"></div>
+            <div class="p-6 bg-slate-50 border-t">
+                <button onclick="closeModal()" class="w-full py-5 bg-slate-900 text-white rounded-full font-black uppercase text-sm tracking-widest shadow-xl">CLOSE PREVIEW</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-header px-6 h-20 flex items-center justify-around z-[100] rounded-t-[2.5rem] shadow-2xl border-t">
+        <button onclick="switchTab('dashboard')" class="flex flex-col items-center gap-1 text-slate-400" id="m-tab-dashboard">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" stroke-width="2"></path><path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" stroke-width="2"></path></svg>
+            <span class="text-[9px] font-bold uppercase">Summary</span>
+        </button>
+        <button onclick="switchTab('entry')" class="flex flex-col items-center gap-2 -translate-y-10" id="m-tab-entry">
+            <div class="w-16 h-16 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl border-8 border-white active:scale-90 transition-all">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="3"></path></svg>
+            </div>
+            <span class="text-[10px] font-black uppercase text-slate-900 -mt-6 tracking-widest">Entry</span>
+        </button>
+        <button onclick="switchTab('data')" class="flex flex-col items-center gap-1 text-slate-400" id="m-tab-data">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-width="2"></path></svg>
+            <span class="text-[9px] font-bold uppercase">Logs</span>
+        </button>
+    </nav>
+
+    <div id="toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-[500] px-10 py-6 rounded-[3rem] shadow-2xl transition-all duration-500 opacity-0 pointer-events-none bg-slate-900 text-white font-black text-lg uppercase italic text-center"></div>
+
+    <script>
+        const IMGBB_API_KEY = '412005bc434fd396c0f0163133dfa205'; 
+        const WRITE_URL = 'https://script.google.com/macros/s/AKfycbz31YJnsULoFDpqYCMHBnxtMPgaxQGCCAhAWJbNBDdW3PEQUv_BQ1LH6WMUC3uPoP7G4A/exec'; 
+        const SHEET_ID = '1aTkdKkfMXkKutMuVJBew4k5PfPoIkQsr6pmtUAQtPlE';
+        const READ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Expenses`;
+
+        let expenseData = [], trendChart = null, categoryChart = null, rawImageFile = null;
+        let userCats = JSON.parse(localStorage.getItem('exp_premium_cats_v2')) || ["ค่าวัตถุดิบ", "ค่าเช่าที่", "ค่าน้ำไฟ", "ค่าแรง", "อื่นๆ"];
+
+        window.onload = () => {
+            document.getElementById('form-date').value = new Date().toLocaleDateString('en-CA');
+            document.getElementById('month-filter').value = new Date().toISOString().substring(0, 7);
+            renderCategoryDropdown(); 
+            fetchData();
+        };
+
+        function renderCategoryDropdown() {
+            const s = document.getElementById('form-category');
+            let h = '<option value="">เลือกหมวดหมู่</option>';
+            userCats.forEach(c => h += `<option value="${c}">${c}</option>`);
+            h += '<option value="ADD_NEW">+ เพิ่มหมวดหมู่ใหม่...</option>';
+            s.innerHTML = h;
+        }
+
+        function handleCategoryChange(s) {
+            document.getElementById('new-category-container').classList.toggle('hidden', s.value !== 'ADD_NEW');
+        }
+
+        function addNewCategory() {
+            const n = document.getElementById('new-category-input').value.trim();
+            if(!n || userCats.includes(n)) return;
+            userCats.push(n); localStorage.setItem('exp_premium_cats_v2', JSON.stringify(userCats));
+            renderCategoryDropdown(); document.getElementById('form-category').value = n;
+            document.getElementById('new-category-container').classList.add('hidden');
+        }
+
+        function handleImage(input) {
+            if (input.files && input.files[0]) {
+                rawImageFile = input.files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('img-preview').src = e.target.result;
+                    document.getElementById('img-preview').classList.remove('hidden');
+                    document.getElementById('upload-placeholder').classList.add('hidden');
+                    showToast("📸 สแกนใบเสร็จสำเร็จ");
+                }; 
+                reader.readAsDataURL(rawImageFile);
+            }
+        }
+
+        async function fetchData() {
+            const icon = document.getElementById('sync-icon');
+            if(icon) icon.classList.add('animate-spin');
+            try {
+                const res = await fetch(`${READ_URL}&t=${Date.now()}`);
+                const text = await res.text();
+                const rows = text.split(/\r?\n/).slice(1);
+                
+                expenseData = rows.map((row, idx) => {
+                    const c = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(v => v.replace(/^"|"$/g, '')) || [];
+                    if(c.length < 4) return null;
+                    return { 
+                        id: idx, 
+                        date: c[0],     // A: วันที่
+                        item: c[1],     // B: รายการ
+                        category: c[2], // C: หมวดหมู่
+                        amount: parseFloat(String(c[3]).replace(/,/g, '')) || 0, // D: จำนวนเงิน
+                        staff: c[4],    // E: ผู้บันทึก
+                        img: c[5]       // F: ลิงก์รูปภาพ
+                    };
+                }).filter(Boolean);
+                updateDashboard(); renderLogs();
+                if(icon) icon.classList.remove('animate-spin');
+            } catch(e) { if(icon) icon.classList.remove('animate-spin'); }
+        }
+
+        function switchTab(id) {
+            ['entry', 'dashboard', 'data'].forEach(t => {
+                document.getElementById('section-'+t).classList.add('hidden');
+                document.getElementById('d-tab-'+t)?.classList.replace('active', 'inactive');
+                document.getElementById('m-tab-'+t)?.classList.replace('text-slate-900', 'text-slate-400');
+            });
+            document.getElementById('section-'+id).classList.remove('hidden');
+            document.getElementById('d-tab-'+id)?.classList.replace('inactive', 'active');
+            document.getElementById('m-tab-'+id)?.classList.replace('text-slate-400', 'text-slate-900');
+            window.scrollTo(0,0);
+        }
+
+        function updateDashboard() {
+            const filter = document.getElementById('month-filter').value;
+            const filtered = expenseData.filter(d => d.date.startsWith(filter));
+            const total = filtered.reduce((s, d) => s + d.amount, 0);
+            document.getElementById('stat-total-month').innerText = `฿${total.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+            document.getElementById('stat-avg-month').innerText = `฿${(total/Math.max(1, filtered.length)).toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+
+            const cats = {}; filtered.forEach(d => cats[d.category] = (cats[d.category] || 0) + d.amount);
+            if(categoryChart) categoryChart.destroy();
+            categoryChart = new Chart(document.getElementById('categoryChart'), { 
+                type: 'doughnut', 
+                data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#ef4444', '#6366f1', '#10b981', '#f59e0b', '#0f172a'], borderWidth: 4, borderRadius: 10 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 10, weight: 'bold' } } } }, cutout: '75%' }
+            });
+
+            const daily = {}; filtered.forEach(d => daily[d.date] = (daily[d.date] || 0) + d.amount);
+            const labels = Object.keys(daily).sort();
+            if(trendChart) trendChart.destroy();
+            trendChart = new Chart(document.getElementById('trendChart'), { 
+                type: 'bar', 
+                data: { labels: labels.map(l => l.split('-')[2]), datasets: [{ data: labels.map(l => daily[l]), backgroundColor: '#ef4444', borderRadius: 4 }] }, 
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, display: false }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } } 
+            });
+        }
+
+        function renderLogs() {
+            const body = document.getElementById('logs-body'); body.innerHTML = '';
+            [...expenseData].sort((a,b) => b.date.localeCompare(a.date)).forEach(d => {
+                const row = document.createElement('tr'); row.className = "hover:bg-slate-50 cursor-pointer transition-all";
+                row.onclick = () => viewDetail(d);
+                row.innerHTML = `
+                    <td class="px-8 py-6">
+                        <div class="text-[10px] font-black text-slate-300 uppercase tracking-widest">${d.date.split('-').reverse().join('/')}</div>
+                        <div class="text-base font-black text-slate-800 italic">${d.item}</div>
+                        <span class="text-[9px] font-bold bg-slate-100 px-2 py-0.5 rounded-full text-slate-500 uppercase mt-1 inline-block">${d.category}</span>
+                    </td>
+                    <td class="px-8 py-6 text-right">
+                        <div class="text-xl font-black text-red-600 tracking-tighter">฿${d.amount.toLocaleString()}</div>
+                    </td>
+                    <td class="px-6 text-right text-slate-300">➔</td>
+                `;
+                body.appendChild(row);
+            });
+        }
+
+        function viewDetail(d) {
+            document.getElementById('modal-content').innerHTML = `
+                <div class="p-8 bg-slate-900 rounded-[2.5rem] text-white shadow-xl flex flex-col justify-center">
+                    <span class="text-[10px] font-black uppercase opacity-40 tracking-[0.2em]">Expense Amount</span>
+                    <div class="text-5xl font-black italic tracking-tighter leading-tight">฿${d.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-left">
+                    <div class="p-4 rounded-2xl bg-slate-50 border"><span class="label-master block mb-1">วันที่จ่าย</span><p class="font-bold text-slate-700">${d.date}</p></div>
+                    <div class="p-4 rounded-2xl bg-slate-50 border"><span class="label-master block mb-1">พนักงาน</span><p class="font-bold text-slate-700">${d.staff}</p></div>
+                </div>
+                <div class="p-6 rounded-3xl bg-slate-50 border text-left">
+                    <span class="label-master block mb-1">รายละเอียดรายการ</span>
+                    <p class="font-bold text-slate-800 italic text-lg leading-tight">"${d.item}"</p>
+                </div>
+                ${d.img && d.img !== '-' ? `<div class="mt-2"><span class="label-master block mb-3 text-left">หลักฐานใบเสร็จ</span><img src="${d.img}" class="w-full rounded-3xl shadow-xl border-4 border-white object-contain"></div>` : ''}
+            `;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
+        async function handleSubmit(e) {
+            e.preventDefault(); 
+            const btn = document.getElementById('submit-btn'); 
+            btn.disabled = true; btn.innerText = "กำลังจัดส่งข้อมูล...";
+            
+            let finalUrl = "-";
+            if (rawImageFile) {
+                const formData = new FormData(); formData.append('image', rawImageFile);
+                try {
+                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
+                    const data = await res.json(); if(data.success) finalUrl = data.data.url;
+                } catch(e) { console.error("Upload Error"); }
+            }
+
+            const payload = { 
+                action: 'SAVE_EXPENSE',
+                date: document.getElementById('form-date').value, 
+                item: document.getElementById('form-item').value, 
+                category: document.getElementById('form-category').value, 
+                amount: parseFloat(document.getElementById('form-amount').value), 
+                staff: document.getElementById('form-staff').value, 
+                image: finalUrl 
+            };
+
+            try {
+                await fetch(WRITE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                showToast("✨ บันทึกรายจ่ายสำเร็จ!"); 
+                document.getElementById('expenseForm').reset();
+                rawImageFile = null; 
+                document.getElementById('img-preview').classList.add('hidden'); 
+                document.getElementById('upload-placeholder').classList.remove('hidden');
+                setTimeout(() => { fetchData(); switchTab('dashboard'); btn.disabled = false; btn.innerText = "ยืนยันบันทึกข้อมูล"; }, 1500);
+            } catch(e) { showToast("❌ ขัดข้อง", "error"); btn.disabled = false; }
+        }
+
+        function showToast(m, t) {
+            const el = document.getElementById('toast'); 
+            el.innerText = m;
+            el.className = `fixed top-14 left-1/2 -translate-x-1/2 z-[500] px-10 py-6 rounded-[3rem] shadow-2xl transition-all duration-500 opacity-100 ${t==='error'?'bg-red-600':'bg-slate-900'} text-white font-black text-lg uppercase italic text-center`;
+            setTimeout(() => el.style.opacity = "0", 4000);
+        }
+    </script>
+</body>
+</html>
