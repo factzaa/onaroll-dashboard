@@ -383,45 +383,63 @@ function parseData() {
       };
     });
 
-  // Performance_Report: แถวแรกคือ header label, คอลัมน์ที่ 1 เป็น metric name, คอลัมน์ที่เหลือเป็นพนักงาน
-  // รูปแบบ: row["Unnamed: 0"] = ลำดับ, row["Unnamed: 1"] = metric, row["ชื่อเล่น1"]...
+  // Performance_Report จาก Google Sheets (PapaParse header:true):
+  // row แรก = header → คอลัมน์จะชื่อ "เลือกชื่อพนักงาน", "กาย", "เคลียร์", ...
+  // row ถัดไป = metric แต่ละแถว เช่น "จำนวนวันที่มาทำงาน (ครั้ง)", "คะแนนรวม (100 คะแนน)" ฯลฯ
   var perfRaw = DATA.performance_report || [];
   DATA.perf_parsed = [];
   if (perfRaw.length > 0) {
-    // หาชื่อคอลัมน์พนักงาน (ทุกคอลัมน์ยกเว้น 2 อันแรก)
     var allKeys = Object.keys(perfRaw[0]);
-    var empCols = allKeys.slice(2); // ข้าม Unnamed:0 และ Unnamed:1
+    // คอลัมน์แรกคือ label metric, ที่เหลือคือชื่อพนักงาน
+    var labelCol = allKeys[0];
+    var empCols = allKeys.slice(1);
 
-    // หาชื่อพนักงานจากแถวแรก (row index 0 = ชื่อพนักงาน)
-    var nameRow = perfRaw[0];
-    var empNames = empCols.map(function(k) { return (nameRow[k]||"").trim(); });
-
-    // map metric rows
+    // สร้าง map metric → value ต่อพนักงาน
     var metrics = {};
+    empCols.forEach(function(empName) { metrics[empName.trim()] = {}; });
+
     perfRaw.forEach(function(row) {
-      var label = (row[allKeys[1]]||"").trim();
+      var label = (row[labelCol] || "").trim();
       if (!label) return;
-      empCols.forEach(function(k, i) {
-        var name = empNames[i];
-        if (!name) return;
+      empCols.forEach(function(k) {
+        var name = k.trim();
         if (!metrics[name]) metrics[name] = {};
         metrics[name][label] = row[k];
       });
     });
 
-    // สร้าง array พนักงาน
-    empNames.forEach(function(name) {
-      if (!name) return;
+    // สร้าง array พนักงาน — หาชื่อ metric จากทุกแถว
+    empCols.forEach(function(k) {
+      var name = k.trim();
+      if (!name || name === "" ) return;
       var m = metrics[name] || {};
-      var score = parseFloat(m["คะแนนรวม (100 คะแนน)"]) || 0;
-      var grade = (m["เกรดที่ได้"] || "").trim();
-      var workPct = parseFloat(m["เปอร์เซ็นต์งานที่ทำสำเร็จ (%)"]) || 0;
-      var workDone = parseFloat(m["ปริมาณงานที่ทำเสร็จ"]) || 0;
-      var workDays = parseFloat(m["จำนวนวันที่มาทำงาน (ครั้ง)"]) || 0;
-      var lateMin = parseFloat(m["รวมเวลาสาย (นาที)"]) || 0;
-      DATA.perf_parsed.push({ name:name, score:score, grade:grade, workPct:workPct, workDone:workDone, workDays:workDays, lateMin:lateMin });
+
+      // หา key ที่ตรงกับ metric ที่ต้องการ (match แบบ includes เพื่อรองรับชื่อที่ต่างกันเล็กน้อย)
+      function findVal(keyword) {
+        var keys = Object.keys(m);
+        for (var i=0; i<keys.length; i++) {
+          if (keys[i].indexOf(keyword) !== -1) return m[keys[i]];
+        }
+        return "";
+      }
+
+      var score    = parseFloat(findVal("คะแนนรวม")) || 0;
+      var grade    = (findVal("เกรด") || "").toString().trim();
+      var workPct  = parseFloat(findVal("เปอร์เซ็นต์")) || 0;
+      var workDone = parseFloat(findVal("ปริมาณงาน")) || 0;
+      var workDays = parseFloat(findVal("จำนวนวันที่มาทำงาน")) || 0;
+      var lateMin  = parseFloat(findVal("รวมเวลาสาย")) || 0;
+
+      // ข้ามถ้าชื่อเป็นตัวเลข (เช่นปี 2026) หรือว่าง
+      if (!isNaN(parseFloat(name)) || name.length < 2) return;
+
+      DATA.perf_parsed.push({
+        name: name, score: score, grade: grade,
+        workPct: workPct, workDone: workDone,
+        workDays: workDays, lateMin: lateMin
+      });
     });
-    DATA.perf_parsed.sort(function(a,b) { return b.score-a.score; });
+    DATA.perf_parsed.sort(function(a,b) { return b.score - a.score; });
   }
 }
 
