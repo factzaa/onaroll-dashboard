@@ -656,6 +656,11 @@ function renderProfileMain(emp, grandTotal){
     </div>`;
 }
 
+const PAYROLL_CACHE_KEY = 'or_payroll_cache';
+const PAYROLL_CACHE_TTL = 5 * 60 * 1000;
+function savePayrollCache(sum, hist){ try{ localStorage.setItem(PAYROLL_CACHE_KEY, JSON.stringify({ts:Date.now(),sum,hist})); }catch(e){} }
+function loadPayrollCache(){ try{ const r=localStorage.getItem(PAYROLL_CACHE_KEY); if(!r) return null; const o=JSON.parse(r); return Date.now()-o.ts>PAYROLL_CACHE_TTL?null:o; }catch(e){return null;} }
+
 async function refreshData(){
   showLoading(true);
   const icon=document.getElementById('sync-icon');
@@ -663,34 +668,60 @@ async function refreshData(){
   dateStart=document.getElementById('date-start').value;
   dateEnd=document.getElementById('date-end').value;
   selectedMonth=document.getElementById('month-selector').value;
+
+  // ── ใช้ cache แสดงก่อนทันที ──
+  var cached = loadPayrollCache();
+  if (cached) {
+    summaryData = cached.sum;
+    historyData = cached.hist;
+    applyPayrollData();
+    showLoading(false);
+    if(icon) icon.style.animation='';
+    toast('โหลดจาก cache — กำลังอัพเดตใน background...');
+    refreshPayrollBg();
+    return;
+  }
+  await refreshPayrollBg();
+}
+
+async function refreshPayrollBg() {
+  const icon=document.getElementById('sync-icon');
   try{
-    const resSum=await fetch(`${APPS_SCRIPT_URL}?action=GET_CALC_SUMMARY&start=${dateStart}&end=${dateEnd}&t=${Date.now()}`);
+    // ── fetch พร้อมกัน ──
+    const [resSum, resHist] = await Promise.all([
+      fetch(`${APPS_SCRIPT_URL}?action=GET_CALC_SUMMARY&start=${dateStart}&end=${dateEnd}&t=${Date.now()}`),
+      fetch(`${APPS_SCRIPT_URL}?action=GET_PAYROLL_HISTORY&t=${Date.now()}`)
+    ]);
     summaryData=await resSum.json();
-    const resHist=await fetch(`${APPS_SCRIPT_URL}?action=GET_PAYROLL_HISTORY&t=${Date.now()}`);
     historyData=await resHist.json();
-    employees.forEach(emp=>{
-      const sum=summaryData.find(s=>String(s.empId)===String(emp.id))||{};
-      const log=historyData.filter(h=>h['เดือน']===selectedMonth&&String(h['รหัสพนักงาน'])===String(emp.id)).pop()||{};
-      localInputs[emp.id]={
-        salaryType: log['ประเภทการจ้าง']||'Daily',
-        baseRate: log['ค่าจ้างพื้นฐาน']!==undefined?Number(log['ค่าจ้างพื้นฐาน']):350,
-        otHours: log['จำนวนชม. OT']!==undefined?Number(log['จำนวนชม. OT']):(Number(sum.ot)||0),
-        otRate: log['เรท OT ต่อชม.']!==undefined?Number(log['เรท OT ต่อชม.']):25,
-        lateMins: log['จำนวนครั้งที่สาย']!==undefined?Number(log['จำนวนครั้งที่สาย']):(Number(sum.lateCount)||0),
-        lateDeduction: log['ยอดหักสาย/ขาด']!==undefined?Number(log['ยอดหักสาย/ขาด']):0,
-        advancePay: log['ยอดเงินเบิก']!==undefined?Number(log['ยอดเงินเบิก']):0,
-        otherEarn: log['เงินพิเศษ/โบนัส']!==undefined?Number(log['เงินพิเศษ/โบนัส']):0,
-        otherEarnNote: log['หมายเหตุเงินพิเศษ']||'',
-        otherDed: log['ยอดหักอื่นๆ']!==undefined?Number(log['ยอดหักอื่นๆ']):0,
-        otherDedNote: log['หมายเหตุเงินหัก']||'',
-        daysWorked: log['จำนวนวันทำงาน']!==undefined?Number(log['จำนวนวันทำงาน']):(Number(sum.workDays)||0)
-      };
-    });
-    renderEntry();
+    savePayrollCache(summaryData, historyData);
+    applyPayrollData();
     toast('ซิงค์ข้อมูลสำเร็จ');
   }catch(e){toast('ซิงค์ไม่สำเร็จ กรุณาลองใหม่','error');}
   if(icon) icon.style.animation='';
   showLoading(false);
+}
+
+function applyPayrollData() {
+  employees.forEach(emp=>{
+    const sum=summaryData.find(s=>String(s.empId)===String(emp.id))||{};
+    const log=historyData.filter(h=>h['เดือน']===selectedMonth&&String(h['รหัสพนักงาน'])===String(emp.id)).pop()||{};
+    localInputs[emp.id]={
+      salaryType: log['ประเภทการจ้าง']||'Daily',
+      baseRate: log['ค่าจ้างพื้นฐาน']!==undefined?Number(log['ค่าจ้างพื้นฐาน']):350,
+      otHours: log['จำนวนชม. OT']!==undefined?Number(log['จำนวนชม. OT']):(Number(sum.ot)||0),
+      otRate: log['เรท OT ต่อชม.']!==undefined?Number(log['เรท OT ต่อชม.']):25,
+      lateMins: log['จำนวนครั้งที่สาย']!==undefined?Number(log['จำนวนครั้งที่สาย']):(Number(sum.lateCount)||0),
+      lateDeduction: log['ยอดหักสาย/ขาด']!==undefined?Number(log['ยอดหักสาย/ขาด']):0,
+      advancePay: log['ยอดเงินเบิก']!==undefined?Number(log['ยอดเงินเบิก']):0,
+      otherEarn: log['เงินพิเศษ/โบนัส']!==undefined?Number(log['เงินพิเศษ/โบนัส']):0,
+      otherEarnNote: log['หมายเหตุเงินพิเศษ']||'',
+      otherDed: log['ยอดหักอื่นๆ']!==undefined?Number(log['ยอดหักอื่นๆ']):0,
+      otherDedNote: log['หมายเหตุเงินหัก']||'',
+      daysWorked: log['จำนวนวันทำงาน']!==undefined?Number(log['จำนวนวันทำงาน']):(Number(sum.workDays)||0)
+    };
+  });
+  renderEntry();
 }
 window.refreshAppState=refreshData;
 
