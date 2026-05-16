@@ -226,9 +226,10 @@ const SHEETS = {
   sales: "Daily_sales",
   expenses: "Expenses",
   employees: "Employees",
-  petitions: "Petitions",
-  performance_report: "Performance_Report"
+  petitions: "Petitions"
 };
+const CHECKLIST_SHEET_ID = "18hNJIl7zFTRLmu4CUrOhqxCGQ6iC_tb6OIuMln8VL30";
+const CHECKLIST_SHEET_NAME = "Daily_Checklist_Records";
 
 let DATA = {};
 let charts = {};
@@ -288,9 +289,22 @@ async function loadAllSheets() {
     var keys = Object.keys(SHEETS);
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i];
-      setLoading("กำลังโหลด " + SHEETS[key] + "...", (i+1) + "/" + keys.length + " sheets");
+      setLoading("กำลังโหลด " + SHEETS[key] + "...", (i+1) + "/" + (keys.length+1) + " sheets");
       DATA[key] = await fetchSheet(SHEETS[key]);
     }
+    // โหลด Checklist จาก Spreadsheet อีกไฟล์
+    setLoading("กำลังโหลด Daily_Checklist_Records...", (keys.length+1) + "/" + (keys.length+1) + " sheets");
+    try {
+      var clUrl = "https://docs.google.com/spreadsheets/d/" + CHECKLIST_SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(CHECKLIST_SHEET_NAME);
+      var clRes = await fetch(clUrl);
+      if (clRes.ok) {
+        var clText = await clRes.text();
+        DATA.checklist = await new Promise(function(resolve, reject) {
+          Papa.parse(clText, { header:true, skipEmptyLines:true,
+            complete: function(r){ resolve(r.data); }, error: function(e){ reject(e); } });
+        });
+      } else { DATA.checklist = []; }
+    } catch(e) { DATA.checklist = []; }
     parseData();
     initFilters();
     renderSection();
@@ -383,71 +397,101 @@ function parseData() {
       };
     });
 
-  // Performance_Report CSV structure:
-  // คอลัมน์: "" | "เลือกชื่อพนักงาน" | "กาย" | "เคลียร์" | ...
-  // แถว: "" | metric_label | val1 | val2 | ...
-  // หมายเหตุ: เกรดว่างใน CSV → คำนวณจากคะแนนแทน
-  var perfRaw = DATA.performance_report || [];
-  DATA.perf_parsed = [];
-  if (perfRaw.length > 0) {
-    var allKeys = Object.keys(perfRaw[0]);
-    // คอลัมน์ที่ 0 = ว่าง, คอลัมน์ที่ 1 = "เลือกชื่อพนักงาน", ที่เหลือ = ชื่อพนักงาน
-    var labelCol = allKeys[1];
-    var empCols  = allKeys.slice(2).filter(function(k) {
-      // กรองเฉพาะคอลัมน์ที่มีชื่อพนักงานจริง (ไม่ว่าง ไม่ใช่ตัวเลข)
-      var n = k.trim();
-      return n.length > 0 && isNaN(parseFloat(n));
-    });
+  // คำนวณ Performance จาก Attendance + Checklist
+  var attAll = DATA.attendance || [];
+  var empMap = {};
+  (DATA.employees || []).forEach(function(e) { empMap[e.nickname] = e; });
 
-    // map: empName → { metric: value }
-    var metrics = {};
-    empCols.forEach(function(k) { metrics[k.trim()] = {}; });
-
-    perfRaw.forEach(function(row) {
-      var label = (row[labelCol] || "").trim();
-      if (!label) return;
-      empCols.forEach(function(k) {
-        metrics[k.trim()][label] = (row[k] || "").toString().trim();
-      });
-    });
-
-    function calcGrade(score) {
-      if (score >= 90)  return "A (ยอดเยี่ยม)";
-      if (score >= 80)  return "B (ดีมาก)";
-      if (score >= 70)  return "C (มาตรฐาน)";
-      if (score >= 60)  return "D (ควรปรับปรุง)";
-      return "F (ต่ำกว่าเกณฑ์)";
-    }
-    function gradeKey(score) {
-      if (score >= 90) return "A";
-      if (score >= 80) return "B";
-      if (score >= 70) return "C";
-      if (score >= 60) return "D";
-      return "F";
-    }
-
-    empCols.forEach(function(k) {
-      var name = k.trim();
-      var m = metrics[name] || {};
-      var score    = parseFloat(m["คะแนนรวม (100 คะแนน)"]) || 0;
-      var workPctS = (m["เปอร์เซ็นต์งานที่ทำสำเร็จ (%)"] || "0").replace("%","");
-      var workPct  = parseFloat(workPctS) || 0;
-      var workDone = parseFloat(m["ปริมาณงานที่ทำเสร็จ"]) || 0;
-      var workDays = parseFloat(m["จำนวนวันที่มาทำงาน (ครั้ง)"]) || 0;
-      var lateMin  = parseFloat(m["รวมเวลาสาย (นาที)"]) || 0;
-      // เกรดว่างใน CSV → คำนวณจากคะแนน
-      var gradeRaw = (m["เกรดที่ได้"] || "").trim();
-      var grade    = gradeRaw || calcGrade(score);
-      var gradeK   = gradeRaw ? gradeRaw.charAt(0) : gradeKey(score);
-
-      DATA.perf_parsed.push({
-        name: name, score: score, grade: grade, gradeKey: gradeK,
-        workPct: workPct, workDone: workDone,
-        workDays: workDays, lateMin: lateMin
-      });
-    });
-    DATA.perf_parsed.sort(function(a,b) { return b.score - a.score; });
+  // หาช่วง 30 วันล่าสุด
+  var allDates = attAll.map(function(r){return r.date;}).filter(Boolean).sort();
+  var latestDate = allDates[allDates.length-1] || "";
+  var cutoffDate = "";
+  if (latestDate) {
+    var d0 = new Date(latestDate);
+    d0.setDate(d0.getDate()-30);
+    cutoffDate = d0.toISOString().slice(0,10);
   }
+
+  // รวมงาน checklist ต่อคน (นับ Completed, distinct task+date)
+  var checkMap = {};
+  (DATA.checklist || []).forEach(function(r) {
+    var name = (r["Staff_Name"]||"").trim();
+    var date = (r["Date"]||"").trim().slice(0,10);
+    var status = (r["Status"]||"").trim();
+    if (!name || !date || date < cutoffDate) return;
+    if (!checkMap[name]) checkMap[name] = { completed:0, total:0, byDay:{} };
+    checkMap[name].total++;
+    if (status === "Completed") checkMap[name].completed++;
+    // นับวันที่ทำงาน (unique)
+    checkMap[name].byDay[date] = true;
+  });
+
+  // รวม attendance ต่อคน
+  var perfMap = {};
+  attAll.filter(function(r){ return r.status==="CHECK_IN" && r.date >= cutoffDate; })
+    .forEach(function(r) {
+      var n = r.name;
+      if (!n) return;
+      if (!perfMap[n]) perfMap[n] = { days:{}, lateCnt:0, lateMin:0, ot:0 };
+      perfMap[n].days[r.date] = true;
+      if (r.late_min > 0) { perfMap[n].lateCnt++; perfMap[n].lateMin += r.late_min; }
+      perfMap[n].ot += r.ot;
+    });
+
+  var maxDays = 1;
+  Object.keys(perfMap).forEach(function(n) {
+    var d = Object.keys(perfMap[n].days).length;
+    if (d > maxDays) maxDays = d;
+  });
+
+  function calcGrade(score) {
+    if (score >= 90) return { label:"A (ยอดเยี่ยม)", key:"A" };
+    if (score >= 80) return { label:"B (ดีมาก)",     key:"B" };
+    if (score >= 70) return { label:"C (มาตรฐาน)",   key:"C" };
+    if (score >= 60) return { label:"D (ควรปรับปรุง)",key:"D" };
+    return             { label:"F (ต่ำกว่าเกณฑ์)",  key:"F" };
+  }
+
+  DATA.perf_parsed = [];
+  Object.keys(perfMap).forEach(function(name) {
+    var p = perfMap[name];
+    var ck = checkMap[name] || { completed:0, total:0 };
+    var workDays = Object.keys(p.days).length;
+
+    // หางานที่ต้องทำต่อวัน: total tasks / วันที่มีงานใน checklist
+    var ckDays = Object.keys(ck.byDay || {}).length || 1;
+    var taskPerDay = ck.total > 0 ? ck.total / ckDays : 0;
+
+    // เปอร์เซ็นต์งานสำเร็จ = งานสำเร็จ / (งานต้องทำ/วัน × วันที่มา)
+    var expectedTasks = taskPerDay * workDays;
+    var taskPct = expectedTasks > 0 ? Math.min(ck.completed / expectedTasks, 1) : 0;
+
+    // 70 คะแนน = ปริมาณงาน, 30 คะแนน = วินัย (หัก 0.2/นาทีสาย)
+    var taskScore  = taskPct * 70;
+    var discScore  = Math.max(0, 30 - (p.lateMin * 0.2));
+    var score = Math.min(100, Math.max(0, taskScore + discScore));
+
+    var g = calcGrade(score);
+    var info = empMap[name] || {};
+    DATA.perf_parsed.push({
+      name: name,
+      fullname: info.fullname || name,
+      position: info.position || "",
+      photo: info.photo || "",
+      score: score,
+      grade: g.label,
+      gradeKey: g.key,
+      workDays: workDays,
+      lateCnt: p.lateCnt,
+      lateMin: p.lateMin,
+      ot: p.ot,
+      taskDone: ck.completed,
+      taskTotal: ck.total,
+      taskPerDay: Math.round(taskPerDay),
+      taskPct: taskPct * 100
+    });
+  });
+  DATA.perf_parsed.sort(function(a,b) { return b.score - a.score; });
 }
 
 function initFilters() {
@@ -766,7 +810,7 @@ function renderPerformance() {
     '<div class="kpi kpi-green"><div class="kpi-label">คะแนนเฉลี่ย</div><div class="kpi-value">'+fmtD(avgScore)+'</div><div class="kpi-sub">/ 100 คะแนน</div></div>' +
     '<div class="kpi kpi-red"><div class="kpi-label">ความสายรวม</div><div class="kpi-value">'+totalLate+'</div><div class="kpi-sub">ครั้ง</div></div>' +
     '<div class="kpi kpi-blue"><div class="kpi-label">OT รวม</div><div class="kpi-value">'+fmtD(totalOT)+'</div><div class="kpi-sub">ชั่วโมง</div></div>' +
-    (topEmp ? '<div class="kpi" style="border-top:3px solid #f0a030"><div class="kpi-label">คะแนนสูงสุด</div><div class="kpi-value" style="font-size:18px">'+topEmp.name+'</div><div class="kpi-sub">'+fmtD(topEmp.score)+' คะแนน — '+topEmp.grade+'</div></div>' : '');
+    (topEmp ? '<div class="kpi" style="border-top:3px solid #f0a030"><div class="kpi-label">คะแนนสูงสุด</div><div class="kpi-value" style="font-size:18px">'+topEmp.name+'</div><div class="kpi-sub">'+fmtD(topEmp.score)+' คะแนน — '+topEmp.gradeKey+'</div></div>' : '');
 
   // Performance Report Cards
   var gradeColor = {"A":"#34c97a","B":"#9b59ff","C":"#f0a030","D":"#ff5c7a","F":"#ff5c7a"};
@@ -784,29 +828,45 @@ function renderPerformance() {
           '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
             '<div style="display:flex;align-items:center;gap:8px">' +
               '<span style="font-size:16px">'+(medals[i]||"")+'</span>' +
-              '<div style="font-size:14px;font-weight:600;color:var(--text)">'+p.name+'</div>' +
+              (p.photo ? '<div class="avatar"><img src="'+p.photo+'" alt="'+p.name+'" onerror="this.parentElement.textContent=\''+p.name[0]+'\'"></div>'
+                       : '<div class="avatar">'+p.name[0]+'</div>') +
+              '<div>' +
+                '<div style="font-size:14px;font-weight:600;color:var(--text)">'+p.name+'</div>' +
+                '<div style="font-size:11px;color:var(--text-muted)">'+p.position+'</div>' +
+              '</div>' +
             '</div>' +
-            '<div style="background:'+gb+';color:'+gc+';border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700">'+p.grade+'</div>' +
+            '<div style="background:'+gb+';color:'+gc+';border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700">'+p.gradeKey+'</div>' +
           '</div>' +
-          '<div style="margin-bottom:8px">' +
+          '<div style="margin-bottom:10px">' +
             '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">' +
               '<span style="color:var(--text-muted)">คะแนนรวม</span>' +
               '<span style="font-weight:600;color:'+gc+'">'+fmtD(p.score)+' / 100</span>' +
             '</div>' +
             '<div style="height:7px;background:var(--surface);border-radius:4px;overflow:hidden">' +
-              '<div style="height:100%;width:'+scorePct+'%;background:'+gc+';border-radius:4px;transition:width .4s"></div>' +
+              '<div style="height:100%;width:'+Math.min(Math.round(p.score),100)+'%;background:'+gc+';border-radius:4px"></div>' +
             '</div>' +
           '</div>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">' +
-            '<div style="color:var(--text-muted)">วันทำงาน <span style="color:var(--text);font-weight:500">'+p.workDays+' วัน</span></div>' +
-            '<div style="color:var(--text-muted)">งานสำเร็จ <span style="color:var(--text);font-weight:500">'+p.workDone+' ชิ้น</span></div>' +
-            '<div style="color:var(--text-muted)">% สำเร็จ <span style="color:var(--text);font-weight:500">'+fmtD(p.workPct*100)+'%</span></div>' +
-            '<div style="color:var(--text-muted)">สาย <span style="color:'+(p.lateMin>0?"#ff5c7a":"#34c97a")+';font-weight:500">'+(p.lateMin>0?p.lateMin+' น.':"ตรงเวลา")+'</span></div>' +
+          '<div style="background:var(--surface);border-radius:6px;padding:7px 10px;margin-bottom:6px;font-size:11px">' +
+            '<div style="display:flex;justify-content:space-between;margin-bottom:3px">' +
+              '<span style="color:var(--text-muted)">📋 ปริมาณงาน (70 คะแนน)</span>' +
+              '<span style="color:#34c97a;font-weight:600">'+fmtD(p.taskPct,1)+'%</span>' +
+            '</div>' +
+            '<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:3px">' +
+              '<div style="height:100%;width:'+Math.min(p.taskPct,100)+'%;background:#34c97a;border-radius:3px"></div>' +
+            '</div>' +
+            '<div style="color:var(--text-light)">'+p.taskDone+' งาน ÷ ('+p.taskPerDay+' /วัน × '+p.workDays+' วัน)</div>' +
+          '</div>' +
+          '<div style="background:var(--surface);border-radius:6px;padding:7px 10px;font-size:11px">' +
+            '<div style="display:flex;justify-content:space-between;margin-bottom:2px">' +
+              '<span style="color:var(--text-muted)">⏰ วินัย (30 คะแนน)</span>' +
+              '<span style="color:'+(p.lateMin>0?"#ff5c7a":"#34c97a")+';font-weight:600">'+fmtD(Math.max(0,30-p.lateMin*0.2),1)+' คะแนน</span>' +
+            '</div>' +
+            '<div style="color:var(--text-light)">'+(p.lateMin>0?'สาย '+p.lateMin+' น. × 0.2 = หัก '+fmtD(p.lateMin*0.2,1)+' คะแนน':"ไม่มีการมาสาย")+'</div>' +
           '</div>' +
         '</div>';
     });
   } else {
-    cardsHtml = '<div class="empty" style="grid-column:1/-1">ไม่มีข้อมูล Performance Report — ตรวจสอบว่า Sheet "Performance_Report" ถูก Publish แล้ว</div>';
+    cardsHtml = '<div class="empty" style="grid-column:1/-1">ไม่มีข้อมูลการเข้างานในช่วงนี้</div>';
   }
   document.getElementById("perfReportCards").innerHTML = cardsHtml;
 
