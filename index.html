@@ -965,8 +965,8 @@ function renderPerformance() {
     (topEmp ? '<div class="kpi" style="border-top:3px solid #f0a030"><div class="kpi-label">คะแนนสูงสุด</div><div class="kpi-value" style="font-size:18px">'+topEmp.name+'</div><div class="kpi-sub">'+fmtD(topEmp.score)+' คะแนน — '+topEmp.gradeKey+'</div></div>' : '');
 
   // Performance Report Cards
-  var gradeColor = {"A":"#00897b","B":"#1565c0","C":"#f57c00","D":"#e53935","F":"#b71c1c"};
-  var gradeBg    = {"A":"#e0f5f2","B":"#e3f0ff","C":"#fff3e0","D":"#fdecea","F":"#fce4e4"};
+  var gradeColor = {"A":"#1b5e20","B":"#388e3c","C":"#81c784","D":"#f57c00","F":"#e53935"};
+  var gradeBg    = {"A":"#e8f5e9","B":"#f1f8f1","C":"#f9fdf9","D":"#fff3e0","F":"#fdecea"};
   var cardsHtml = "";
   if (perf.length) {
     perf.forEach(function(p, i) {
