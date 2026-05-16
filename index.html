@@ -771,6 +771,8 @@ function renderPerformance() {
     var info      = empMap[name] || {};
     var position  = info.position || "";
     var taskPerDay= posTaskCount[position] || 0;
+    // ผู้ช่วยครัว หาร 2 ตามสูตรในชีท
+    if (position === "ผู้ช่วยครัว") taskPerDay = Math.round(taskPerDay / 2);
     var ck        = checkMap[name] || { completed:0 };
     var taskDone  = ck.completed;
     var expected  = taskPerDay * workDays;
