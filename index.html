@@ -441,29 +441,78 @@ function setConnected(ok) {
   if (label) label.textContent = ok ? "เชื่อมต่อแล้ว" : "เชื่อมต่อไม่สำเร็จ";
 }
 
+var CACHE_KEY = "or_dashboard_cache";
+var CACHE_TTL = 10 * 60 * 1000; // 10 นาที
+
+function saveCache(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
+  } catch(e) {}
+}
+
+function loadCache() {
+  try {
+    var raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    var obj = JSON.parse(raw);
+    if (Date.now() - obj.ts > CACHE_TTL) return null;
+    return obj.data;
+  } catch(e) { return null; }
+}
+
 async function loadAllSheets() {
   var btn = document.getElementById("syncBtn");
   btn.disabled = true;
   btn.textContent = "⏳ กำลังโหลด...";
-  setLoading("กำลังดึงข้อมูลจาก Google Sheets...", "");
 
+  // ── ขั้นตอน 1: ใช้ cache แสดงก่อนทันที ──
+  var cached = loadCache();
+  if (cached) {
+    DATA = cached;
+    parseData();
+    initFilters();
+    renderSection();
+    setConnected(true);
+    document.getElementById("syncTime").textContent =
+      "cache " + new Date().toLocaleTimeString("th-TH", {hour:"2-digit", minute:"2-digit"});
+    setLoading("กำลังอัพเดตข้อมูลล่าสุด...", "");
+  } else {
+    setLoading("กำลังโหลดข้อมูลจาก Google Sheets...", "");
+  }
+
+  // ── ขั้นตอน 2: fetch ทุก Sheet พร้อมกัน (Parallel) ──
   try {
     var keys = Object.keys(SHEETS);
-    for (var i = 0; i < keys.length; i++) {
-      var key = keys[i];
-      setLoading("กำลังโหลด " + SHEETS[key] + "...", (i+1) + "/" + (keys.length+1) + " sheets");
-      DATA[key] = await fetchSheet(SHEETS[key]);
-    }
-    // โหลด Checklist จาก Spreadsheet อีกไฟล์ (ไม่ throw ถ้าล้มเหลว)
-    setLoading("กำลังโหลด Daily_Checklist_Records...", (keys.length+1) + "/" + (keys.length+2) + " sheets");
-    DATA.checklist = await fetchSheetSafe(
-      "https://docs.google.com/spreadsheets/d/" + CHECKLIST_SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(CHECKLIST_SHEET_NAME)
+    var mainPromises = keys.map(function(key) {
+      return fetchSheet(SHEETS[key]).then(function(data) {
+        return { key: key, data: data };
+      });
+    });
+
+    var clRecordsPromise = fetchSheetSafe(
+      "https://docs.google.com/spreadsheets/d/" + CHECKLIST_SHEET_ID +
+      "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(CHECKLIST_SHEET_NAME)
+    );
+    var clMasterPromise = fetchSheetSafe(
+      "https://docs.google.com/spreadsheets/d/" + CHECKLIST_SHEET_ID +
+      "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(CHECKLIST_MASTER_NAME)
     );
 
-    setLoading("กำลังโหลด Daily_Checklist_Master...", (keys.length+2) + "/" + (keys.length+2) + " sheets");
-    DATA.checklist_master = await fetchSheetSafe(
-      "https://docs.google.com/spreadsheets/d/" + CHECKLIST_SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(CHECKLIST_MASTER_NAME)
-    );
+    // รอทุก fetch พร้อมกัน
+    var results = await Promise.all([
+      Promise.all(mainPromises),
+      clRecordsPromise,
+      clMasterPromise
+    ]);
+
+    var mainResults = results[0];
+    mainResults.forEach(function(r) { DATA[r.key] = r.data; });
+    DATA.checklist = results[1];
+    DATA.checklist_master = results[2];
+
+    // บันทึก cache
+    saveCache(DATA);
+
     parseData();
     initFilters();
     renderSection();
@@ -475,7 +524,6 @@ async function loadAllSheets() {
     setConnected(false);
     showError(e.message + " | " + (e.stack ? e.stack.split("\n")[1] : "no stack"));
     console.error("loadAllSheets error:", e);
-    hideLoading();
   } finally {
     hideLoading();
     btn.disabled = false;
