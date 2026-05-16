@@ -423,124 +423,18 @@ function parseData() {
       };
     });
 
-  // คำนวณ Performance จาก Attendance + Checklist
-  var attAll = DATA.attendance || [];
-  var empMap = {};
-  (DATA.employees || []).forEach(function(e) { empMap[e.nickname] = e; });
-
-  // หาช่วง 30 วันล่าสุด
-  var allDates = attAll.map(function(r){return r.date;}).filter(Boolean).sort();
-  var latestDate = allDates[allDates.length-1] || "";
-  var cutoffDate = "";
-  if (latestDate) {
-    var d0 = new Date(latestDate);
-    d0.setDate(d0.getDate()-30);
-    cutoffDate = d0.toISOString().slice(0,10);
-  }
-
-  // สร้าง map: position → จำนวนงานที่ต้องทำต่อวัน
-  // สูตรชีท: WHERE Col2 contains 'ตำแหน่ง' AND Col8 = 'Active'
+  // posTaskCount คำนวณไว้ใน renderPerformance() ตาม filterFrom/filterTo
   posTaskCount = {};
   (DATA.checklist_master || []).forEach(function(r) {
     var posField = (r["position"] || "").trim();
     var status = (r["สถานะ"] || r["status"] || "").trim();
     if (status !== "Active" || !posField) return;
-    // posField อาจเป็น "บาริสต้า, ผู้ช่วยบาริสต้า" — แตกออกเป็นแต่ละตำแหน่ง
     posField.split(",").forEach(function(pos) {
       pos = pos.trim();
       if (pos) posTaskCount[pos] = (posTaskCount[pos] || 0) + 1;
     });
   });
-  // ใช้ช่วงวันที่จาก filter (filterFrom/filterTo) แทน cutoff 30 วัน
-  var perfFrom = filterFrom || cutoffDate;
-  var perfTo   = filterTo   || latestDate;
-
-  checkMap = {};
-  (DATA.checklist || []).forEach(function(r) {
-    var name    = (r["Staff_Name"]||"").trim();
-    var dateRaw = (r["Date"]||"").trim();
-    var date    = parseDate(dateRaw);
-    var status  = (r["Status"]||"").trim();
-    if (!name || !date) return;
-    if (date < perfFrom || date > perfTo) return;
-    if (!checkMap[name]) checkMap[name] = { completed:0, total:0, byDay:{} };
-    checkMap[name].total++;
-    if (status === "Completed") checkMap[name].completed++;
-    checkMap[name].byDay[date] = true;
-  });
-
-  // รวม attendance ต่อคน ตาม filter
-  var perfMap = {};
-  attAll.filter(function(r){ return r.status==="CHECK_IN" && r.date >= perfFrom && r.date <= perfTo; })
-    .forEach(function(r) {
-      var n = r.name;
-      if (!n) return;
-      if (!perfMap[n]) perfMap[n] = { days:{}, lateCnt:0, lateMin:0, ot:0 };
-      perfMap[n].days[r.date] = true;
-      if (r.late_min > 0) { perfMap[n].lateCnt++; perfMap[n].lateMin += r.late_min; }
-      perfMap[n].ot += r.ot;
-    });
-
-  var maxDays = 1;
-  Object.keys(perfMap).forEach(function(n) {
-    var d = Object.keys(perfMap[n].days).length;
-    if (d > maxDays) maxDays = d;
-  });
-
-  function calcGrade(score) {
-    if (score >= 90) return { label:"A (ยอดเยี่ยม)", key:"A" };
-    if (score >= 80) return { label:"B (ดีมาก)",      key:"B" };
-    if (score >= 60) return { label:"C (มาตรฐาน)",    key:"C" };
-    if (score >= 40) return { label:"D (ควรปรับปรุง)", key:"D" };
-    return             { label:"F (ไม่ผ่านเกณฑ์)",   key:"F" };
-  }
-
   DATA.perf_parsed = [];
-  Object.keys(perfMap).forEach(function(name) {
-    var p = perfMap[name];
-    var ck = checkMap[name] || { completed:0, total:0, byDay:{} };
-    var workDays = Object.keys(p.days).length;
-    var info = empMap[name] || {};
-
-    // หางานที่ต้องทำต่อวัน จาก Daily_Checklist_Master ตามตำแหน่ง
-    var position = info.position || "";
-    var taskPerDay = posTaskCount[position] || 0;
-
-    // ถ้าไม่มีใน master ให้ fallback คำนวณจากข้อมูลจริง
-    if (!taskPerDay) {
-      var ckDays = Object.keys(ck.byDay || {}).length || 1;
-      taskPerDay = ck.total > 0 ? Math.round(ck.total / ckDays) : 0;
-    }
-
-    // เปอร์เซ็นต์งานสำเร็จ = งานสำเร็จ / (งานต้องทำ/วัน × วันที่มา)
-    var expectedTasks = taskPerDay * workDays;
-    var taskPct = expectedTasks > 0 ? Math.min(ck.completed / expectedTasks, 1) : 0;
-
-    // 70 คะแนน = ปริมาณงาน, 30 คะแนน = วินัย (หัก 0.2/นาทีสาย)
-    var taskScore = taskPct * 70;
-    var discScore = Math.max(0, 30 - (p.lateMin * 0.2));
-    var score = Math.min(100, Math.max(0, taskScore + discScore));
-
-    var g = calcGrade(score);
-    DATA.perf_parsed.push({
-      name: name,
-      fullname: info.fullname || name,
-      position: position,
-      photo: info.photo || "",
-      score: score,
-      grade: g.label,
-      gradeKey: g.key,
-      workDays: workDays,
-      lateCnt: p.lateCnt,
-      lateMin: p.lateMin,
-      ot: p.ot,
-      taskDone: ck.completed,
-      taskTotal: ck.total,
-      taskPerDay: taskPerDay,
-      taskPct: taskPct * 100
-    });
-  });
-  DATA.perf_parsed.sort(function(a,b) { return b.score - a.score; });
 }
 
 function initFilters() {
@@ -835,6 +729,23 @@ function renderExpenses() {
 
 /* ---- PERFORMANCE ---- */
 function renderPerformance() {
+  var empMap = {};
+  (DATA.employees||[]).forEach(function(e) { empMap[e.nickname] = e; });
+
+  // คำนวณ checkMap และ perfMap ตาม filterFrom/filterTo จริงๆ
+  var perfFrom = filterFrom || "2020-01-01";
+  var perfTo   = filterTo   || "2099-12-31";
+
+  checkMap = {};
+  (DATA.checklist||[]).forEach(function(r) {
+    var name   = (r["Staff_Name"]||"").trim();
+    var date   = parseDate((r["Date"]||"").trim());
+    var status = (r["Status"]||"").trim();
+    if (!name || !date || date < perfFrom || date > perfTo) return;
+    if (!checkMap[name]) checkMap[name] = { completed:0 };
+    if (status === "Completed") checkMap[name].completed++;
+  });
+
   var att = (DATA.attendance||[]).filter(function(r) { return r.status==="CHECK_IN" && inRange(r.date); });
   var empDays={}, empLateC={}, empLateMin={}, empOT={};
   att.forEach(function(r) {
@@ -844,13 +755,47 @@ function renderPerformance() {
     if (r.late_min>0) { empLateC[n]++; empLateMin[n]+=r.late_min; }
     empOT[n]+=r.ot;
   });
+
+  function calcGrade(score) {
+    if (score >= 90) return { label:"A (ยอดเยี่ยม)", key:"A" };
+    if (score >= 80) return { label:"B (ดีมาก)",      key:"B" };
+    if (score >= 60) return { label:"C (มาตรฐาน)",    key:"C" };
+    if (score >= 40) return { label:"D (ควรปรับปรุง)", key:"D" };
+    return             { label:"F (ไม่ผ่านเกณฑ์)",   key:"F" };
+  }
+
+  var perf = [];
+  Object.keys(empDays).forEach(function(name) {
+    var workDays  = Object.keys(empDays[name]).length;
+    var lateMin   = empLateMin[name] || 0;
+    var info      = empMap[name] || {};
+    var position  = info.position || "";
+    var taskPerDay= posTaskCount[position] || 0;
+    var ck        = checkMap[name] || { completed:0 };
+    var taskDone  = ck.completed;
+    var expected  = taskPerDay * workDays;
+    var taskPct   = expected > 0 ? Math.min(taskDone / expected, 1) : 0;
+    var taskScore = taskPct * 70;
+    var discScore = Math.max(0, 30 - lateMin * 0.2);
+    var score     = Math.min(100, Math.max(0, taskScore + discScore));
+    var g = calcGrade(score);
+    perf.push({
+      name: name, fullname: info.fullname||name,
+      position: position, photo: info.photo||"",
+      score: score, grade: g.label, gradeKey: g.key,
+      workDays: workDays, lateCnt: empLateC[name]||0,
+      lateMin: lateMin, ot: empOT[name]||0,
+      taskDone: taskDone, taskPerDay: taskPerDay,
+      taskPct: taskPct * 100
+    });
+  });
+  perf.sort(function(a,b) { return b.score - a.score; });
+
   var allEmps = Object.keys(empDays);
   var dSizes = allEmps.map(function(n) { return Object.keys(empDays[n]).length; });
   var maxD = dSizes.length ? Math.max.apply(null,dSizes) : 1;
-  var totalLate = allEmps.reduce(function(s,n) { return s+empLateC[n]; }, 0);
-  var totalOT = allEmps.reduce(function(s,n) { return s+empOT[n]; }, 0);
-
-  var perf = DATA.perf_parsed || [];
+  var totalLate = allEmps.reduce(function(s,n) { return s+(empLateC[n]||0); }, 0);
+  var totalOT   = allEmps.reduce(function(s,n) { return s+(empOT[n]||0); }, 0);
   var avgScore = perf.length ? perf.reduce(function(s,p){return s+p.score;},0)/perf.length : 0;
   var topEmp = perf.length ? perf[0] : null;
 
