@@ -327,7 +327,8 @@ async function loadAllSheets() {
     setConnected(true);
   } catch(e) {
     setConnected(false);
-    showError(e.message);
+    showError(e.message + " | " + (e.stack ? e.stack.split("\n")[1] : "no stack"));
+    console.error("loadAllSheets error:", e);
     hideLoading();
   } finally {
     hideLoading();
