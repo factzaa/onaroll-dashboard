@@ -236,6 +236,8 @@ let DATA = {};
 let charts = {};
 let currentSection = "attendance";
 let filterFrom = "", filterTo = "", filterEmp = "";
+let checkMap = {};
+let posTaskCount = {};
 
 function csvUrl(sheet) {
   return "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(sheet);
@@ -432,7 +434,7 @@ function parseData() {
   }
 
   // สร้าง map: position → จำนวนงานที่ต้องทำต่อวัน (จาก Daily_Checklist_Master, Active เท่านั้น)
-  var posTaskCount = {};
+  posTaskCount = {};
   (DATA.checklist_master || []).forEach(function(r) {
     var positions = (r["position"] || "").split(",");
     var status = (r["สถานะ"] || r["status"] || "").trim();
@@ -443,6 +445,7 @@ function parseData() {
       posTaskCount[pos] = (posTaskCount[pos] || 0) + 1;
     });
   });
+  checkMap = {};
   (DATA.checklist || []).forEach(function(r) {
     var name = (r["Staff_Name"]||"").trim();
     var dateRaw = (r["Date"]||"").trim();
