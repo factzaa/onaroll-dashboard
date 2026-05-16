@@ -383,58 +383,65 @@ function parseData() {
       };
     });
 
-  // Performance_Report จาก Google Sheets (PapaParse header:true):
-  // row แรก = header → คอลัมน์จะชื่อ "เลือกชื่อพนักงาน", "กาย", "เคลียร์", ...
-  // row ถัดไป = metric แต่ละแถว เช่น "จำนวนวันที่มาทำงาน (ครั้ง)", "คะแนนรวม (100 คะแนน)" ฯลฯ
+  // Performance_Report CSV structure:
+  // คอลัมน์: "" | "เลือกชื่อพนักงาน" | "กาย" | "เคลียร์" | ...
+  // แถว: "" | metric_label | val1 | val2 | ...
+  // หมายเหตุ: เกรดว่างใน CSV → คำนวณจากคะแนนแทน
   var perfRaw = DATA.performance_report || [];
   DATA.perf_parsed = [];
   if (perfRaw.length > 0) {
     var allKeys = Object.keys(perfRaw[0]);
-    // คอลัมน์แรกคือ label metric, ที่เหลือคือชื่อพนักงาน
-    var labelCol = allKeys[0];
-    var empCols = allKeys.slice(1);
+    // คอลัมน์ที่ 0 = ว่าง, คอลัมน์ที่ 1 = "เลือกชื่อพนักงาน", ที่เหลือ = ชื่อพนักงาน
+    var labelCol = allKeys[1];
+    var empCols  = allKeys.slice(2).filter(function(k) {
+      // กรองเฉพาะคอลัมน์ที่มีชื่อพนักงานจริง (ไม่ว่าง ไม่ใช่ตัวเลข)
+      var n = k.trim();
+      return n.length > 0 && isNaN(parseFloat(n));
+    });
 
-    // สร้าง map metric → value ต่อพนักงาน
+    // map: empName → { metric: value }
     var metrics = {};
-    empCols.forEach(function(empName) { metrics[empName.trim()] = {}; });
+    empCols.forEach(function(k) { metrics[k.trim()] = {}; });
 
     perfRaw.forEach(function(row) {
       var label = (row[labelCol] || "").trim();
       if (!label) return;
       empCols.forEach(function(k) {
-        var name = k.trim();
-        if (!metrics[name]) metrics[name] = {};
-        metrics[name][label] = row[k];
+        metrics[k.trim()][label] = (row[k] || "").toString().trim();
       });
     });
 
-    // สร้าง array พนักงาน — หาชื่อ metric จากทุกแถว
+    function calcGrade(score) {
+      if (score >= 90)  return "A (ยอดเยี่ยม)";
+      if (score >= 80)  return "B (ดีมาก)";
+      if (score >= 70)  return "C (มาตรฐาน)";
+      if (score >= 60)  return "D (ควรปรับปรุง)";
+      return "F (ต่ำกว่าเกณฑ์)";
+    }
+    function gradeKey(score) {
+      if (score >= 90) return "A";
+      if (score >= 80) return "B";
+      if (score >= 70) return "C";
+      if (score >= 60) return "D";
+      return "F";
+    }
+
     empCols.forEach(function(k) {
       var name = k.trim();
-      if (!name || name === "" ) return;
       var m = metrics[name] || {};
-
-      // หา key ที่ตรงกับ metric ที่ต้องการ (match แบบ includes เพื่อรองรับชื่อที่ต่างกันเล็กน้อย)
-      function findVal(keyword) {
-        var keys = Object.keys(m);
-        for (var i=0; i<keys.length; i++) {
-          if (keys[i].indexOf(keyword) !== -1) return m[keys[i]];
-        }
-        return "";
-      }
-
-      var score    = parseFloat(findVal("คะแนนรวม")) || 0;
-      var grade    = (findVal("เกรด") || "").toString().trim();
-      var workPct  = parseFloat(findVal("เปอร์เซ็นต์")) || 0;
-      var workDone = parseFloat(findVal("ปริมาณงาน")) || 0;
-      var workDays = parseFloat(findVal("จำนวนวันที่มาทำงาน")) || 0;
-      var lateMin  = parseFloat(findVal("รวมเวลาสาย")) || 0;
-
-      // ข้ามถ้าชื่อเป็นตัวเลข (เช่นปี 2026) หรือว่าง
-      if (!isNaN(parseFloat(name)) || name.length < 2) return;
+      var score    = parseFloat(m["คะแนนรวม (100 คะแนน)"]) || 0;
+      var workPctS = (m["เปอร์เซ็นต์งานที่ทำสำเร็จ (%)"] || "0").replace("%","");
+      var workPct  = parseFloat(workPctS) || 0;
+      var workDone = parseFloat(m["ปริมาณงานที่ทำเสร็จ"]) || 0;
+      var workDays = parseFloat(m["จำนวนวันที่มาทำงาน (ครั้ง)"]) || 0;
+      var lateMin  = parseFloat(m["รวมเวลาสาย (นาที)"]) || 0;
+      // เกรดว่างใน CSV → คำนวณจากคะแนน
+      var gradeRaw = (m["เกรดที่ได้"] || "").trim();
+      var grade    = gradeRaw || calcGrade(score);
+      var gradeK   = gradeRaw ? gradeRaw.charAt(0) : gradeKey(score);
 
       DATA.perf_parsed.push({
-        name: name, score: score, grade: grade,
+        name: name, score: score, grade: grade, gradeKey: gradeK,
         workPct: workPct, workDone: workDone,
         workDays: workDays, lateMin: lateMin
       });
@@ -763,13 +770,13 @@ function renderPerformance() {
 
   // Performance Report Cards
   var gradeColor = {"A":"#34c97a","B":"#9b59ff","C":"#f0a030","D":"#ff5c7a","F":"#ff5c7a"};
-  var gradeBg = {"A":"rgba(52,201,122,.15)","B":"rgba(155,89,255,.15)","C":"rgba(240,160,48,.15)","D":"rgba(255,92,122,.15)","F":"rgba(255,92,122,.15)"};
+  var gradeBg    = {"A":"rgba(52,201,122,.15)","B":"rgba(155,89,255,.15)","C":"rgba(240,160,48,.15)","D":"rgba(255,92,122,.15)","F":"rgba(255,92,122,.15)"};
   var cardsHtml = "";
   if (perf.length) {
     perf.forEach(function(p, i) {
-      var gradeKey = p.grade ? p.grade.charAt(0) : "";
-      var gc = gradeColor[gradeKey] || "#9b8fc0";
-      var gb = gradeBg[gradeKey] || "rgba(155,143,192,.15)";
+      var gradeK = p.gradeKey || (p.grade ? p.grade.charAt(0) : "");
+      var gc = gradeColor[gradeK] || "#9b8fc0";
+      var gb = gradeBg[gradeK]   || "rgba(155,143,192,.15)";
       var scorePct = Math.min(Math.round(p.score), 100);
       var medals = ["🥇","🥈","🥉"];
       cardsHtml +=
@@ -806,7 +813,7 @@ function renderPerformance() {
   // Score bar chart
   if (perf.length) {
     var perfColors = perf.map(function(p) {
-      var k = p.grade ? p.grade.charAt(0) : "";
+      var k = p.gradeKey || (p.grade ? p.grade.charAt(0) : "");
       return gradeColor[k] || "#9b8fc0";
     });
     mkChart("perfScoreChart", {
