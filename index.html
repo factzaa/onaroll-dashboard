@@ -339,6 +339,11 @@ async function loadAllSheets() {
   }
 }
 
+function parseThaiNum(s) {
+  if (!s) return 0;
+  return parseFloat(String(s).replace(/,/g, "")) || 0;
+}
+
 function parseDate(str) {
   if (!str) return "";
   var s = String(str).trim();
@@ -364,8 +369,8 @@ function parseData() {
         name: (r["ชื่อเล่น"] || "").trim(),
         checkin: r["เวลาเช็คอิน"] || "",
         status: r["สถานะ"] || "",
-        late_min: parseFloat(r["สาย(นาที)"]) || 0,
-        ot: parseFloat(r["OT(ชม.)"]) || 0
+        late_min: parseThaiNum(r["สาย(นาที)"]),
+        ot: parseThaiNum(r["OT(ชม.)"])
       };
     });
 
@@ -374,11 +379,11 @@ function parseData() {
     .map(function(r) {
       return {
         date: parseDate(r["วันที่"]),
-        total: parseFloat(r["ยอดขายรวม"]) || 0,
-        cash: parseFloat(r["เงินสด"]) || 0,
-        transfer: parseFloat(r["เงินโอน"]) || 0,
-        other: parseFloat(r["อื่นๆ"]) || 0,
-        discount: parseFloat(r["ส่วนลด"]) || 0,
+        total:    parseThaiNum(r["ยอดขายรวม"]),
+        cash:     parseThaiNum(r["เงินสด"]),
+        transfer: parseThaiNum(r["เงินโอน"]),
+        other:    parseThaiNum(r["อื่นๆ"]),
+        discount: parseThaiNum(r["ส่วนลด"]),
         person: r["ผู้รับผิดชอบ"] || ""
       };
     });
@@ -390,7 +395,7 @@ function parseData() {
         date: parseDate(r["วันที่"]),
         item: r["รายการ"] || "",
         category: r["หมวดหมู่"] || "",
-        amount: parseFloat(r["จำนวนเงิน"]) || 0,
+        amount: parseThaiNum(r["จำนวนเงิน"]),
         person: r["ผู้บันทึก"] || ""
       };
     });
@@ -451,11 +456,14 @@ function parseData() {
     var dateRaw = (r["Date"]||"").trim();
     var date = parseDate(dateRaw);
     var status = (r["Status"]||"").trim();
+    var recPos = (r["Position"]||"").trim();
     if (!name || !date || date < cutoffDate) return;
+    // กรองเฉพาะงานที่ตรงกับตำแหน่งของพนักงานคนนั้น (ใช้ position จาก Employees sheet)
+    var empPos = (empMap[name] && empMap[name].position) ? empMap[name].position : recPos;
+    if (empPos && recPos && recPos !== empPos) return;
     if (!checkMap[name]) checkMap[name] = { completed:0, total:0, byDay:{} };
     checkMap[name].total++;
     if (status === "Completed") checkMap[name].completed++;
-    // นับวันที่ทำงาน (unique)
     checkMap[name].byDay[date] = true;
   });
 
