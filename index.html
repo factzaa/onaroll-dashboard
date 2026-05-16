@@ -230,6 +230,7 @@ const SHEETS = {
 };
 const CHECKLIST_SHEET_ID = "18hNJIl7zFTRLmu4CUrOhqxCGQ6iC_tb6OIuMln8VL30";
 const CHECKLIST_SHEET_NAME = "Daily_Checklist_Records";
+const CHECKLIST_MASTER_NAME = "Daily_Checklist_Master";
 
 let DATA = {};
 let charts = {};
@@ -293,7 +294,7 @@ async function loadAllSheets() {
       DATA[key] = await fetchSheet(SHEETS[key]);
     }
     // โหลด Checklist จาก Spreadsheet อีกไฟล์
-    setLoading("กำลังโหลด Daily_Checklist_Records...", (keys.length+1) + "/" + (keys.length+1) + " sheets");
+    setLoading("กำลังโหลด Daily_Checklist_Records...", (keys.length+1) + "/" + (keys.length+2) + " sheets");
     try {
       var clUrl = "https://docs.google.com/spreadsheets/d/" + CHECKLIST_SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(CHECKLIST_SHEET_NAME);
       var clRes = await fetch(clUrl);
@@ -305,6 +306,20 @@ async function loadAllSheets() {
         });
       } else { DATA.checklist = []; }
     } catch(e) { DATA.checklist = []; }
+
+    // โหลด Checklist Master (งานต้องทำต่อวัน ตามตำแหน่ง)
+    setLoading("กำลังโหลด Daily_Checklist_Master...", (keys.length+2) + "/" + (keys.length+2) + " sheets");
+    try {
+      var cmUrl = "https://docs.google.com/spreadsheets/d/" + CHECKLIST_SHEET_ID + "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(CHECKLIST_MASTER_NAME);
+      var cmRes = await fetch(cmUrl);
+      if (cmRes.ok) {
+        var cmText = await cmRes.text();
+        DATA.checklist_master = await new Promise(function(resolve, reject) {
+          Papa.parse(cmText, { header:true, skipEmptyLines:true,
+            complete: function(r){ resolve(r.data); }, error: function(e){ reject(e); } });
+        });
+      } else { DATA.checklist_master = []; }
+    } catch(e) { DATA.checklist_master = []; }
     parseData();
     initFilters();
     renderSection();
@@ -417,8 +432,18 @@ function parseData() {
     cutoffDate = d0.toISOString().slice(0,10);
   }
 
-  // รวมงาน checklist ต่อคน (นับ Completed, distinct task+date)
-  var checkMap = {};
+  // สร้าง map: position → จำนวนงานที่ต้องทำต่อวัน (จาก Daily_Checklist_Master, Active เท่านั้น)
+  var posTaskCount = {};
+  (DATA.checklist_master || []).forEach(function(r) {
+    var positions = (r["position"] || "").split(",");
+    var status = (r["สถานะ"] || r["status"] || "").trim();
+    if (status !== "Active") return;
+    positions.forEach(function(pos) {
+      pos = pos.trim();
+      if (!pos) return;
+      posTaskCount[pos] = (posTaskCount[pos] || 0) + 1;
+    });
+  });
   (DATA.checklist || []).forEach(function(r) {
     var name = (r["Staff_Name"]||"").trim();
     var dateRaw = (r["Date"]||"").trim();
@@ -461,28 +486,34 @@ function parseData() {
   DATA.perf_parsed = [];
   Object.keys(perfMap).forEach(function(name) {
     var p = perfMap[name];
-    var ck = checkMap[name] || { completed:0, total:0 };
+    var ck = checkMap[name] || { completed:0, total:0, byDay:{} };
     var workDays = Object.keys(p.days).length;
+    var info = empMap[name] || {};
 
-    // หางานที่ต้องทำต่อวัน: total tasks / วันที่มีงานใน checklist
-    var ckDays = Object.keys(ck.byDay || {}).length || 1;
-    var taskPerDay = ck.total > 0 ? ck.total / ckDays : 0;
+    // หางานที่ต้องทำต่อวัน จาก Daily_Checklist_Master ตามตำแหน่ง
+    var position = info.position || "";
+    var taskPerDay = posTaskCount[position] || 0;
+
+    // ถ้าไม่มีใน master ให้ fallback คำนวณจากข้อมูลจริง
+    if (!taskPerDay) {
+      var ckDays = Object.keys(ck.byDay || {}).length || 1;
+      taskPerDay = ck.total > 0 ? Math.round(ck.total / ckDays) : 0;
+    }
 
     // เปอร์เซ็นต์งานสำเร็จ = งานสำเร็จ / (งานต้องทำ/วัน × วันที่มา)
     var expectedTasks = taskPerDay * workDays;
     var taskPct = expectedTasks > 0 ? Math.min(ck.completed / expectedTasks, 1) : 0;
 
     // 70 คะแนน = ปริมาณงาน, 30 คะแนน = วินัย (หัก 0.2/นาทีสาย)
-    var taskScore  = taskPct * 70;
-    var discScore  = Math.max(0, 30 - (p.lateMin * 0.2));
+    var taskScore = taskPct * 70;
+    var discScore = Math.max(0, 30 - (p.lateMin * 0.2));
     var score = Math.min(100, Math.max(0, taskScore + discScore));
 
     var g = calcGrade(score);
-    var info = empMap[name] || {};
     DATA.perf_parsed.push({
       name: name,
       fullname: info.fullname || name,
-      position: info.position || "",
+      position: position,
       photo: info.photo || "",
       score: score,
       grade: g.label,
@@ -493,7 +524,7 @@ function parseData() {
       ot: p.ot,
       taskDone: ck.completed,
       taskTotal: ck.total,
-      taskPerDay: Math.round(taskPerDay),
+      taskPerDay: taskPerDay,
       taskPct: taskPct * 100
     });
   });
