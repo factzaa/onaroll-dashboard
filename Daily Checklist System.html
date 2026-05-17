@@ -9,9 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Kanit",sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;padding-bottom:80px;-webkit-tap-highlight-color:transparent}
+body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;padding-bottom:30px;-webkit-tap-highlight-color:transparent}
 :root{
-  --navy:#1a2b5e;--blue:#2979d4;--blue-light:#e8f1fd;--blue-pale:#f0f6ff;
+  --navy:#1a2b5e;--blue:#2979d4;--blue-light:#e8f1fd;
   --surface:#fff;--surface2:#f7fafd;--bg:#f0f4f8;
   --text:#1a2332;--muted:#5a7184;--light:#92a8bb;--border:#dde6ef;
   --success:#00897b;--success-bg:#e0f5f2;
@@ -22,123 +22,140 @@ body{font-family:"Kanit",sans-serif;background:#f0f4f8;color:#1a2332;min-height:
   --shadow-md:0 6px 24px rgba(26,43,94,.13);
 }
 input,textarea,select{font-size:16px!important}
-.or-hidden{display:none!important}
+
+/* hidden class compat — JS ใช้ทั้ง 'hidden' และ 'or-hidden' */
+.hidden,.or-hidden{display:none!important}
 
 /* ══ HEADER ══ */
-.app-header{background:linear-gradient(135deg,#1a2b5e 0%,#243580 100%);border-radius:0 0 26px 26px;padding:18px 18px 14px;color:#fff;box-shadow:0 8px 24px rgba(26,43,94,.28);position:sticky;top:0;z-index:60}
-.hdr-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:10px}
+.app-header{
+  background:linear-gradient(135deg,#1a2b5e 0%,#243580 100%);
+  border-radius:0 0 24px 24px;
+  padding:16px 16px 14px;color:#fff;
+  box-shadow:0 8px 24px rgba(26,43,94,.28);
+  position:sticky;top:0;z-index:60;
+}
+.hdr-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .hdr-brand .hdr-title{font-size:15px;font-weight:700;color:#fff;line-height:1.2}
 .hdr-brand .hdr-sub{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
-.hdr-right{text-align:right;flex-shrink:0}
-.hdr-pct{font-size:36px;font-weight:700;color:#fff;line-height:1;letter-spacing:-1px}
-.hdr-status{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px}
-.btn-sync{width:34px;height:34px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;transition:all .2s;flex-shrink:0;margin-top:4px}
-.btn-sync:active{background:rgba(255,255,255,.25)}
-
-/* Progress */
-.prog-wrap{margin-bottom:13px}
-.prog-meta{display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.4);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px}
+.hdr-stats{display:flex;flex-direction:column;align-items:flex-end;margin-left:auto}
+.hdr-pct{font-size:34px;font-weight:700;color:#fff;line-height:1;letter-spacing:-1px}
+.hdr-live{font-size:10px;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:4px;margin-top:2px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#4caf50;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.btn-sync{width:32px;height:32px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;transition:all .2s;flex-shrink:0}
+.btn-sync:active{transform:rotate(180deg)}
+.prog-wrap{margin-bottom:12px}
+.prog-meta{display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}
 .prog-track{height:5px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden}
 .prog-fill{height:100%;background:linear-gradient(90deg,#29b6f6,#4caf50);border-radius:3px;transition:width 1s ease}
-
-/* Tab pills */
 .tab-pills{display:flex;background:rgba(255,255,255,.1);border-radius:24px;padding:3px;gap:2px}
 .tab-btn{flex:1;padding:8px 6px;border-radius:21px;border:none;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.55);background:transparent;white-space:nowrap;text-transform:uppercase;letter-spacing:.3px}
 .tab-btn.tab-active{background:#fff;color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .tab-btn:active{transform:scale(.96)}
 
 /* ══ MAIN ══ */
-.main{max-width:600px;margin:0 auto;padding:16px 14px}
+.main{max-width:640px;margin:0 auto;padding:16px 14px}
 
 /* ══ DASHBOARD ══ */
 .dash-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding:10px 14px;background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow)}
-.dt-left .dt-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
-.dt-left .dt-pos{font-size:12px;font-weight:700;color:var(--blue);margin-top:2px}
-.date-picker{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:7px 12px;font-family:inherit;font-size:13px;font-weight:700;color:var(--blue);background:#fff;outline:none;cursor:pointer;-webkit-appearance:none}
-.date-picker:focus{border-color:var(--blue)}
+.dt-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.dt-pos{font-size:12px;font-weight:700;color:var(--blue);margin-top:2px}
+.date-input-premium{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:7px 12px;font-family:inherit;font-size:13px;font-weight:700;color:var(--blue);background:#fff;outline:none;cursor:pointer;-webkit-appearance:none}
+.date-input-premium:focus{border-color:var(--blue)}
 
-/* KPI strip */
-.kpi-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
-.kpi-box{border-radius:var(--r);padding:14px 10px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
-.kpi-box::after{content:"";position:absolute;inset:0;border-radius:var(--r);border:3px solid transparent;transition:border-color .2s}
-.kpi-box.kb-blue{background:linear-gradient(145deg,#2979d4,#1565c0);box-shadow:0 4px 14px rgba(41,121,212,.35)}
-.kpi-box.kb-warn{background:linear-gradient(145deg,#f57c00,#e65100);box-shadow:0 4px 14px rgba(245,124,0,.35)}
-.kpi-box.kb-red{background:linear-gradient(145deg,#e53935,#b71c1c);box-shadow:0 4px 14px rgba(229,57,53,.35)}
-.kpi-box.active-filter::after{border-color:rgba(255,255,255,.55)}
-.kpi-box.active-filter{transform:scale(1.04);box-shadow:0 6px 20px rgba(0,0,0,.2)}
-.kpi-box:active{transform:scale(.95)}
-.kb-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.kb-value{font-size:30px;font-weight:700;color:#fff;line-height:1}
+/* KPI stat boxes — compatible with original stat-grid / premium-stat-box */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.premium-stat-box{border-radius:var(--r);padding:14px 10px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.premium-stat-box::after{content:'';position:absolute;inset:0;border-radius:var(--r);border:3px solid transparent;transition:border-color .2s}
+.stat-done{background:linear-gradient(145deg,#2979d4,#1565c0);box-shadow:0 4px 14px rgba(41,121,212,.35)}
+.stat-fix{background:linear-gradient(145deg,#f57c00,#e65100);box-shadow:0 4px 14px rgba(245,124,0,.35)}
+.stat-pending{background:linear-gradient(145deg,#e53935,#b71c1c);box-shadow:0 4px 14px rgba(229,57,53,.35)}
+.premium-stat-box.active-filter{transform:scale(1.04);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.premium-stat-box.active-filter::after{border-color:rgba(255,255,255,.55)}
+.premium-stat-box:active{transform:scale(.95)}
+.stat-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:block}
+.stat-value{font-size:30px;font-weight:700;color:#fff;line-height:1;display:block}
 
 /* Chart */
 .chart-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:14px}
 .chart-card-hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:10px}
-.chart-card-title{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px}
+.chart-card-title{font-size:13px;font-weight:700;color:var(--navy)}
 .chart-hint{font-size:10px;color:var(--blue);font-weight:600}
 .chart-wrap{height:160px;position:relative}
 
-/* Timeline section */
-.tl-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px}
+/* Timeline toolbar */
+.tl-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .tl-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
 .filter-chips{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.filter-pill{background:var(--blue-light);color:var(--blue);border:1px solid #b3d4f7;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px}
-.filter-pill.staff-pill{background:var(--blue);color:#fff;border-color:var(--blue)}
-.filter-pill .x{font-size:12px;opacity:.7}
-.clear-btn{font-size:11px;font-weight:700;color:var(--blue);cursor:pointer;text-decoration:underline;white-space:nowrap;background:none;border:none;font-family:inherit}
 
-/* Task capsule (timeline & checklist) */
+/* filter-pill — compat with original */
+.filter-pill{
+  background:var(--blue-light);color:var(--blue);border:1px solid #b3d4f7;
+  border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;
+  cursor:pointer;display:inline-flex;align-items:center;gap:5px;
+  animation:none;
+}
+.filter-pill .x{font-size:12px;opacity:.7}
+.staff-pill{background:var(--blue);color:#fff;border-color:var(--blue)}
+.clear-link{font-size:11px;font-weight:700;color:var(--blue);cursor:pointer;text-decoration:underline;background:none;border:none;font-family:inherit}
+
+/* Task capsule — used by BOTH timeline and checklist */
 .task-capsule{
   background:#fff;border:1px solid var(--border);border-radius:var(--r);
   padding:12px 14px;margin-bottom:8px;
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   cursor:pointer;transition:all .18s;box-shadow:var(--shadow);
-  border-left:4px solid var(--border);text-align:left;
+  text-align:left;border-left:4px solid var(--border);
 }
-.task-capsule:active{transform:scale(.98);box-shadow:var(--shadow-md)}
+.task-capsule:active{transform:scale(.98)}
 .border-done{border-left-color:var(--success)}
 .border-fix{border-left-color:var(--warn);background:#fffcf5}
 .border-pending{border-left-color:#dde6ef}
+
+/* Status badges used in timeline */
+.badge-done{background:var(--success-bg);color:var(--success);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;display:inline-block}
+.badge-fix{background:var(--warn-bg);color:var(--warn);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;display:inline-block}
+.badge-pending{background:#eef2f7;color:var(--muted);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;display:inline-block}
 .thumb-square{width:44px;height:44px;min-width:44px;border-radius:10px;object-fit:cover;border:2px solid var(--border);flex-shrink:0}
 
-/* Status badges */
-.s-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
-.sb-done{background:var(--success-bg);color:var(--success)}
-.sb-fix{background:var(--warn-bg);color:var(--warn)}
-.sb-pending{background:#eef2f7;color:var(--muted)}
-
-/* ══ CHECKLIST VIEW ══ */
-.zone-section{margin-bottom:18px}
-.zone-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px;padding:0 2px}
+/* Checklist zone grouping */
+.zone-group{margin-bottom:18px}
+.zone-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px;padding:0 2px}
 .zone-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0}
-.task-capsule.border-fix{border-left-color:var(--warn)}
 
-/* Photo strip */
-.photo-strip-inner{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
-.pt-thumb{width:46px;height:46px;border-radius:10px;object-fit:cover;border:2px solid var(--border);box-shadow:var(--shadow)}
-.pt-add{width:46px;height:46px;border-radius:10px;background:var(--surface2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--light);flex-shrink:0;transition:all .2s}
-.pt-add:active{background:var(--blue-light);border-color:var(--blue)}
+/* Photo strip in checklist */
+.photo-strip{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.photo-strip img{width:44px;height:44px;border-radius:10px;object-fit:cover;border:2px solid var(--border);box-shadow:var(--shadow)}
+.photo-add-btn{width:44px;height:44px;border-radius:10px;background:var(--surface2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--light);flex-shrink:0;transition:all .2s}
+.photo-add-btn:active{background:var(--blue-light);border-color:var(--blue)}
 
 /* Confirm button */
-.confirm-btn{width:48px;height:48px;border-radius:50%;border:4px solid;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;cursor:pointer}
+.confirm-btn{width:48px;height:48px;border-radius:50%;border:4px solid;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;cursor:pointer;background:transparent}
 .btn-ready{border-color:var(--blue);background:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(41,121,212,.35)}
 .btn-ready:active{transform:scale(.88)}
-.btn-not-ready{border-color:var(--border);background:#fff;color:var(--border);cursor:not-allowed;opacity:.5}
+.btn-not-ready{border-color:var(--border);color:var(--border);cursor:not-allowed;opacity:.5}
+
+/* Tags on checklist tasks */
+.task-tag{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;display:inline-block}
+.tag-photo{background:var(--danger-bg);color:var(--danger)}
+.tag-std{background:#eef2f7;color:var(--muted)}
+.tag-fix{background:var(--warn-bg);color:var(--warn)}
 
 /* ══ MODAL ══ */
-.modal-bg{position:fixed;inset:0;background:rgba(10,15,30,.88);backdrop-filter:blur(5px);z-index:200;display:none;align-items:flex-end;justify-content:center}
-.modal-bg:not(.or-hidden){display:flex}
-.modal-box{background:#fff;border-radius:var(--r) var(--r) 0 0;width:100%;max-width:540px;max-height:93vh;display:flex;flex-direction:column;animation:slideUp .25s ease}
+#action-modal{position:fixed;inset:0;background:rgba(10,15,30,.88);backdrop-filter:blur(5px);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+#action-modal.hidden,#action-modal.or-hidden{display:none!important}
+.modal-inner{background:#fff;border-radius:var(--r) var(--r) 0 0;width:100%;max-width:540px;max-height:93vh;display:flex;flex-direction:column;animation:slideUp .25s ease}
 @keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
 .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 0;flex-shrink:0}
-.fix-banner{background:var(--warn);color:#fff;padding:8px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;text-align:center;flex-shrink:0}
-.modal-hdr{padding:13px 16px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
-.modal-hdr-meta{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
-.modal-hdr-name{font-size:14px;font-weight:700;color:var(--blue)}
-.modal-x{width:30px;height:30px;border:1px solid var(--border);border-radius:7px;background:#fff;cursor:pointer;font-size:14px;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#fix-banner{background:var(--warn);color:#fff;padding:8px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;text-align:center;flex-shrink:0}
+.modal-hdr{padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
+.modal-hdr-left .modal-hdr-meta{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.modal-hdr-left .modal-hdr-name{font-size:14px;font-weight:700;color:var(--blue)}
+.modal-close-btn{width:30px;height:30px;border:1px solid var(--border);border-radius:7px;background:#fff;cursor:pointer;font-size:14px;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;line-height:1}
+.modal-close-btn:active{background:var(--danger-bg);color:var(--danger)}
 .modal-body{overflow-y:auto;flex:1;padding:16px}
 .modal-body::-webkit-scrollbar{width:3px}
 .modal-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-.modal-sec{margin-bottom:14px}
 .modal-sec-label{display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
 
 /* Gallery */
@@ -151,25 +168,22 @@ input,textarea,select{font-size:16px!important}
 .dot.active{background:var(--blue);width:14px;border-radius:3px}
 
 /* Revision box */
-.revision-note-box{background:var(--warn-bg);border:1px solid #ffcc80;border-radius:var(--r-sm);padding:12px;margin-bottom:12px}
+#revision-note-box{background:var(--warn-bg);border:1px solid #ffcc80;border-radius:var(--r-sm);padding:12px;margin-bottom:12px}
 .rn-label{font-size:10px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px}
 .rn-text{font-size:12px;color:#e65100;font-weight:600;font-style:italic;line-height:1.5}
 
 /* Fix zone */
-.staff-fix-zone{padding-top:12px;border-top:2px solid var(--border);margin-top:4px}
+#staff-fix-zone{padding-top:12px;border-top:2px solid var(--border);margin-top:4px}
 .fix-photo-strip{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
 .photo-preview-item{width:60px;height:60px;border-radius:10px;overflow:hidden;border:2px solid var(--border)}
 .photo-preview-item img{width:100%;height:100%;object-fit:cover}
-.btn-fix-cam{width:100%;border:2px dashed #ffcc80;background:var(--warn-bg);border-radius:var(--r-sm);padding:13px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:var(--warn);transition:all .2s}
-.btn-fix-cam svg{width:22px;height:22px}
-.btn-fix-cam span{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
-.staff-fix-note{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-family:inherit;font-size:14px;color:var(--text);background:#fff;width:100%;outline:none;resize:none;margin-top:8px;transition:border-color .2s}
-.staff-fix-note:focus{border-color:var(--blue)}
+.fix-cam-btn{width:100%;border:2px dashed #ffcc80;background:var(--warn-bg);border-radius:var(--r-sm);padding:13px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:var(--warn);transition:all .2s}
+.fix-cam-btn svg{width:22px;height:22px}
+.fix-cam-btn span{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
 
-/* Manager zone */
-.manager-input-zone{margin-bottom:12px}
-.manager-input{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-family:inherit;font-size:14px;color:var(--text);background:#fff;width:100%;outline:none;resize:none;transition:border-color .2s}
-.manager-input:focus{border-color:var(--blue)}
+/* Inputs */
+.modal-textarea{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-family:inherit;font-size:14px;color:var(--text);background:#fff;width:100%;outline:none;resize:none;transition:border-color .2s;margin-top:4px}
+.modal-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(41,121,212,.1)}
 
 /* Meta row */
 .meta-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
@@ -179,27 +193,28 @@ input,textarea,select{font-size:16px!important}
 #manager-rating{border:none;background:transparent;font-family:inherit;font-size:14px;font-weight:700;color:var(--blue);outline:none;width:100%;text-align:center;cursor:pointer}
 
 /* Modal footer */
-.modal-footer{padding:13px 16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;flex-shrink:0}
-.manager-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.btn-approve{background:var(--success);color:#fff;border:none;border-radius:var(--r-sm);padding:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
-.btn-approve:active{background:#00695c}
+.modal-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+#manager-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .btn-reject{background:#fff;color:var(--danger);border:1.5px solid var(--danger);border-radius:var(--r-sm);padding:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
 .btn-reject:active{background:var(--danger-bg)}
+.btn-approve{background:var(--success);color:#fff;border:none;border-radius:var(--r-sm);padding:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-approve:active{background:#00695c}
 #btn-submit-fix{width:100%;background:var(--warn);color:#fff;border:none;border-radius:var(--r-sm);padding:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
 .btn-line{width:100%;background:#06C755;color:#fff;border:none;border-radius:var(--r-sm);padding:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
 .btn-line:active{background:#04a844}
 
-/* ══ EMPTY & TOAST ══ */
-#empty-state{text-align:center;padding:48px 20px;color:var(--light)}
-#empty-state .ei{font-size:40px;margin-bottom:12px}
-#empty-state p{font-size:13px;font-weight:500}
-#toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:1000;border-radius:var(--r);padding:11px 20px;font-weight:700;font-size:13px;color:#fff;box-shadow:var(--shadow-md);text-align:center;pointer-events:none;min-width:240px;max-width:92vw}
+/* ══ TOAST ══ */
+#toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:1000;border-radius:var(--r);padding:11px 20px;font-weight:700;font-size:13px;color:#fff;box-shadow:var(--shadow-md);text-align:center;pointer-events:none;min-width:240px;max-width:92vw;opacity:0;transition:opacity .3s}
+#toast.visible{opacity:1}
 
-@media(min-width:600px){
+/* ══ EMPTY ══ */
+#empty-state{text-align:center;padding:48px 20px;color:var(--light)}
+
+@media(min-width:640px){
   body{padding-bottom:0}
   .main{padding:24px 20px}
-  .modal-box{border-radius:var(--r);margin:auto}
-  .modal-bg:not(.or-hidden){align-items:center}
+  .modal-inner{border-radius:var(--r);margin:auto}
+  #action-modal:not(.hidden):not(.or-hidden){align-items:center}
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 .animate-spin{animation:spin .7s linear infinite}
@@ -207,90 +222,11 @@ input,textarea,select{font-size:16px!important}
 </head>
 <body>
 
-<!-- MODAL -->
-<div id="action-modal" class="modal-bg or-hidden" onclick="if(event.target===this)closeModal()">
-  <div class="modal-box">
-    <div class="modal-handle"></div>
-    <div id="fix-banner" class="fix-banner or-hidden">🚨 REVISION MODE — กรุณาดำเนินการแก้ไขงาน</div>
-    <div class="modal-hdr">
-      <div>
-        <div class="modal-hdr-meta" id="modal-header-text">Task Information</div>
-        <div class="modal-hdr-name" id="modal-task-title">—</div>
-      </div>
-      <button class="modal-x" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-body">
-
-      <!-- Gallery -->
-      <div class="modal-sec">
-        <div class="modal-sec-label">
-          <span>📸 หลักฐานการทำงาน</span>
-          <span id="gallery-count"></span>
-        </div>
-        <div id="modal-gallery" class="image-gallery" onscroll="updateGalleryDots(this)"></div>
-        <div id="pagination-dots" class="gallery-dots"></div>
-      </div>
-
-      <!-- Revision note -->
-      <div id="revision-note-box" class="revision-note-box or-hidden">
-        <div class="rn-label">📋 คำสั่งจากเจ้าของร้าน:</div>
-        <div class="rn-text" id="prev-comment">—</div>
-      </div>
-
-      <!-- Staff Fix Zone -->
-      <div id="staff-fix-zone" class="staff-fix-zone or-hidden">
-        <div class="modal-sec-label" style="margin-bottom:10px">📷 แนบหลักฐานการแก้ไข (ถ่ายใหม่)</div>
-        <div id="fix-photo-strip" class="fix-photo-strip"></div>
-        <div class="btn-fix-cam" onclick="document.getElementById('fix-camera').click()">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          <span>แตะถ่ายรูปยืนยันการแก้ไข</span>
-        </div>
-        <textarea id="staff-fix-note" rows="2" class="staff-fix-note" placeholder="ระบุสิ่งที่แก้ไข..."></textarea>
-        <input type="file" id="fix-camera" accept="image/*" capture="environment" class="or-hidden" onchange="handleAddFixPhoto(this)">
-      </div>
-
-      <!-- Manager Zone -->
-      <div id="manager-input-zone" class="manager-input-zone">
-        <div class="modal-sec-label">💬 Manager's Feedback</div>
-        <textarea id="manager-input" rows="2" class="manager-input" placeholder="ระบุคอมเมนต์..."></textarea>
-      </div>
-
-      <!-- Meta -->
-      <div class="meta-row">
-        <div class="meta-cell"><div class="mc-label">พนักงาน</div><div class="mc-val" id="modal-staff-name">—</div></div>
-        <div class="meta-cell" id="rating-zone">
-          <div class="mc-label">ประเมิน</div>
-          <select id="manager-rating">
-            <option value="5">⭐⭐⭐⭐⭐</option>
-            <option value="4">⭐⭐⭐⭐</option>
-            <option value="3">⭐⭐⭐</option>
-            <option value="2">⭐⭐</option>
-            <option value="1">⭐</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="modal-footer">
-      <div id="manager-actions" class="manager-actions">
-        <button class="btn-reject" onclick="saveManagerReview('Fix Required')">🔴 สั่งแก้ไขงาน</button>
-        <button class="btn-approve" onclick="saveManagerReview('Completed')">✅ อนุมัติผ่าน</button>
-      </div>
-      <button id="btn-submit-fix" class="or-hidden" onclick="submitStaffFix()">✅ ยืนยันการแก้ไขและส่งงานใหม่</button>
-      <button class="btn-line" onclick="sendToLine()">
-        <svg width="17" height="17" fill="currentColor" viewBox="0 0 24 24"><path d="M24 10.3c0-4.5-4.5-8.3-10-8.3S4 5.8 4 10.3c0 4 3.5 7.4 8.3 8.1l-1.1 2.2c-.1.2 0 .5.2.6.1.1.2.1.3.1.1 0 .2 0 .3-.1l2.5-1.9c4.3-.8 9.5-4.2 9.5-9z"/></svg>
-        ส่งความเห็นเข้า LINE
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- CAMERA INPUT (hidden) -->
-<input type="file" id="camera-input" accept="image/*" capture="environment" class="or-hidden" onchange="handleImageCaptured(this)">
+<!-- CAMERA (hidden) -->
+<input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImageCaptured(this)">
 
 <!-- TOAST -->
-<div id="toast" class="or-hidden"></div>
+<div id="toast"></div>
 
 <!-- ══ HEADER ══ -->
 <div class="app-header">
@@ -299,18 +235,17 @@ input,textarea,select{font-size:16px!important}
       <div class="hdr-title">Daily Checklist</div>
       <div class="hdr-sub" id="header-staff-name">Staff: —</div>
     </div>
-    <div style="flex:1"></div>
-    <div class="hdr-right">
+    <div class="hdr-stats">
       <div class="hdr-pct" id="header-percent">0%</div>
-      <div class="hdr-status" id="job-status-text">กำลังโหลด...</div>
+      <div class="hdr-live">
+        <div class="live-dot" id="live-dot-el"></div>
+        <span id="job-status-text">กำลังโหลด...</span>
+      </div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-      <button class="btn-sync" onclick="fetchData()">
-        <svg id="sync-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      </button>
-    </div>
+    <button class="btn-sync" onclick="fetchData()">
+      <svg id="sync-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    </button>
   </div>
-
   <div class="prog-wrap">
     <div class="prog-meta">
       <span>Job Efficiency</span>
@@ -320,7 +255,6 @@ input,textarea,select{font-size:16px!important}
       <div class="prog-fill" id="header-progress-bar" style="width:0%"></div>
     </div>
   </div>
-
   <div class="tab-pills">
     <button class="tab-btn" id="tab-Opening" onclick="changeTab('Opening')">เปิดร้าน</button>
     <button class="tab-btn" id="tab-ShiftChange" onclick="changeTab('ShiftChange')">ระหว่างวัน</button>
@@ -334,75 +268,136 @@ input,textarea,select{font-size:16px!important}
 
   <!-- DASHBOARD VIEW -->
   <div id="dashboard-view">
-
-    <!-- Toolbar -->
     <div class="dash-toolbar">
-      <div class="dt-left">
+      <div>
         <div class="dt-label">สถานะประจำวัน</div>
-        <div class="dt-pos" id="display-user-pos2"></div>
+        <div class="dt-pos" id="display-user-pos2">—</div>
       </div>
-      <input type="date" id="dash-date-picker" onchange="fetchData()" class="date-picker">
+      <input type="date" id="dash-date-picker" onchange="fetchData()" class="date-input-premium">
     </div>
 
-    <!-- KPI -->
-    <div class="kpi-strip">
-      <div class="kpi-box kb-blue" id="filter-done" onclick="setFilter('done')">
-        <div class="kb-label">เสร็จสิ้น</div>
-        <div class="kb-value" id="count-done">00</div>
+    <!-- KPI — uses original class names: stat-grid, premium-stat-box, stat-done/fix/pending -->
+    <div class="stat-grid">
+      <div id="filter-done" onclick="setFilter('done')" class="premium-stat-box stat-done">
+        <span class="stat-label">เสร็จสิ้น</span>
+        <span id="count-done" class="stat-value">00</span>
       </div>
-      <div class="kpi-box kb-warn" id="filter-fix" onclick="setFilter('fix')">
-        <div class="kb-label">รอแก้ไข</div>
-        <div class="kb-value" id="count-fix">00</div>
+      <div id="filter-fix" onclick="setFilter('fix')" class="premium-stat-box stat-fix">
+        <span class="stat-label">รอแก้ไข</span>
+        <span id="count-fix" class="stat-value">00</span>
       </div>
-      <div class="kpi-box kb-red" id="filter-pending" onclick="setFilter('pending')">
-        <div class="kb-label">ค้างอยู่</div>
-        <div class="kb-value" id="count-pending">00</div>
+      <div id="filter-pending" onclick="setFilter('pending')" class="premium-stat-box stat-pending">
+        <span class="stat-label">ค้างอยู่</span>
+        <span id="count-pending" class="stat-value">00</span>
       </div>
     </div>
 
     <!-- Chart -->
     <div class="chart-card">
       <div class="chart-card-hdr">
-        <div class="chart-card-title">
-          <span style="width:4px;height:18px;background:var(--blue);border-radius:2px;display:inline-block"></span>
-          ผลงานรายคน
-        </div>
-        <span class="chart-hint">แตะแท่งเพื่อกรอง</span>
+        <div class="chart-card-title">📊 ผลงานรายคน (Personnel Analytics)</div>
+        <span class="chart-hint">💡 แตะแท่งกราฟเพื่อกรอง</span>
       </div>
       <div class="chart-wrap"><canvas id="performanceChart"></canvas></div>
     </div>
 
     <!-- Timeline -->
-    <div>
-      <div class="tl-hdr">
-        <div class="tl-title">รายการงานทั้งหมด</div>
-        <div class="filter-chips" id="filter-status-container">
-          <div id="status-badge" class="or-hidden">
-            <button class="filter-pill" onclick="setFilter('all')"><span id="status-filter-text">FILTER</span><span class="x">✕</span></button>
-          </div>
-          <div id="staff-badge" class="or-hidden">
-            <button class="filter-pill staff-pill" onclick="setStaffFilter(null)"><span id="staff-filter-text">STAFF</span><span class="x">✕</span></button>
-          </div>
-          <button id="clear-all-btn" class="clear-btn or-hidden" onclick="clearAllFilters()">ล้าง</button>
+    <div class="tl-bar">
+      <div class="tl-title">Timeline Analytics</div>
+      <div class="filter-chips" id="filter-status-container">
+        <div id="status-badge" class="hidden">
+          <button onclick="setFilter('all')" class="filter-pill"><span id="status-filter-text">FILTER</span><span class="x"> ✕</span></button>
         </div>
+        <div id="staff-badge" class="hidden">
+          <button onclick="setStaffFilter(null)" class="filter-pill staff-pill"><span id="staff-filter-text">STAFF</span><span class="x"> ✕</span></button>
+        </div>
+        <button id="clear-all-btn" onclick="clearAllFilters()" class="clear-link hidden">ล้างการกรอง</button>
       </div>
-      <div id="timeline-list" style="padding-bottom:16px"></div>
     </div>
+    <div id="timeline-list" style="padding-bottom:20px"></div>
   </div>
 
-  <!-- CHECKLIST VIEW -->
-  <div id="checklist-view" class="or-hidden" style="padding-bottom:24px">
+  <!-- CHECKLIST VIEW — tabs: Opening / ShiftChange / Closing -->
+  <div id="checklist-view" class="hidden" style="padding-bottom:20px">
     <div id="checklist-container"></div>
-    <div id="empty-state" class="or-hidden">
-      <div class="ei">✅</div>
-      <p>ไม่มีงานค้างในช่วงนี้</p>
+    <div id="empty-state" class="hidden">
+      <div style="font-size:40px;margin-bottom:12px">✅</div>
+      <p style="font-size:13px;font-weight:500">ไม่มีงานค้างในช่วงนี้<br><span style="font-size:11px;color:var(--light)">Everything is clear.</span></p>
     </div>
   </div>
 
 </div>
 
+<!-- ══ MODAL ══ -->
+<div id="action-modal" class="hidden" style="position:fixed;inset:0;background:rgba(10,15,30,.88);backdrop-filter:blur(5px);z-index:200;display:none;align-items:flex-end;justify-content:center">
+  <div class="modal-inner">
+    <div class="modal-handle"></div>
+    <div id="fix-banner" class="hidden">🚨 REVISION MODE / กรุณาดำเนินการแก้ไขงาน</div>
+    <div class="modal-hdr">
+      <div class="modal-hdr-left">
+        <div class="modal-hdr-meta" id="modal-header-text">Task Information</div>
+        <div class="modal-hdr-name" id="modal-task-title">—</div>
+      </div>
+      <button class="modal-close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:14px">
+        <div class="modal-sec-label"><span>📸 Evidence Review</span><span id="gallery-count"></span></div>
+        <div id="modal-gallery" class="image-gallery" onscroll="updateGalleryDots(this)"></div>
+        <div id="pagination-dots" class="gallery-dots"></div>
+      </div>
+      <div id="revision-note-box" class="hidden">
+        <div class="rn-label">คำสั่งจากเจ้าของร้าน:</div>
+        <p class="rn-text" id="prev-comment">—</p>
+      </div>
+      <div id="staff-fix-zone" class="hidden">
+        <div class="modal-sec-label" style="margin-bottom:10px">📷 แนบหลักฐานการแก้ไข (ถ่ายใหม่)</div>
+        <div id="fix-photo-strip" class="fix-photo-strip"></div>
+        <div class="fix-cam-btn" onclick="document.getElementById('fix-camera').click()">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <span>แตะถ่ายรูปยืนยันการแก้ไข</span>
+        </div>
+        <textarea id="staff-fix-note" rows="2" class="modal-textarea" placeholder="ระบุสิ่งที่แก้ไข..."></textarea>
+        <input type="file" id="fix-camera" accept="image/*" capture="environment" class="hidden" onchange="handleAddFixPhoto(this)">
+      </div>
+      <div id="manager-input-zone" class="hidden" style="margin-bottom:12px">
+        <div class="modal-sec-label">💬 Manager's Feedback</div>
+        <textarea id="manager-input" rows="2" class="modal-textarea" placeholder="ระบุคอมเมนต์..."></textarea>
+      </div>
+      <div class="meta-row">
+        <div class="meta-cell"><div class="mc-label">พนักงาน</div><div class="mc-val" id="modal-staff-name">—</div></div>
+        <div class="meta-cell" id="rating-zone">
+          <div class="mc-label">ประเมิน</div>
+          <select id="manager-rating">
+            <option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option>
+            <option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div id="manager-actions" class="hidden">
+        <button class="btn-reject" onclick="saveManagerReview('Fix Required')">🔴 สั่งแก้ไขงาน</button>
+        <button class="btn-approve" onclick="saveManagerReview('Completed')">✅ อนุมัติผ่าน</button>
+      </div>
+      <button id="btn-submit-fix" class="hidden" onclick="submitStaffFix()">✅ ยืนยันการแก้ไขและส่งงานใหม่</button>
+      <button class="btn-line" onclick="sendToLine()">
+        <svg width="17" height="17" fill="currentColor" viewBox="0 0 24 24"><path d="M24 10.3c0-4.5-4.5-8.3-10-8.3S4 5.8 4 10.3c0 4 3.5 7.4 8.3 8.1l-1.1 2.2c-.1.2 0 .5.2.6.1.1.2.1.3.1.1 0 .2 0 .3-.1l2.5-1.9c4.3-.8 9.5-4.2 9.5-9z"/></svg>
+        ส่งความเห็นเข้า LINE
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
-Chart.register(ChartDataLabels);
+
+        // ── CACHE (3 min TTL) ──
+        const CACHE_KEY = 'or_checklist_v2';
+        const CACHE_TTL = 3 * 60 * 1000;
+        function _saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), masterTasks, todayRecordsMap, fullHistory })); } catch(e) {} }
+        function _loadCache() { try { const o = JSON.parse(localStorage.getItem(CACHE_KEY)||'null'); if(!o||Date.now()-o.ts>CACHE_TTL) return false; masterTasks=o.masterTasks||[]; todayRecordsMap=o.todayRecordsMap||{}; fullHistory=o.fullHistory||[]; return true; } catch(e){ return false; } }
+
+        Chart.register(ChartDataLabels);
         const API_URL = 'https://script.google.com/macros/s/AKfycbxxjcQkhViS0-_7HVY_Ud9ADeKfXxBrq30hegHai_AGrjgQm_oTliQuMB1dpLe75Zc/exec';
         const IMGBB_KEY = '412005bc434fd396c0f0163133dfa205';
 
@@ -455,34 +450,14 @@ Chart.register(ChartDataLabels);
             } catch (e) { return "-"; }
         };
 
-        
-        // ── CACHE (3 min TTL) ──────────────────────────────────────────────
-        const CACHE_KEY = 'or_checklist_v2';
-        const CACHE_TTL = 3 * 60 * 1000;
-        function _saveCache() {
-            try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), masterTasks, todayRecordsMap, fullHistory })); } catch(e) {}
-        }
-        function _loadCache() {
-            try {
-                const raw = localStorage.getItem(CACHE_KEY);
-                if (!raw) return false;
-                const o = JSON.parse(raw);
-                if (Date.now() - o.ts > CACHE_TTL) return false;
-                masterTasks = o.masterTasks || [];
-                todayRecordsMap = o.todayRecordsMap || {};
-                fullHistory = o.fullHistory || [];
-                return true;
-            } catch(e) { return false; }
-        }
-
         window.onload = () => {
             const todayStr = new Date().toLocaleDateString('en-CA');
             document.getElementById('dash-date-picker').value = todayStr;
             document.getElementById('header-staff-name').innerText = `Staff: ${userName}`;
             document.getElementById('display-user-pos').innerText = `Status: ${userPos.toUpperCase()}`;
-            // Show cache instantly, then fetch fresh
+            // ⚡ Show cache instantly then fetch fresh
             if (_loadCache()) {
-                document.getElementById('job-status-text').innerText = 'Cache ⚡';
+                document.getElementById('job-status-text').innerText = '⚡ Cache';
                 setTimeout(renderDashboard, 30);
             }
             fetchData();
@@ -506,9 +481,8 @@ Chart.register(ChartDataLabels);
                 } else {
                    renderChecklist();
                 }
-                _saveCache();
-                document.getElementById('job-status-text').innerText = "🟢 Live";
-            } catch(e) { document.getElementById('job-status-text').innerText = "⚠️ Offline"; }
+                _saveCache(); document.getElementById('job-status-text').innerText = "🟢 Live";
+            } catch(e) { document.getElementById('job-status-text').innerText = "System Offline"; }
             finally { icon?.classList.remove('animate-spin'); }
         }
 
@@ -867,157 +841,190 @@ Chart.register(ChartDataLabels);
         
         function updateGalleryDots(el) { const index = Math.round(el.scrollLeft / (el.offsetWidth * 0.85 + 10)); document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === index)); }
 
-// Patch createTaskCard inline HTML to use new CSS classes
-(function patchCreateTaskCard(){
-  const orig = createTaskCard;
-  // re-wrap photo strip and button styles
-  window.createTaskCard = function(t) {
-    const rawId = t.checklist_id || t.id;
+// ── Extra patches (after original JS) ──
+
+// Fix: action-modal needs flex when visible (original uses classList.remove('hidden'))
+const _origOpenModal = openActionModal;
+window.openActionModal = async function(taskId) {
+    await _origOpenModal(taskId);
+    // ensure flex display
+    const m = document.getElementById('action-modal');
+    if (!m.classList.contains('hidden')) {
+        m.style.display = 'flex';
+    }
+};
+const _origCloseModal = closeModal;
+window.closeModal = function() {
+    _origCloseModal();
+    document.getElementById('action-modal').style.display = 'none';
+};
+
+// Fix: showToast
+window.showToast = function(m, t) {
+    const el = document.getElementById('toast');
+    el.innerText = m;
+    el.style.background = t === 'error' ? 'var(--danger)' : '#0f172a';
+    el.classList.add('visible');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('visible'), 3200);
+};
+
+// Fix: checklist-view and dashboard-view toggle
+window.changeTab = function(tabId) {
+    activeTab = tabId;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+    document.getElementById('tab-' + tabId).classList.add('tab-active');
+    const isDash = tabId === 'Dashboard';
+    document.getElementById('dashboard-view').style.display = isDash ? 'block' : 'none';
+    const cv = document.getElementById('checklist-view');
+    cv.style.display = isDash ? 'none' : 'block';
+    cv.classList.toggle('hidden', isDash);
+    if (isDash) setTimeout(renderDashboard, 100); else renderChecklist();
+};
+
+// Fix: renderChecklist zone grouping CSS
+window.renderChecklist = function() {
+    const container = document.getElementById('checklist-container');
+    if (!container) return;
+    const tabMap = {
+        'opening':'Opening','เปิดร้าน':'Opening',
+        'shiftchange':'ShiftChange','ระหว่างวัน':'ShiftChange',
+        'closing':'Closing','ปิดร้าน':'Closing'
+    };
+    const userRole = localStorage.getItem('user_role')?.toLowerCase();
+    const userPosLower = normalize(userPos).toLowerCase();
+
+    const list = masterTasks.filter(t => {
+        const taskStatus = normalize(getSmartVal(t,'Status','สถานะ')).toLowerCase();
+        const isActive = taskStatus===''||taskStatus==='active'||taskStatus==='ใช้งาน';
+        if (!isActive) return false;
+        const rawId = t.checklist_id||t.id;
+        const safeId = getSafeId(rawId);
+        const latest = todayRecordsMap[safeId];
+        const groupName = normalize(t.time_block||t.Group||'').toLowerCase();
+        const belongsToTab = tabMap[groupName] === activeTab;
+        const taskPos = normalize(getSmartVal(t,'Position','ตำแหน่ง')).toLowerCase();
+        const isForMe = userRole==='admin'||userRole==='manager'||
+                        taskPos===''||taskPos==='all'||taskPos==='ทั้งหมด'||taskPos.includes(userPosLower);
+        return belongsToTab && isForMe && (!latest||latest.status==='Fix Required');
+    });
+
+    const emptyEl = document.getElementById('empty-state');
+    if (!list.length) {
+        container.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        return;
+    }
+    emptyEl.classList.add('hidden');
+
+    const grouped = list.reduce((acc, t) => {
+        const z = normalize(t.zone||t['โซน']||'ทั่วไป');
+        if (!acc[z]) acc[z] = [];
+        acc[z].push(t);
+        return acc;
+    }, {});
+
+    container.innerHTML = Object.keys(grouped).map(zone => `
+        <div class="zone-group">
+            <div class="zone-title"><div class="zone-dot"></div>${zone}</div>
+            ${grouped[zone].map(t => createStyledTaskCard(t)).join('')}
+        </div>
+    `).join('');
+};
+
+// New styled createTaskCard using new CSS classes
+function createStyledTaskCard(t) {
+    const rawId = t.checklist_id||t.id;
     const safeId = getSafeId(rawId);
     const latest = todayRecordsMap[safeId];
-    const isFix = latest?.status === "Fix Required";
+    const isFix = latest?.status === 'Fix Required';
     const photos = pendingPhotos[safeId] || [];
-    const reqVal = normalize(getSmartVal(t, "Require_Photo", "ต้องแนบรูป") || "NO").toUpperCase();
-    const isPhotoRequired = reqVal === "YES";
+    const reqVal = normalize(getSmartVal(t,'Require_Photo','ต้องแนบรูป')||'NO').toUpperCase();
+    const isPhotoRequired = reqVal === 'YES';
     const isReady = !isPhotoRequired || photos.length > 0;
-    const taskName = t.task_name || t.รายการงาน || "—";
-    const comment = latest?.comment || "";
-    return `<div class="task-capsule ${isFix ? "border-fix" : "border-slate-100"}" style="cursor:default">
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:5px">
-          ${isPhotoRequired ? `<span class="s-badge" style="background:var(--danger-bg);color:var(--danger)">📷 ต้องแนบรูป</span>` : `<span class="s-badge sb-pending">Standard</span>`}
-          ${isFix ? `<span class="s-badge sb-fix">🔴 รอแก้ไข</span>` : ""}
-        </div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.3">${taskName}</div>
-        ${isFix ? `<div style="font-size:11px;color:var(--warn);font-style:italic;margin-top:4px">🚩 "${comment}"</div>` : ""}
-        <div class="photo-strip-inner">
-          ${photos.filter(s=>s.startsWith("http")).map(s=>`<img src="${s}" class="pt-thumb">`).join("")}
-          <div class="pt-add" onclick="openCamera('${rawId}')">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          </div>
-        </div>
-      </div>
-      <button onclick="${isReady ? `submitNormalTask('${rawId}','${taskName.replace(/'/g,"\\'")}','${t.time_block||t.Group}','${t.zone||t.โซน}')` : `showToast('🚨 งานนี้จำเป็นต้องแนบรูป','error')`}" class="confirm-btn ${isReady?"btn-ready":"btn-not-ready"}">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="3.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-      </button>
-    </div>`;
-  };
-})();
+    const taskName = t.task_name || t['รายการงาน'] || '—';
+    const comment = latest?.comment || '';
+    const safeName = taskName.replace(/'/g,"\\'").replace(/"/g,'&quot;');
 
-// Patch renderChecklist to use new zone markup
-(function patchRenderChecklist(){
-  const origRender = renderChecklist;
-  window.renderChecklist = function() {
-    const container = document.getElementById("checklist-container");
-    if(!container) return;
-    const map = {"opening":"Opening","เปิดร้าน":"Opening","shiftchange":"ShiftChange","ระหว่างวัน":"ShiftChange","closing":"Closing","ปิดร้าน":"Closing"};
-    const list = masterTasks.filter(t => {
-      const taskStatus = normalize(getSmartVal(t,"Status","สถานะ")).toLowerCase();
-      const isActive = taskStatus===""||taskStatus==="active"||taskStatus==="ใช้งาน";
-      if(!isActive) return false;
-      const rawId = t.checklist_id||t.id;
-      const safeId = getSafeId(rawId);
-      const latest = todayRecordsMap[safeId];
-      const groupName = normalize(t.time_block||t.Group||"").toLowerCase();
-      const belongsToTab = map[groupName]===activeTab;
-      const taskPos = normalize(getSmartVal(t,"Position","ตำแหน่ง")).toLowerCase();
-      const userPosLower = normalize(userPos).toLowerCase();
-      const userRole = localStorage.getItem("user_role")?.toLowerCase();
-      const isForMe = userRole==="admin"||userRole==="manager"||taskPos===""||taskPos==="all"||taskPos==="ทั้งหมด"||taskPos.includes(userPosLower);
-      return belongsToTab && isForMe && (!latest||latest.status==="Fix Required");
-    });
-    if(!list.length){ container.innerHTML=""; document.getElementById("empty-state").classList.remove("or-hidden"); return; }
-    document.getElementById("empty-state").classList.add("or-hidden");
-    const grouped = list.reduce((acc,t)=>{const z=normalize(t.zone||t.โซน||"ทั่วไป");if(!acc[z])acc[z]=[];acc[z].push(t);return acc;},{});
-    container.innerHTML = Object.keys(grouped).map(z=>`<div class="zone-section"><div class="zone-label"><div class="zone-dot"></div>${z}</div>${grouped[z].map(t=>createTaskCard(t)).join("")}</div>`).join("");
-  };
-})();
-
-// Patch timeline items to use new CSS
-(function patchTimeline(){
-  const origTL = renderTimeline;
-  window.renderTimeline = function(latestDataMap, allDailyData) {
-    const list = document.getElementById("timeline-list");
-    if(!list) return;
-    let itemsToShow = [];
-    if(currentStatusFilter==="pending"){
-      itemsToShow = masterTasks.filter(task=>{
-        const s=normalize(getSmartVal(task,"Status","สถานะ")).toLowerCase();
-        if(!["","active","ใช้งาน"].includes(s)) return false;
-        const safeId=getSafeId(task.checklist_id||task.id);
-        return !latestDataMap[safeId];
-      }).map(t=>({isPendingTask:true,Checklist_ID:t.checklist_id||t.id,Task_Name:t.task_name||t.รายการงาน||t.รายการ,Staff_Name:"ยังไม่ได้ระบุ",Status:"Pending",Timestamp:"-",Photo_URL:""}));
-    } else {
-      itemsToShow = currentStaffFilter ? allDailyData : Object.values(latestDataMap);
-      if(currentStatusFilter==="done") itemsToShow=itemsToShow.filter(x=>normalize(getSmartVal(x,"Status","สถานะ"))==="Completed");
-      else if(currentStatusFilter==="fix") itemsToShow=itemsToShow.filter(x=>normalize(getSmartVal(x,"Status","สถานะ"))==="Fix Required");
-    }
-    if(currentStaffFilter&&currentStatusFilter!=="pending") itemsToShow=itemsToShow.filter(x=>normalize(getSmartVal(x,"Staff_Name","พนักงาน"))===currentStaffFilter);
-    if(!itemsToShow.length){list.innerHTML='<div style="padding:32px;text-align:center;color:var(--light);font-size:13px">ไม่พบข้อมูลประวัติ</div>';return;}
-    list.innerHTML=itemsToShow.sort((a,b)=>{
-      if(a.isPendingTask) return 1;
-      return new Date(getSmartVal(b,"Timestamp","เวลา")||0)-new Date(getSmartVal(a,"Timestamp","เวลา")||0);
-    }).map(r=>{
-      const status=normalize(getSmartVal(r,"Status","สถานะ"))||"Pending";
-      const isFix=status==="Fix Required", isPending=status==="Pending";
-      const timeStr=r.isPendingTask?"-":formatToThaiTime(getSmartVal(r,"Timestamp","เวลา"));
-      const borderCls=isPending?"border-pending":isFix?"border-fix":"border-done";
-      const badgeCls=isPending?"sb-pending":isFix?"sb-fix":"sb-done";
-      const badgeTxt=isPending?"⏳ ค้างอยู่":isFix?"🔴 รอแก้ไข":"✅ สำเร็จ";
-      const photoUrlRaw=getSmartVal(r,"Photo_URL","รูปภาพ")||"";
-      const thumbUrl=photoUrlRaw.startsWith("http")?photoUrlRaw.split(",")[0]:"";
-      return `<div class="task-capsule ${borderCls}" onclick="${isPending?`showToast('🚨 งานนี้ยังไม่มีการบันทึก')`:` openActionModal('${getSmartVal(r,"Checklist_ID","id")}')`}">
+    return `<div class="task-capsule ${isFix?'border-fix':'border-pending'}" style="cursor:default">
         <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <span class="s-badge ${badgeCls}">${badgeTxt}</span>
-            <span style="font-size:10px;color:var(--light);font-weight:700">${timeStr}</span>
-          </div>
-          <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${getSmartVal(r,"Task_Name","รายการงาน")||r.งาน||"Unknown Task"}</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:600">👤 ${getSmartVal(r,"Staff_Name","พนักงาน")||"-"}</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px">
+                ${isPhotoRequired ? `<span class="task-tag tag-photo">📷 ต้องแนบรูป</span>` : `<span class="task-tag tag-std">Standard</span>`}
+                ${isFix ? `<span class="task-tag tag-fix">🔴 รอแก้ไข</span>` : ''}
+            </div>
+            <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.3">${taskName}</div>
+            ${isFix ? `<div style="font-size:11px;color:var(--warn);font-style:italic;margin-top:4px;font-weight:600">🚩 "${comment}"</div>` : ''}
+            <div class="photo-strip">
+                ${photos.filter(s=>s.startsWith('http')).map(s=>`<img src="${s}">`).join('')}
+                <div class="photo-add-btn" onclick="openCamera('${rawId}')">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+            </div>
         </div>
-        ${thumbUrl?`<img src="${thumbUrl}" class="thumb-square">`:""}
-      </div>`;
-    }).join("");
-  };
-})();
+        <button onclick="${isReady
+            ? `submitNormalTask('${rawId}','${safeName}','${t.time_block||t.Group||''}','${t.zone||t['โซน']||''}')`
+            : `showToast('🚨 งานนี้จำเป็นต้องแนบรูป','error')`}"
+            class="confirm-btn ${isReady?'btn-ready':'btn-not-ready'}">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="3.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+        </button>
+    </div>`;
+}
 
-// Patch showToast to use new CSS
-window.showToast = function(m, t) {
-  const el = document.getElementById("toast");
-  el.innerText = m;
-  el.style.cssText = `background:${t==="error"?"var(--danger)":"var(--navy)"};opacity:1`;
-  el.classList.remove("or-hidden");
-  clearTimeout(el._tid);
-  el._tid = setTimeout(()=>{ el.style.opacity="0"; setTimeout(()=>el.classList.add("or-hidden"),300); }, 3200);
+// Fix: renderTimeline with new CSS
+window.renderTimeline = function(latestDataMap, allDailyData) {
+    const list = document.getElementById('timeline-list');
+    if (!list) return;
+    let items = [];
+    if (currentStatusFilter === 'pending') {
+        items = masterTasks.filter(task => {
+            const s = normalize(getSmartVal(task,'Status','สถานะ')).toLowerCase();
+            if (!['','active','ใช้งาน'].includes(s)) return false;
+            return !latestDataMap[getSafeId(task.checklist_id||task.id)];
+        }).map(t => ({isPendingTask:true,Checklist_ID:t.checklist_id||t.id,Task_Name:t.task_name||t['รายการงาน']||t['รายการ'],Staff_Name:'ยังไม่ได้ระบุ',Status:'Pending',Timestamp:'-',Photo_URL:''}));
+    } else {
+        items = currentStaffFilter ? allDailyData : Object.values(latestDataMap);
+        if (currentStatusFilter==='done') items=items.filter(x=>normalize(getSmartVal(x,'Status','สถานะ'))==='Completed');
+        else if (currentStatusFilter==='fix') items=items.filter(x=>normalize(getSmartVal(x,'Status','สถานะ'))==='Fix Required');
+    }
+    if (currentStaffFilter && currentStatusFilter!=='pending')
+        items = items.filter(x=>normalize(getSmartVal(x,'Staff_Name','พนักงาน'))===currentStaffFilter);
+
+    if (!items.length) { list.innerHTML='<div style="padding:32px;text-align:center;color:var(--light);font-size:13px">ไม่พบข้อมูลประวัติ</div>'; return; }
+
+    list.innerHTML = items.sort((a,b) => {
+        if (a.isPendingTask) return 1;
+        return new Date(getSmartVal(b,'Timestamp','เวลา')||0) - new Date(getSmartVal(a,'Timestamp','เวลา')||0);
+    }).map(r => {
+        const status = normalize(getSmartVal(r,'Status','สถานะ'))||'Pending';
+        const isFix=status==='Fix Required', isPending=status==='Pending';
+        const timeStr = r.isPendingTask ? '-' : formatToThaiTime(getSmartVal(r,'Timestamp','เวลา'));
+        const borderCls = isPending?'border-pending':isFix?'border-fix':'border-done';
+        const badgeCls = isPending?'badge-pending':isFix?'badge-fix':'badge-done';
+        const badgeTxt = isPending?'⏳ ค้างอยู่':isFix?'🔴 รอแก้ไข':'✅ สำเร็จ';
+        const thumb = (getSmartVal(r,'Photo_URL','รูปภาพ')||'').split(',').find(u=>u.startsWith('http'))||'';
+        const cid = getSmartVal(r,'Checklist_ID','id');
+        return `<div class="task-capsule ${borderCls}" onclick="${isPending ? `showToast('งานนี้ยังไม่มีการบันทึก')` : `openActionModal('${cid}')`}">
+            <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+                    <span class="${badgeCls}">${badgeTxt}</span>
+                    <span style="font-size:10px;color:var(--light);font-weight:700">${timeStr}</span>
+                </div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${getSmartVal(r,'Task_Name','รายการงาน')||'Unknown Task'}</div>
+                <div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:600">👤 ${getSmartVal(r,'Staff_Name','พนักงาน')||'-'}</div>
+            </div>
+            ${thumb?`<img src="${thumb}" class="thumb-square">`:''}
+        </div>`;
+    }).join('');
 };
 
-// Patch closeModal
-window.closeModal = function() {
-  document.getElementById("action-modal").classList.add("or-hidden");
-  fixPhotos = [];
-};
-
-// Patch changeTab to use or-hidden
-window.changeTab = function(tabId) {
-  activeTab = tabId;
-  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("tab-active"));
-  document.getElementById(`tab-${tabId}`).classList.add("tab-active");
-  const isDash = tabId === "Dashboard";
-  document.getElementById("dashboard-view").style.display = isDash ? "block" : "none";
-  document.getElementById("checklist-view").style.display = isDash ? "none" : "block";
-  if(isDash) setTimeout(renderDashboard,100); else renderChecklist();
-};
-
-// Patch display-user-pos2
-const _origOnload = window.onload;
-window.onload = function() {
-  _origOnload && _origOnload();
-  const p2 = document.getElementById("display-user-pos2");
-  if(p2) p2.innerText = userPos || "Staff";
-  // init views
-  document.getElementById("dashboard-view").style.display = "block";
-  document.getElementById("checklist-view").style.display = "none";
-};
+// Fix display-user-pos2 on load
+window.addEventListener('load', function() {
+    const p2 = document.getElementById('display-user-pos2');
+    if (p2) p2.innerText = userPos || 'Staff';
+    // ensure dashboard is visible at start
+    document.getElementById('dashboard-view').style.display = 'block';
+    document.getElementById('checklist-view').style.display = 'none';
+});
 </script>
 </body>
 </html>
