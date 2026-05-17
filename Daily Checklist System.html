@@ -946,14 +946,37 @@ function createStyledTaskCard(t) {
     const comment = latest?.comment || '';
     const safeName = taskName.replace(/'/g,"\\'").replace(/"/g,'&quot;');
 
+    // ─── ตำแหน่งผู้รับผิดชอบ ───
+    const rawPos = normalize(getSmartVal(t,'Position','ตำแหน่ง') || '');
+    const posDisplay = (!rawPos || rawPos.toLowerCase()==='all' || rawPos.toLowerCase()==='ทั้งหมด')
+        ? 'ทุกตำแหน่ง' : rawPos;
+    // สีแยกตำแหน่ง
+    const posColorMap = {
+        'บาริสต้า':'#2979d4','barista':'#2979d4',
+        'ครัว':'#00897b','kitchen':'#00897b',
+        'เสิร์ฟ':'#f57c00','service':'#f57c00',
+        'แคชเชียร์':'#7c3aed','cashier':'#7c3aed',
+        'ผู้ช่วยครัว':'#0288d1',
+        'ทุกตำแหน่ง':'#5a7184','all':'#5a7184','ทั้งหมด':'#5a7184',
+    };
+    let posColor = '#5a7184';
+    for (const [k,v] of Object.entries(posColorMap)) {
+        if (rawPos.toLowerCase().includes(k.toLowerCase())) { posColor = v; break; }
+    }
+    if (posDisplay === 'ทุกตำแหน่ง') posColor = '#5a7184';
+
     return `<div class="task-capsule ${isFix?'border-fix':'border-pending'}" style="cursor:default">
         <div style="flex:1;min-width:0">
-            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px">
+            <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
                 ${isPhotoRequired ? `<span class="task-tag tag-photo">📷 ต้องแนบรูป</span>` : `<span class="task-tag tag-std">Standard</span>`}
                 ${isFix ? `<span class="task-tag tag-fix">🔴 รอแก้ไข</span>` : ''}
             </div>
-            <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.3">${taskName}</div>
-            ${isFix ? `<div style="font-size:11px;color:var(--warn);font-style:italic;margin-top:4px;font-weight:600">🚩 "${comment}"</div>` : ''}
+            <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:5px">${taskName}</div>
+            <div style="display:flex;align-items:center;gap:5px;margin-bottom:${isFix?'5px':'0'}">
+                <span style="font-size:11px">👤</span>
+                <span style="font-size:11px;font-weight:700;color:${posColor};background:${posColor}18;border:1px solid ${posColor}30;border-radius:20px;padding:2px 9px;letter-spacing:.3px">${posDisplay}</span>
+            </div>
+            ${isFix ? `<div style="font-size:11px;color:var(--warn);font-style:italic;margin-top:2px;font-weight:600">🚩 "${comment}"</div>` : ''}
             <div class="photo-strip">
                 ${photos.filter(s=>s.startsWith('http')).map(s=>`<img src="${s}">`).join('')}
                 <div class="photo-add-btn" onclick="openCamera('${rawId}')">
