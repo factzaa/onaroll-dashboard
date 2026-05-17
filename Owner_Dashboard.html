@@ -64,6 +64,8 @@ html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:
 .user-info .uname{font-size:12px;font-weight:600;color:#fff}
 .user-info .urole{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px}
 .sb-time{font-size:11px;color:rgba(255,255,255,.3);margin-top:6px;text-align:center}
+.logout-btn{width:100%;margin-top:8px;padding:8px;border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.1);border-radius:var(--r-sm);color:rgba(239,68,68,.8);font-family:'Kanit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.logout-btn:active{background:rgba(239,68,68,.25);color:#fff}
 
 /* ══════ MOBILE DRAWER ══════ */
 .drawer{position:fixed;top:0;left:0;bottom:0;width:260px;background:var(--navy);z-index:201;transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
@@ -152,6 +154,7 @@ html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:
   <div class="sb-body" id="drawerNav"></div>
   <div class="sb-footer">
     <div class="user-card"><div class="user-avatar" id="drawerAv">—</div><div class="user-info"><div class="uname" id="drawerName">—</div><div class="urole" id="drawerRole">—</div></div></div>
+    <button class="logout-btn" onclick="doLogout()">↩ ออกจากระบบ</button>
     <div class="sb-time" id="drawerTime">—</div>
   </div>
 </aside>
@@ -162,6 +165,7 @@ html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:
   <div class="sb-body" id="desktopNav"></div>
   <div class="sb-footer">
     <div class="user-card"><div class="user-avatar" id="sidebarAv">—</div><div class="user-info"><div class="uname" id="sidebarName">—</div><div class="urole" id="sidebarRole">—</div></div></div>
+    <button class="logout-btn" onclick="doLogout()">↩ ออกจากระบบ</button>
     <div class="sb-time" id="sidebarTime">—</div>
   </div>
 </aside>
