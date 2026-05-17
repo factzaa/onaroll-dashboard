@@ -1,323 +1,379 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบริหารจัดการตารางงาน - Professional Report</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&family=Prompt:wght@300;400;500;600;700&display=swap');
-        
-        body { 
-            font-family: 'Prompt', sans-serif; 
-            background-color: #f4f7fa; 
-            color: #1e293b;
-            -webkit-tap-highlight-color: transparent;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Weekly Scheduler — OnaRoll</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;padding-bottom:24px;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#1a2b5e;--blue:#2979d4;--blue-light:#e8f1fd;--blue-pale:#f0f6ff;
+  --surface:#fff;--surface2:#f7fafd;--bg:#f0f4f8;
+  --text:#1a2332;--muted:#5a7184;--light:#92a8bb;--border:#dde6ef;
+  --success:#00897b;--success-bg:#e0f5f2;
+  --danger:#e53935;--danger-bg:#fdecea;
+  --warn:#f57c00;
+  --r:12px;--r-sm:8px;
+  --shadow:0 2px 8px rgba(26,43,94,.08);
+  --shadow-md:0 4px 20px rgba(26,43,94,.12);
+}
 
-        .premium-card {
-            background: white;
-            border-radius: 2.5rem;
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.05);
-        }
+/* TOPBAR */
+.topbar{background:#fff;border-bottom:2px solid var(--blue);padding:0 20px;height:56px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:60;box-shadow:var(--shadow)}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:700;color:var(--navy)}
+.topbar-sub{font-size:10px;color:var(--muted)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tab-group{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;gap:3px}
+.tab-pill{padding:7px 16px;border-radius:6px;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--muted);background:transparent;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.tab-pill.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(41,121,212,.3)}
+.btn-icon{width:36px;height:36px;border:1px solid var(--border);background:var(--surface2);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .2s;flex-shrink:0}
+.btn-icon:active{background:var(--blue-light);color:var(--blue)}
+.live-badge{background:var(--success);color:#fff;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;display:none;align-items:center;gap:5px}
+.live-badge.show{display:flex}
+.live-ping{width:6px;height:6px;border-radius:50%;background:#fff;animation:blink .8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-        .job-select {
-            @apply w-full p-2 text-[12px] font-bold border-none bg-slate-50 focus:ring-2 focus:ring-blue-100 cursor-pointer text-center rounded-xl transition-all appearance-none;
-        }
+/* MAIN */
+.main{max-width:1400px;margin:0 auto;padding:20px}
 
-        .day-col { @apply p-1 border-r border-slate-50 min-w-[100px]; }
+/* CONTROL BAR */
+.control-bar{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;box-shadow:var(--shadow);margin-bottom:16px}
+.week-picker{display:flex;align-items:center;gap:10px}
+.week-picker label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.week-picker input{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;font-family:inherit;font-size:14px;font-weight:700;color:var(--blue);background:#fff;outline:none;cursor:pointer}
+.week-picker input:focus{border-color:var(--blue)}
+.status-chip{display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700;color:var(--muted)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--light);flex-shrink:0;transition:background .3s}
+.status-dot.success{background:var(--success);box-shadow:0 0 0 3px rgba(0,137,123,.15)}
+.status-dot.pending{background:var(--warn);animation:blink 1s infinite}
+.status-dot.error{background:var(--danger)}
 
-        .sticky-col {
-            @apply sticky left-0 bg-white z-20 border-r border-slate-100 shadow-[5px_0_15px_-10px_rgba(0,0,0,0.05)];
-        }
+/* KPI */
+.kpi-section{display:none;margin-bottom:16px}
+.kpi-section.show{display:block}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.dark{background:var(--navy);border-color:var(--navy)}.kpi.dark::before{display:none}
+.kpi.red::before{background:var(--danger)}
+.kpi.blue::before{background:var(--blue)}
+.kpi.purple::before{background:#7c3aed}
+.kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.kpi.dark .kpi-label{color:rgba(255,255,255,.45)}.kpi:not(.dark) .kpi-label{color:var(--muted)}
+.kpi-value{font-size:28px;font-weight:700}
+.kpi.dark .kpi-value{color:#fff}.kpi.red .kpi-value{color:var(--danger)}.kpi.blue .kpi-value{color:var(--blue)}.kpi.purple .kpi-value{color:#7c3aed}
 
-        .nav-tab {
-            @apply px-8 py-3 rounded-2xl text-sm font-bold transition-all flex items-center gap-2;
-        }
+/* TABLE */
+.table-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
+.table-scroll{overflow-x:auto}.table-scroll::-webkit-scrollbar{height:4px}.table-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+table{width:100%;border-collapse:collapse;min-width:860px}
+thead{background:var(--navy)}
+th{padding:14px 10px;font-size:10px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;text-align:center;white-space:nowrap}
+th.col-emp{text-align:left;padding-left:18px;min-width:200px;position:sticky;left:0;background:var(--navy);z-index:10}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover td,tbody tr:hover td.col-emp{background:#f5f9ff}
+td{padding:11px 8px;text-align:center;vertical-align:middle}
+td.col-emp{text-align:left;padding:12px 18px;position:sticky;left:0;background:#fff;z-index:5;box-shadow:3px 0 8px rgba(26,43,94,.04)}
+.emp-nick{font-size:14px;font-weight:700;color:var(--blue);line-height:1.2}
+.emp-name{font-size:11px;color:var(--muted);margin-top:1px}
+.day-select{width:100%;padding:7px 2px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:inherit;font-size:12px;font-weight:700;color:var(--text);background:#fff;cursor:pointer;-webkit-appearance:none;outline:none;text-align:center;transition:all .2s}
+.day-select:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(41,121,212,.1)}
+.day-select.is-off{color:var(--danger);background:var(--danger-bg);border-color:#ffcdd2}
+.report-badge{display:block;width:100%;padding:6px 2px;border-radius:var(--r-sm);font-size:11px;font-weight:700;text-align:center}
+.badge-work{background:var(--blue-light);color:var(--blue)}
+.badge-off{background:var(--danger-bg);color:var(--danger)}
+.branch-input{width:100%;padding:7px 8px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:inherit;font-size:12px;font-weight:600;color:var(--text);background:#fff;text-align:center;outline:none;transition:border-color .2s}
+.branch-input:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(41,121,212,.1)}
 
-        .nav-tab.active { @apply bg-blue-600 text-white shadow-lg shadow-blue-100 scale-105; }
-        .nav-tab.inactive { @apply text-slate-400 hover:bg-white hover:text-slate-600; }
+/* OFF BREAKDOWN */
+.off-section{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;display:none}
+.off-section.show{display:block}
+.off-header{padding:13px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px}
+.off-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
+.off-day{background:#fff;padding:12px;text-align:center}
+.off-day-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.off-name{font-size:11px;font-weight:600;color:var(--danger);padding:2px 0;line-height:1.4}
+.off-none{font-size:11px;color:var(--light)}
 
-        .report-badge {
-            @apply px-3 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider block w-full text-center shadow-sm;
-        }
-        .bg-work { @apply bg-blue-50 text-blue-600 border border-blue-100; }
-        /* 🚀 แก้ไขสี OFF ให้เป็นแดงเด่นชัด */
-        .bg-off { @apply bg-red-50 text-red-600 border border-red-200 font-black; }
+/* FOOTER */
+.footer-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;box-shadow:var(--shadow)}
+.footer-actions.hidden{display:none}
+.btn-refresh{background:transparent;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 16px;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s}
+.btn-refresh:hover{border-color:var(--blue);color:var(--blue)}
+.btn-save-main{background:var(--blue);color:#fff;border:none;border-radius:var(--r-sm);padding:11px 28px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(41,121,212,.3);transition:all .2s;display:flex;align-items:center;gap:8px}
+.btn-save-main:active{background:#1565c0;transform:scale(.97)}
+.btn-save-main:disabled{opacity:.5;pointer-events:none}
 
-        .animate-in { animation: fadeIn 0.4s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+/* MOBILE */
+.mobile-tabs{display:none;width:100%;gap:0;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.mobile-tab{flex:1;padding:11px 8px;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;background:#fff;color:var(--muted);border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:5px}
+.mobile-tab:last-child{border-right:none}
+.mobile-tab.active{background:var(--blue);color:#fff}
+
+/* TOAST */
+.toast{position:fixed;top:66px;left:50%;transform:translateX(-50%);z-index:500;border-radius:var(--r);padding:11px 22px;font-weight:700;font-size:13px;color:#fff;display:flex;align-items:center;gap:7px;box-shadow:var(--shadow-md);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:92vw}
+.toast.show{opacity:1}
+.toast.success{background:var(--success)}.toast.error{background:var(--danger)}.toast.info{background:var(--navy)}
+
+@media(max-width:768px){
+  .main{padding:14px}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .off-grid{grid-template-columns:1fr 1fr}
+  .tab-group{display:none}
+  .mobile-tabs{display:flex}
+}
+</style>
 </head>
-<body class="p-4 md:p-8 pb-24 text-center">
-    <div class="max-w-7xl mx-auto space-y-8">
-        
-        <!-- Header & Navigation -->
-        <header class="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-5">
-                <!-- 🏠 Home Button (🔗 กลับไป Main_Hub.html) -->
-                <button onclick="window.location.href='Main_Hub.html'" class="p-4 bg-white rounded-2xl hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all shadow-md active:scale-90">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                </button>
-                <div class="text-left">
-                    <h1 class="text-3xl font-black text-slate-900 tracking-tight uppercase leading-none" id="main-title">Job <span class="text-blue-600">Planner</span></h1>
-                    <p class="text-slate-400 text-sm font-medium mt-1 italic">จัดการตารางงานและสรุปรายสัปดาห์</p>
-                </div>
-            </div>
+<body>
 
-            <div class="bg-slate-200/60 p-1.5 rounded-[1.8rem] flex gap-2 backdrop-blur-md shadow-inner border border-white">
-                <button onclick="switchMode('manage')" id="tab-manage" class="nav-tab active">📝 จัดตารางงาน</button>
-                <button onclick="switchMode('history')" id="tab-history" class="nav-tab inactive">📊 รายงานสรุป</button>
-            </div>
-        </header>
+<div class="toast" id="toast"></div>
 
-        <!-- KPI Cards Summary -->
-        <div id="summary-section" class="hidden animate-in">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                <div class="premium-card p-6 bg-slate-900 text-white border-none text-left relative overflow-hidden flex flex-col justify-center min-h-[120px]">
-                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Total Staff</span>
-                    <div class="text-3xl sm:text-4xl font-black italic tabular-nums" id="stat-total-emp">0</div>
-                </div>
-                <div class="premium-card p-6 border-l-[12px] border-red-500 text-left min-h-[120px] flex flex-col justify-center">
-                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">OFF Days</span>
-                    <div class="text-3xl sm:text-4xl font-black text-red-600 italic tabular-nums" id="stat-off-total">0</div>
-                </div>
-                <div class="premium-card p-6 border-l-[12px] border-blue-500 text-left min-h-[120px] flex flex-col justify-center">
-                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Working</span>
-                    <div class="text-3xl sm:text-4xl font-black text-blue-600 italic tabular-nums" id="stat-work-total">0</div>
-                </div>
-                <div class="premium-card p-6 border-l-[12px] border-indigo-500 text-left min-h-[120px] flex flex-col justify-center">
-                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Locations</span>
-                    <div class="text-3xl sm:text-4xl font-black text-indigo-600 italic tabular-nums" id="stat-branch-total">0</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Workspace -->
-        <div class="premium-card p-8 relative overflow-hidden" id="workspace">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
-                <div class="flex items-center gap-4 bg-slate-50 p-5 rounded-[1.8rem] border border-slate-100 shadow-inner">
-                    <label class="text-[11px] font-black uppercase text-slate-400 tracking-widest">สัปดาห์ (จันทร์):</label>
-                    <input type="date" id="week-start" onchange="handleDateChange()" class="bg-transparent font-black outline-none text-blue-600 cursor-pointer text-lg">
-                </div>
-                <div id="history-indicator" class="hidden animate-in">
-                    <span class="bg-emerald-500 text-white px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest shadow-lg flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-white animate-ping"></span> Live Report View
-                    </span>
-                </div>
-            </div>
-
-            <!-- Main Table -->
-            <div class="overflow-hidden rounded-[2.5rem] border border-slate-100 shadow-sm bg-white" id="table-container">
-                <div class="overflow-x-auto no-scrollbar">
-                    <table class="w-full text-center border-collapse">
-                        <thead class="bg-slate-900 text-white text-[10px] uppercase tracking-[0.15em]">
-                            <tr>
-                                <th class="py-8 px-10 text-left sticky left-0 bg-slate-900 z-30 min-w-[240px]">Personnel Info</th>
-                                <th class="day-col">จันทร์</th>
-                                <th class="day-col">อังคาร</th>
-                                <th class="day-col">พุธ</th>
-                                <th class="day-col">พฤหัสบดี</th>
-                                <th class="day-col">ศุกร์</th>
-                                <th class="day-col">เสาร์</th>
-                                <th class="day-col">อาทิตย์</th>
-                                <th class="px-10 min-w-[150px]">สาขา</th>
-                            </tr>
-                        </thead>
-                        <tbody id="job-table-body" class="divide-y divide-slate-50"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Daily Off Breakdown -->
-            <div id="day-breakdown" class="mt-12 hidden animate-in border-t pt-10 text-left">
-                <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-8 ml-2 flex items-center gap-3">
-                    <span class="w-2 h-8 bg-red-500 rounded-full"></span> รายชื่อพนักงาน "หยุดงาน"
-                </h3>
-                <div class="grid grid-cols-2 md:grid-cols-7 gap-4" id="daily-off-list"></div>
-            </div>
-
-            <!-- Footer Actions -->
-            <div class="mt-12 flex flex-col sm:flex-row justify-between items-center gap-8 border-t pt-8 border-slate-100" id="footer-actions">
-                <div class="flex items-center gap-4">
-                    <div id="status-dot" class="w-4 h-4 rounded-full bg-slate-200"></div>
-                    <p id="data-status" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Syncing...</p>
-                </div>
-                <div class="flex gap-4 w-full sm:w-auto">
-                    <button onclick="fetchEmployees()" class="px-8 py-5 font-bold text-slate-400 hover:text-blue-600 transition-all rounded-2xl">รีเฟรช</button>
-                    <button onclick="submitJobs()" id="btn-save" class="flex-1 sm:flex-none px-16 py-6 bg-blue-600 text-white font-black rounded-[2.2rem] shadow-2xl hover:bg-blue-700 active:scale-95 transition-all">
-                        บันทึกตารางงาน
-                    </button>
-                </div>
-            </div>
-        </div>
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo-icon">📅</div>
+  <div><div class="topbar-title">Weekly Scheduler</div><div class="topbar-sub">ระบบจัดตารางงาน</div></div>
+  <div class="topbar-right">
+    <div class="tab-group">
+      <button class="tab-pill active" id="tab-manage" onclick="switchMode('manage')">✏️ จัดตาราง</button>
+      <button class="tab-pill" id="tab-history" onclick="switchMode('history')">📊 รายงาน</button>
     </div>
+    <div class="live-badge" id="live-badge"><div class="live-ping"></div>Live</div>
+    <button class="btn-icon" onclick="fetchEmployees()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    </button>
+  </div>
+</div>
 
-    <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[200] px-12 py-6 rounded-[2rem] shadow-2xl opacity-0 transition-all duration-500 bg-slate-950 text-white font-black text-center min-w-[350px] border-b-8 border-blue-600"></div>
+<div class="main">
 
-    <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbz31YJnsULoFDpqYCMHBnxtMPgaxQGCCAhAWJbNBDdW3PEQUv_BQ1LH6WMUC3uPoP7G4A/exec';
-        let employees = [], currentMode = 'manage';
-        const dayKeys = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        const dayLabels = { Mon:'จันทร์', Tue:'อังคาร', Wed:'พุธ', Thu:'พฤหัส', Fri:'ศุกร์', Sat:'เสาร์', Sun:'อาทิตย์' };
+  <!-- Mobile Tabs -->
+  <div class="mobile-tabs">
+    <button class="mobile-tab active" id="m-tab-manage" onclick="switchMode('manage')">✏️ จัดตาราง</button>
+    <button class="mobile-tab" id="m-tab-history" onclick="switchMode('history')">📊 รายงาน</button>
+  </div>
 
-        window.onload = async () => { initDate(); await fetchEmployees(); };
+  <!-- Control Bar -->
+  <div class="control-bar">
+    <div class="week-picker">
+      <label>📅 สัปดาห์ (วันจันทร์):</label>
+      <input type="date" id="week-start" onchange="handleDateChange()">
+    </div>
+    <div class="status-chip">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="data-status">กำลังโหลด...</span>
+    </div>
+    <div class="live-badge" id="live-badge-bar" style="background:var(--success)"><div class="live-ping"></div>Live Report View</div>
+  </div>
 
-        function initDate() {
-            const today = new Date();
-            const day = today.getDay();
-            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-            const monday = new Date(today.setDate(diff));
-            document.getElementById('week-start').value = monday.toISOString().substring(0, 10);
-        }
+  <!-- KPI -->
+  <div class="kpi-section" id="summary-section">
+    <div class="kpi-grid">
+      <div class="kpi dark"><div class="kpi-label">พนักงานทั้งหมด</div><div class="kpi-value" id="stat-total-emp">0</div></div>
+      <div class="kpi red"><div class="kpi-label">🔴 วันหยุดรวม</div><div class="kpi-value" id="stat-off-total">0</div></div>
+      <div class="kpi blue"><div class="kpi-label">🟢 วันทำงานรวม</div><div class="kpi-value" id="stat-work-total">0</div></div>
+      <div class="kpi purple"><div class="kpi-label">📍 สาขา</div><div class="kpi-value" id="stat-branch-total">0</div></div>
+    </div>
+  </div>
 
-        async function handleDateChange() { if (currentMode === 'history') await fetchHistory(); else renderTable(); }
+  <!-- Table -->
+  <div class="table-card">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-emp">พนักงาน</th>
+            <th>จันทร์</th><th>อังคาร</th><th>พุธ</th>
+            <th>พฤหัส</th><th>ศุกร์</th><th>เสาร์</th><th>อาทิตย์</th>
+            <th style="min-width:110px">สาขา</th>
+          </tr>
+        </thead>
+        <tbody id="job-table-body"></tbody>
+      </table>
+    </div>
+  </div>
 
-        function switchMode(mode) {
-            currentMode = mode;
-            const isHistory = mode === 'history';
-            document.getElementById('tab-manage').className = `nav-tab ${!isHistory ? 'active' : 'inactive'}`;
-            document.getElementById('tab-history').className = `nav-tab ${isHistory ? 'active' : 'inactive'}`;
-            document.getElementById('history-indicator').style.display = isHistory ? 'block' : 'none';
-            document.getElementById('summary-section').style.display = isHistory ? 'block' : 'none';
-            document.getElementById('day-breakdown').style.display = isHistory ? 'block' : 'none';
-            document.getElementById('footer-actions').style.display = isHistory ? 'none' : 'flex';
-            if (isHistory) fetchHistory(); else renderTable();
-        }
+  <!-- Off Breakdown -->
+  <div class="off-section" id="day-breakdown">
+    <div class="off-header">
+      <span style="width:4px;height:20px;background:var(--danger);border-radius:2px;display:inline-block"></span>
+      รายชื่อพนักงานหยุดงานแต่ละวัน
+    </div>
+    <div class="off-grid" id="daily-off-list"></div>
+  </div>
 
-        // 🚀 ตัวช่วยแปลงรูปแบบวันที่ให้ตรงกัน
-        function normalizeDate(val) {
-            if (!val) return "";
-            try {
-                let d = new Date(val);
-                if (isNaN(d.getTime())) return String(val).split('T')[0];
-                let y = d.getFullYear();
-                if (y > 2500) y -= 543;
-                return `${y}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            } catch(e) { return String(val).split('T')[0]; }
-        }
+  <!-- Footer -->
+  <div class="footer-actions" id="footer-actions">
+    <div class="status-chip">
+      <div class="status-dot" id="status-dot-footer"></div>
+      <span id="data-status-footer">พร้อมใช้งาน</span>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-refresh" onclick="fetchEmployees()">🔄 รีเฟรช</button>
+      <button class="btn-save-main" onclick="submitJobs()" id="btn-save">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        บันทึกตารางงาน
+      </button>
+    </div>
+  </div>
 
-        function getSmartVal(obj, pref, fallbacks = []) {
-            if (!obj) return "";
-            const keys = [pref, ...fallbacks];
-            for (let k of keys) {
-                if (obj[k] !== undefined) return obj[k];
-                const clean = (s) => s.toString().toLowerCase().replace(/[^a-z0-9ก-๙]/g, '');
-                for (let key in obj) if (clean(key) === clean(k)) return obj[key];
-            }
-            return "";
-        }
+</div>
 
-        async function fetchEmployees() {
-            updateStatus("กำลังโหลดพนักงาน...", "pending");
-            try {
-                const res = await fetch(API_URL + '?action=GET_EMPLOYEES');
-                employees = await res.json();
-                renderTable();
-                updateStatus(`${employees.length} Personnel Online`, 'success');
-            } catch(e) { updateStatus("Error Connection", "error"); }
-        }
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbz31YJnsULoFDpqYCMHBnxtMPgaxQGCCAhAWJbNBDdW3PEQUv_BQ1LH6WMUC3uPoP7G4A/exec';
+let employees = [], currentMode = 'manage';
+const dayKeys = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const dayLabels = {Mon:'จันทร์',Tue:'อังคาร',Wed:'พุธ',Thu:'พฤหัส',Fri:'ศุกร์',Sat:'เสาร์',Sun:'อาทิตย์'};
 
-        async function fetchHistory() {
-            const weekStart = document.getElementById('week-start').value;
-            updateStatus("ดึงรายงานสัปดาห์นี้...", "pending");
-            try {
-                const res = await fetch(`${API_URL}?action=GET_JOBS`);
-                const allData = await res.json();
-                // 🚀 กรองข้อมูลเฉพาะสัปดาห์ที่เลือกก่อนนำไปแสดง
-                const filtered = allData.filter(d => normalizeDate(getSmartVal(d, 'Week_Start')) === weekStart);
-                renderTable(filtered);
-                calculateStats(filtered);
-                updateStatus(filtered.length > 0 ? "แสดงรายงานสำเร็จ" : "ไม่พบข้อมูลสัปดาห์นี้", "success");
-            } catch(e) { showToast("โหลดรายงานล้มเหลว", "error"); }
-        }
+window.onload = async () => { initDate(); await fetchEmployees(); };
 
-        function calculateStats(data) {
-            document.getElementById('stat-total-emp').innerText = employees.length;
-            let off = 0, work = 0, branches = new Set();
-            let offMap = { Mon:[], Tue:[], Wed:[], Thu:[], Fri:[], Sat:[], Sun:[] };
-            data.forEach(j => {
-                dayKeys.forEach(d => {
-                    const v = getSmartVal(j, d);
-                    if (v === 'OFF') { off++; offMap[d].push(getSmartVal(j, 'Name', ['ชื่อเล่น', 'ชื่อพนักงาน'])); }
-                    else if (v === 'Work') { work++; }
-                });
-                const b = getSmartVal(j, 'Branch'); if(b) branches.add(b);
-            });
-            document.getElementById('stat-off-total').innerText = off;
-            document.getElementById('stat-work-total').innerText = work;
-            document.getElementById('stat-branch-total').innerText = branches.size;
-            document.getElementById('daily-off-list').innerHTML = Object.entries(offMap).map(([day, names]) => `
-                <div class="p-5 rounded-[1.8rem] bg-white border border-slate-100 shadow-sm text-left">
-                    <span class="text-[9px] font-black uppercase text-slate-300 block mb-2">${dayLabels[day]}</span>
-                    <div class="text-xs font-bold text-slate-600">${names.length ? names.join(', ') : 'ไม่มีคนหยุด'}</div>
-                </div>
-            `).join('');
-        }
+function initDate() {
+  const today = new Date(), day = today.getDay();
+  const diff = today.getDate() - day + (day===0?-6:1);
+  const monday = new Date(today.setDate(diff));
+  document.getElementById('week-start').value = monday.toISOString().substring(0,10);
+}
 
-        function renderTable(history = []) {
-            const body = document.getElementById('job-table-body');
-            const isReport = currentMode === 'history';
-            const weekStart = document.getElementById('week-start').value;
+async function handleDateChange() {
+  if (currentMode==='history') await fetchHistory(); else renderTable();
+}
 
-            body.innerHTML = employees.map(e => {
-                const id = getSmartVal(e, 'Employee_ID', ['ID', 'รหัสพนักงาน']);
-                const name = getSmartVal(e, 'Full_Name', ['ชื่อ-นามสกุล']);
-                const nick = getSmartVal(e, 'Nickname', ['ชื่อเล่น']);
-                
-                // 🚀 ค้นหาข้อมูลที่ตรงทั้ง ID และ วันที่สัปดาห์
-                const saved = history.find(j => 
-                    String(getSmartVal(j, 'Employee_ID', ['ID'])) === String(id) &&
-                    normalizeDate(getSmartVal(j, 'Week_Start')) === weekStart
-                );
+function switchMode(mode) {
+  currentMode = mode;
+  const isH = mode==='history';
+  document.getElementById('tab-manage').className='tab-pill '+(isH?'':'active');
+  document.getElementById('tab-history').className='tab-pill '+(isH?'active':'');
+  const mm=document.getElementById('m-tab-manage'); if(mm) mm.className='mobile-tab'+(isH?'':' active');
+  const mh=document.getElementById('m-tab-history'); if(mh) mh.className='mobile-tab'+(isH?' active':'');
+  document.getElementById('live-badge').classList.toggle('show',isH);
+  document.getElementById('live-badge-bar').classList.toggle('show',isH);
+  document.getElementById('summary-section').classList.toggle('show',isH);
+  document.getElementById('day-breakdown').classList.toggle('show',isH);
+  document.getElementById('footer-actions').classList.toggle('hidden',isH);
+  if (isH) fetchHistory(); else renderTable();
+}
 
-                return `
-                    <tr class="hover:bg-slate-50 transition-all group" data-id="${id}" data-name="${nick || name}">
-                        <td class="py-7 px-10 text-left sticky-col group-hover:bg-slate-50">
-                            <div class="font-black text-blue-600 text-xl leading-none mb-1 uppercase">${nick || '-'}</div>
-                            <div class="text-[12px] font-bold text-slate-800">${name}</div>
-                        </td>
-                        ${dayKeys.map(d => {
-                            const v = saved ? (getSmartVal(saved, d) || 'Work') : 'Work';
-                            if (isReport) {
-                                let c = "bg-work", t = "ทำงาน";
-                                if(v === 'OFF') { c="bg-off"; t="OFF"; } 
-                                return `<td class="day-col py-5 px-2"><span class="report-badge ${c}">${t}</span></td>`;
-                            }
-                            // 🚀 เหลือแค่ 2 ตัวเลือก และเปลี่ยนสีตัวหนังสือเมื่อเป็น OFF
-                            return `<td class="day-col"><select class="job-select day-${d} ${v==='OFF'?'text-red-600':''}" onchange="this.classList.toggle('text-red-600', this.value === 'OFF')">
-                                <option value="Work" ${v==='Work'?'selected':''}>ทำงาน</option>
-                                <option value="OFF" ${v==='OFF'?'selected':''}>หยุด</option>
-                            </select></td>`;
-                        }).join('')}
-                        <td class="px-10">${isReport ? `<span class="text-[11px] font-bold">${getSmartVal(saved, 'Branch') || '-'}</span>` : `<input type="text" value="${getSmartVal(saved || e, 'Branch')}" class="w-full p-2 bg-slate-50 rounded-xl text-center font-bold text-[11px] branch-input">`}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
+function normalizeDate(val) {
+  if (!val) return '';
+  try {
+    let d = new Date(val); if(isNaN(d.getTime())) return String(val).split('T')[0];
+    let y = d.getFullYear(); if(y>2500) y-=543;
+    return `${y}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  } catch(e) { return String(val).split('T')[0]; }
+}
 
-        async function submitJobs() {
-            const weekStart = document.getElementById('week-start').value;
-            const btn = document.getElementById('btn-save'); 
-            const originalText = btn.innerText;
-            btn.disabled = true; btn.innerText = "กำลังบันทึก...";
-            
-            const rows = document.querySelectorAll('#job-table-body tr');
-            const jobs = Array.from(rows).map(r => ({
-                empId: r.dataset.id, name: r.dataset.name,
-                mon: r.querySelector('.day-Mon').value, tue: r.querySelector('.day-Tue').value, wed: r.querySelector('.day-Wed').value,
-                thu: r.querySelector('.day-Thu').value, fri: r.querySelector('.day-Fri').value, sat: r.querySelector('.day-Sat').value,
-                sun: r.querySelector('.day-Sun').value, branch: r.querySelector('.branch-input').value
-            }));
-            try {
-                await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'SAVE_JOBS', weekStart, jobs }) });
-                showToast("✅ บันทึกเรียบร้อย!"); setTimeout(() => location.reload(), 1000);
-            } catch(e) { showToast("❌ บันทึกไม่สำเร็จ", "error"); btn.disabled = false; btn.innerText = originalText; }
-        }
+function getSmartVal(obj, pref, fallbacks=[]) {
+  if (!obj) return '';
+  for (let k of [pref,...fallbacks]) {
+    if (obj[k]!==undefined) return obj[k];
+    const cl = s=>s.toString().toLowerCase().replace(/[^a-z0-9ก-๙]/g,'');
+    for (let key in obj) if(cl(key)===cl(k)) return obj[key];
+  }
+  return '';
+}
 
-        function updateStatus(t, s) { document.getElementById('data-status').innerText = t; document.getElementById('status-dot').className = `w-4 h-4 rounded-full ${s==='success'?'bg-emerald-500 shadow-[0_0_10px_#10b981]':s==='pending'?'bg-amber-500 animate-pulse':'bg-slate-300'}`; }
-        function showToast(m, t) { const el = document.getElementById('toast'); el.innerText = m; el.className = `fixed top-12 left-1/2 -translate-x-1/2 z-[200] px-12 py-6 rounded-[2rem] shadow-2xl opacity-100 ${t==='error'?'bg-red-600':'bg-slate-950'} text-white font-black text-center min-w-[350px] border-b-8 ${t==='error'?'border-red-900':'border-blue-600'}`; setTimeout(() => el.style.opacity = "0", 4000); }
-    </script>
+async function fetchEmployees() {
+  updateStatus('กำลังโหลดพนักงาน...','pending');
+  try {
+    const res = await fetch(API_URL+'?action=GET_EMPLOYEES');
+    employees = await res.json();
+    renderTable();
+    updateStatus(`${employees.length} พนักงาน`,'success');
+    showToast('โหลดข้อมูลสำเร็จ','success');
+  } catch(e) { updateStatus('เชื่อมต่อไม่สำเร็จ','error'); }
+}
+
+async function fetchHistory() {
+  const ws = document.getElementById('week-start').value;
+  updateStatus('กำลังดึงรายงาน...','pending');
+  try {
+    const res = await fetch(`${API_URL}?action=GET_JOBS`);
+    const all = await res.json();
+    const filtered = all.filter(d=>normalizeDate(getSmartVal(d,'Week_Start'))===ws);
+    renderTable(filtered); calculateStats(filtered);
+    updateStatus(filtered.length>0?'แสดงรายงานสำเร็จ':'ไม่พบข้อมูลสัปดาห์นี้','success');
+  } catch(e) { showToast('โหลดรายงานล้มเหลว','error'); }
+}
+
+function calculateStats(data) {
+  document.getElementById('stat-total-emp').innerText = employees.length;
+  let off=0,work=0,branches=new Set();
+  let offMap={Mon:[],Tue:[],Wed:[],Thu:[],Fri:[],Sat:[],Sun:[]};
+  data.forEach(j=>{
+    dayKeys.forEach(d=>{
+      const v=getSmartVal(j,d);
+      if(v==='OFF'){off++;offMap[d].push(getSmartVal(j,'Name',['ชื่อเล่น','ชื่อพนักงาน']));}
+      else if(v==='Work') work++;
+    });
+    const b=getSmartVal(j,'Branch'); if(b) branches.add(b);
+  });
+  document.getElementById('stat-off-total').innerText=off;
+  document.getElementById('stat-work-total').innerText=work;
+  document.getElementById('stat-branch-total').innerText=branches.size;
+  document.getElementById('daily-off-list').innerHTML=Object.entries(offMap).map(([day,names])=>`
+    <div class="off-day">
+      <div class="off-day-label">${dayLabels[day]}</div>
+      ${names.length?names.map(n=>`<div class="off-name">${n}</div>`).join(''):'<div class="off-none">ปกติ</div>'}
+    </div>`).join('');
+}
+
+function renderTable(history=[]) {
+  const body=document.getElementById('job-table-body');
+  const isR=currentMode==='history';
+  const ws=document.getElementById('week-start').value;
+  if(!employees.length){body.innerHTML=`<tr><td colspan="9" style="padding:40px;text-align:center;color:#92a8bb;font-size:13px">ไม่พบข้อมูลพนักงาน</td></tr>`;return;}
+  body.innerHTML=employees.map(e=>{
+    const id=getSmartVal(e,'Employee_ID',['ID','รหัสพนักงาน']);
+    const name=getSmartVal(e,'Full_Name',['ชื่อ-นามสกุล']);
+    const nick=getSmartVal(e,'Nickname',['ชื่อเล่น']);
+    const saved=history.find(j=>String(getSmartVal(j,'Employee_ID',['ID']))===String(id)&&normalizeDate(getSmartVal(j,'Week_Start'))===ws);
+    return `<tr data-id="${id}" data-name="${nick||name}">
+      <td class="col-emp"><div class="emp-nick">${nick||'—'}</div><div class="emp-name">${name}</div></td>
+      ${dayKeys.map(d=>{
+        const v=saved?(getSmartVal(saved,d)||'Work'):'Work';
+        if(isR) return `<td><span class="report-badge ${v==='OFF'?'badge-off':'badge-work'}">${v==='OFF'?'หยุด':'ทำงาน'}</span></td>`;
+        return `<td><select class="day-select day-${d} ${v==='OFF'?'is-off':''}" onchange="this.classList.toggle('is-off',this.value==='OFF')">
+          <option value="Work" ${v==='Work'?'selected':''}>✅ ทำงาน</option>
+          <option value="OFF" ${v==='OFF'?'selected':''}>🔴 หยุด</option>
+        </select></td>`;
+      }).join('')}
+      <td>${isR?`<span style="font-size:12px;font-weight:600;color:var(--muted)">${getSmartVal(saved,'Branch')||'—'}</span>`:`<input type="text" value="${getSmartVal(saved||e,'Branch')}" class="branch-input" placeholder="สาขา...">`}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function submitJobs() {
+  const ws=document.getElementById('week-start').value;
+  const btn=document.getElementById('btn-save');
+  const orig=btn.textContent; btn.disabled=true; btn.textContent='กำลังบันทึก...';
+  const rows=document.querySelectorAll('#job-table-body tr');
+  const jobs=Array.from(rows).map(r=>({
+    empId:r.dataset.id, name:r.dataset.name,
+    mon:r.querySelector('.day-Mon').value, tue:r.querySelector('.day-Tue').value,
+    wed:r.querySelector('.day-Wed').value, thu:r.querySelector('.day-Thu').value,
+    fri:r.querySelector('.day-Fri').value, sat:r.querySelector('.day-Sat').value,
+    sun:r.querySelector('.day-Sun').value, branch:r.querySelector('.branch-input').value
+  }));
+  try {
+    await fetch(API_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({action:'SAVE_JOBS',weekStart:ws,jobs})});
+    showToast('✅ บันทึกตารางงานสำเร็จ!','success');
+    setTimeout(()=>location.reload(),1200);
+  } catch(e) { showToast('❌ บันทึกไม่สำเร็จ','error'); btn.disabled=false; btn.textContent=orig; }
+}
+
+function updateStatus(text, state) {
+  [document.getElementById('status-dot'),document.getElementById('status-dot-footer')].forEach(d=>{if(d){d.className='status-dot';if(state)d.classList.add(state);}});
+  [document.getElementById('data-status'),document.getElementById('data-status-footer')].forEach(t=>{if(t)t.innerText=text;});
+}
+
+function showToast(msg,type='info') {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast show '+type;
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
+</script>
 </body>
 </html>
