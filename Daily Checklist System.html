@@ -329,7 +329,7 @@ input,textarea,select{font-size:16px!important}
 </div>
 
 <!-- ══ MODAL ══ -->
-<div id="action-modal" class="hidden" style="position:fixed;inset:0;background:rgba(10,15,30,.88);backdrop-filter:blur(5px);z-index:200;display:none;align-items:flex-end;justify-content:center">
+<div id="action-modal" class="hidden" style="position:fixed;inset:0;background:rgba(10,15,30,.88);backdrop-filter:blur(5px);z-index:200;align-items:flex-end;justify-content:center">
   <div class="modal-inner">
     <div class="modal-handle"></div>
     <div id="fix-banner" class="hidden">🚨 REVISION MODE / กรุณาดำเนินการแก้ไขงาน</div>
@@ -750,6 +750,7 @@ input,textarea,select{font-size:16px!important}
             document.getElementById('modal-gallery').innerHTML = photoUrls.map(u => `<div class="gallery-item"><img src="${u}"></div>`).join('');
             document.getElementById('pagination-dots').innerHTML = photoUrls.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
             
+            document.getElementById('action-modal').classList.remove('hidden');
             document.getElementById('action-modal').classList.remove('or-hidden');
         }
 
@@ -823,7 +824,13 @@ input,textarea,select{font-size:16px!important}
         }
 
         function openCamera(id) { currentTaskId = id; document.getElementById('camera-input').click(); }
-        function closeModal() { document.getElementById('action-modal').classList.add('or-hidden'); fixPhotos = []; }
+        function closeModal() { 
+            const m = document.getElementById('action-modal');
+            m.classList.add('or-hidden');
+            m.classList.add('hidden');
+            m.style.display = 'none';
+            fixPhotos = []; 
+        }
         function showToast(m, t) { const el = document.getElementById('toast'); el.innerText = m; el.className = `fixed top-10 left-1/2 -translate-x-1/2 z-[1000] px-10 py-6 rounded-full shadow-2xl text-white font-black text-center min-w-[300px] border-b-4 opacity-100 ${t==='error'?'bg-rose-600 border-rose-900':'bg-slate-900 border-blue-600'} font-black font-black`; setTimeout(() => el.classList.replace('opacity-100', 'opacity-0'), 3500); }
         
         function sendToLine() { 
@@ -843,20 +850,18 @@ input,textarea,select{font-size:16px!important}
 
 // ── Extra patches (after original JS) ──
 
-// Fix: action-modal needs flex when visible (original uses classList.remove('hidden'))
+// Fix: action-modal needs flex when visible
 const _origOpenModal = openActionModal;
 window.openActionModal = async function(taskId) {
     await _origOpenModal(taskId);
-    // ensure flex display
     const m = document.getElementById('action-modal');
-    if (!m.classList.contains('hidden')) {
-        m.style.display = 'flex';
-    }
+    m.classList.remove('hidden');
+    m.classList.remove('or-hidden');
+    m.style.display = 'flex';
 };
 const _origCloseModal = closeModal;
 window.closeModal = function() {
     _origCloseModal();
-    document.getElementById('action-modal').style.display = 'none';
 };
 
 // Fix: showToast
