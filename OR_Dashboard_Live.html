@@ -9,200 +9,139 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;display:flex}
-
+body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh}
 :root{
-  --navy:#1a2b5e;--navy-dark:#111d45;--navy-light:#2d4080;
-  --blue:#2979d4;--blue-light:#e8f1fd;--blue-pale:#f0f6ff;
-  --sky:#29b6f6;
-  --surface:#fff;--surface2:#f7fafd;--bg:#f0f4f8;
+  --navy:#1a2b5e;--blue:#2979d4;--blue-light:#e8f1fd;--blue-pale:#f0f6ff;
+  --sky:#29b6f6;--surface:#fff;--surface2:#f7fafd;--bg:#f0f4f8;
   --text:#1a2332;--text-muted:#5a7184;--text-light:#92a8bb;
   --border:#dde6ef;--border-strong:#b8cedd;
-  --success:#00897b;--success-bg:#e0f5f2;--success-light:#00bfa5;
+  --success:#00897b;--success-bg:#e0f5f2;
   --danger:#e53935;--danger-bg:#fdecea;
   --warn:#f57c00;--warn-bg:#fff3e0;
   --info:#2979d4;--info-bg:#e8f1fd;
-  --r:14px;--r-sm:8px;--r-xs:6px;
+  --r:12px;--r-sm:8px;
   --shadow:0 2px 8px rgba(26,43,94,.08);
   --shadow-md:0 4px 20px rgba(26,43,94,.12);
-  --sidebar-w:230px;
+  --sidebar-w:230px;--topbar-h:56px;--bottom-h:58px;
 }
-
-/* ─── SIDEBAR ─── */
-.sidebar{
-  width:var(--sidebar-w);flex-shrink:0;
-  background:var(--navy);min-height:100vh;
-  display:flex;flex-direction:column;
-  position:fixed;top:0;left:0;bottom:0;z-index:100;
-}
-.sidebar-logo{
-  padding:24px 20px 20px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
-.sidebar-logo-icon{
-  width:42px;height:42px;
-  background:linear-gradient(135deg,#2979d4,#29b6f6);
-  border-radius:12px;display:flex;align-items:center;justify-content:center;
-  font-size:17px;font-weight:700;color:#fff;
-  box-shadow:0 4px 12px rgba(41,121,212,.4);
-  margin-bottom:10px;
-}
-.sidebar-logo h1{font-size:14px;font-weight:600;color:#fff;line-height:1.3}
-.sidebar-logo p{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px}
-
-.sidebar-nav{padding:16px 12px;flex:1}
-.sidebar-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);
-  letter-spacing:1px;text-transform:uppercase;padding:0 8px;margin-bottom:8px;margin-top:16px}
-.sidebar-label:first-child{margin-top:0}
-.nav-item{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 12px;border-radius:var(--r-sm);
-  cursor:pointer;transition:all .2s;
-  font-size:13px;font-weight:500;color:rgba(255,255,255,.6);
-  border:none;background:transparent;width:100%;text-align:left;
-  font-family:inherit;margin-bottom:3px;
-}
-.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
-.nav-item.active{background:var(--blue);color:#fff;box-shadow:0 2px 10px rgba(41,121,212,.4)}
-.nav-item .nav-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
-.nav-item .nav-badge{margin-left:auto;background:rgba(255,255,255,.15);border-radius:20px;padding:1px 8px;font-size:10px}
-.nav-item.active .nav-badge{background:rgba(255,255,255,.2)}
-
-.sidebar-bottom{
-  padding:16px 12px;
-  border-top:1px solid rgba(255,255,255,.08);
-}
-.sync-info{padding:8px 12px;background:rgba(255,255,255,.06);border-radius:var(--r-sm);margin-bottom:10px}
-.sync-info .gs-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4caf50;margin-right:6px;animation:pulse 2s infinite;vertical-align:middle}
-.sync-info span{font-size:11px;color:rgba(255,255,255,.5);vertical-align:middle}
-.sync-info #syncTime{font-size:10px;color:rgba(255,255,255,.35);display:block;margin-top:3px;padding-left:13px}
+/* ══ TOPBAR ══ */
+.topbar{background:#fff;padding:0 14px;display:flex;align-items:center;justify-content:space-between;height:var(--topbar-h);border-bottom:2px solid var(--blue);position:sticky;top:0;z-index:50;box-shadow:var(--shadow);gap:10px}
+.topbar-title{font-size:14px;font-weight:700;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.gs-pill{background:var(--blue-light);border:1px solid #b3d4f7;border-radius:20px;padding:4px 10px;font-size:10px;color:var(--blue);font-weight:600;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.gs-dot{width:6px;height:6px;border-radius:50%;background:#4caf50;animation:pulse 2s infinite;flex-shrink:0}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.sync-btn{
-  width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
-  color:#fff;padding:9px 14px;border-radius:var(--r-sm);cursor:pointer;
-  font-size:12px;font-family:inherit;font-weight:500;
-  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;
-}
+.sync-btn{display:flex;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;padding:8px;border-radius:var(--r-sm);cursor:pointer;font-size:11px;font-family:inherit;font-weight:500;transition:all .2s;align-items:center;justify-content:center;gap:5px}
 .sync-btn:hover{background:var(--blue);border-color:var(--blue)}
 .sync-btn:disabled{opacity:.4;pointer-events:none}
-
-/* ─── MAIN CONTENT ─── */
-.app-body{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
-
-.topbar{
-  background:#fff;padding:0 28px;
-  display:flex;align-items:center;justify-content:space-between;
-  height:60px;border-bottom:1px solid var(--border);
-  position:sticky;top:0;z-index:40;
-  box-shadow:0 1px 4px rgba(26,43,94,.06);
-}
-.topbar-title{font-size:16px;font-weight:600;color:var(--text)}
-.topbar-right{display:flex;align-items:center;gap:12px}
-.gs-pill{background:var(--blue-light);border:1px solid #b3d4f7;border-radius:20px;padding:5px 14px;font-size:11px;color:var(--blue);display:flex;align-items:center;gap:6px;font-weight:500}
-.error-bar{background:var(--danger-bg);border:1px solid #ffcdd2;border-radius:var(--r-sm);padding:10px 16px;margin-bottom:14px;font-size:13px;color:var(--danger);display:none}
-
-.main{padding:24px 28px;max-width:1300px}
-
-/* ─── FILTER BAR ─── */
-.filter-bar{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--r);padding:14px 20px;margin-bottom:20px;
-  display:flex;flex-wrap:wrap;align-items:center;gap:14px;
-  box-shadow:var(--shadow);
-}
-.filter-bar label{font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:.4px;text-transform:uppercase}
-.filter-bar input,.filter-bar select{
-  border:1.5px solid var(--border);border-radius:var(--r-sm);
-  padding:7px 12px;font-size:13px;font-family:inherit;
-  background:#fff;color:var(--text);cursor:pointer;transition:border-color .2s;
-}
-.filter-bar input:focus,.filter-bar select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(41,121,212,.1)}
-.filter-group{display:flex;align-items:center;gap:8px}
-.filter-group span{color:var(--text-muted);font-size:13px}
-.btn-apply{background:var(--blue);color:#fff;border:none;padding:8px 22px;border-radius:var(--r-sm);cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;box-shadow:0 2px 8px rgba(41,121,212,.25);transition:all .2s}
-.btn-apply:hover{background:#1565c0;box-shadow:0 4px 14px rgba(41,121,212,.4)}
-.btn-reset{background:#fff;color:var(--text-muted);border:1.5px solid var(--border);padding:7px 16px;border-radius:var(--r-sm);cursor:pointer;font-size:13px;font-family:inherit;transition:all .2s}
-.btn-reset:hover{background:var(--surface2);border-color:var(--border-strong)}
-
-/* ─── SECTIONS ─── */
+/* ══ SIDEBAR (hidden mobile) ══ */
+.sidebar{display:none}
+/* ══ BOTTOM NAV (mobile) ══ */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--bottom-h);padding-bottom:env(safe-area-inset-bottom);background:#fff;border-top:1px solid var(--border);display:flex;z-index:50;box-shadow:0 -2px 10px rgba(26,43,94,.08)}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;cursor:pointer;font-family:inherit;color:var(--text-light);transition:color .15s;padding:5px 2px;-webkit-tap-highlight-color:transparent}
+.bnav-btn.active{color:var(--blue)}
+.bnav-btn:active{transform:scale(.9)}
+.bnav-icon{font-size:19px;line-height:1}
+.bnav-label{font-size:9px;font-weight:600}
+/* ══ LAYOUT ══ */
+.app-body{padding-bottom:var(--bottom-h)}
+.main{padding:12px;max-width:1400px;margin:0 auto}
+/* ══ FILTER ══ */
+.filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
+.filter-top{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.filter-bottom{display:flex;gap:8px;flex-wrap:wrap}
+.filter-bar label{font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:3px}
+.filter-bar input,.filter-bar select{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text);width:100%;-webkit-appearance:none}
+.filter-bar input:focus,.filter-bar select:focus{outline:none;border-color:var(--blue)}
+.filter-group{display:flex;flex-direction:column}
+.filter-actions{display:flex;gap:8px}
+.btn-apply{background:var(--blue);color:#fff;border:none;padding:10px 16px;border-radius:var(--r-sm);cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;flex:1}
+.btn-reset{background:#fff;color:var(--text-muted);border:1.5px solid var(--border);padding:10px 12px;border-radius:var(--r-sm);cursor:pointer;font-size:13px;font-family:inherit}
+/* ══ SECTIONS ══ */
 .section{display:none}.section.active{display:block}
-
-/* ─── KPI CARDS ─── */
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);transition:box-shadow .2s;position:relative;overflow:hidden}
+.error-bar{background:var(--danger-bg);border:1px solid #ffcdd2;border-radius:var(--r-sm);padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--danger);display:none}
+/* ══ KPI ══ */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.kpi-accent::before{background:var(--blue)}
-.kpi-green::before{background:var(--success)}
-.kpi-red::before{background:var(--danger)}
-.kpi-blue::before{background:var(--sky)}
-.kpi:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
-.kpi-label{font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.kpi-value{font-size:28px;font-weight:700;color:var(--text);line-height:1}
-.kpi-sub{font-size:11px;color:var(--text-light);margin-top:5px}
-.kpi-icon{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
-.kpi-accent .kpi-icon{background:var(--blue-light)}
-.kpi-green .kpi-icon{background:var(--success-bg)}
-.kpi-red .kpi-icon{background:var(--danger-bg)}
-.kpi-blue .kpi-icon{background:var(--sky-light,#e1f5fe)}
-
-/* ─── GRID & CARDS ─── */
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.kpi-accent::before{background:var(--blue)}.kpi-green::before{background:var(--success)}.kpi-red::before{background:var(--danger)}.kpi-blue::before{background:var(--sky)}
+.kpi-label{font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.kpi-value{font-size:20px;font-weight:700;color:var(--text)}
+.kpi-sub{font-size:10px;color:var(--text-light);margin-top:2px}
+/* ══ GRID & CARD ══ */
+.grid-2{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
 .card:last-child{margin-bottom:0}
-.card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
-.card-title-left{display:flex;align-items:center;gap:8px}
-.card-title-icon{width:28px;height:28px;border-radius:8px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:14px}
-.chart-wrap{position:relative;width:100%;height:225px}
-.chart-wrap-sm{position:relative;width:100%;height:170px}
-
-/* ─── TABLE ─── */
-.table-wrap{overflow-x:auto;max-height:320px;overflow-y:auto;border-radius:var(--r-sm);border:1px solid var(--border)}
-table{width:100%;border-collapse:collapse;font-size:12.5px}
-th{padding:11px 14px;text-align:left;font-weight:600;font-size:11px;color:var(--text-muted);border-bottom:2px solid var(--border);background:var(--surface2);position:sticky;top:0;z-index:1;letter-spacing:.3px;text-transform:uppercase}
-td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.chart-wrap{position:relative;width:100%;height:175px}
+.chart-wrap-sm{position:relative;width:100%;height:155px}
+/* ══ TABLE ══ */
+.table-wrap{overflow-x:auto;max-height:280px;overflow-y:auto;border-radius:var(--r-sm);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:380px}
+th{padding:8px 10px;text-align:left;font-weight:700;font-size:10px;color:var(--text-muted);border-bottom:2px solid var(--border);background:var(--surface2);position:sticky;top:0;z-index:1;text-transform:uppercase;letter-spacing:.3px}
+td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:#f5f9ff}
-
-/* ─── BADGES ─── */
-.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+tr:hover td{background:var(--blue-pale)}
+/* ══ MISC ══ */
+.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600}
 .badge-green{background:var(--success-bg);color:var(--success)}
 .badge-red{background:var(--danger-bg);color:var(--danger)}
 .badge-warn{background:var(--warn-bg);color:var(--warn)}
 .badge-blue{background:var(--info-bg);color:var(--info)}
 .badge-gray{background:#eef2f7;color:#5a7184}
-
-/* ─── AVATAR & ROW ─── */
-.avatar{width:32px;height:32px;border-radius:50%;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--blue);flex-shrink:0;overflow:hidden;border:2px solid #b3d4f7}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--blue);flex-shrink:0;overflow:hidden;border:2px solid #b3d4f7}
 .avatar img{width:100%;height:100%;object-fit:cover}
-.emp-row{display:flex;align-items:center;gap:10px}
-.sparkline-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.emp-row{display:flex;align-items:center;gap:8px}
+.sparkline-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
 .sparkline-row:last-child{border-bottom:none}
-.sparkline-bar-wrap{flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden}
-.sparkline-bar{height:100%;border-radius:4px}
-.progress-bar{height:6px;background:#e8f0f7;border-radius:3px;overflow:hidden;margin-top:4px}
-.progress-fill{height:100%;border-radius:3px;transition:width .4s}
-.empty{text-align:center;padding:36px;color:var(--text-light);font-size:13px}
-
-/* ─── LOADING ─── */
-.loading-overlay{position:fixed;inset:0;background:rgba(240,244,248,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:16px}
-.spinner{width:42px;height:42px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+.sparkline-bar-wrap{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.sparkline-bar{height:100%;border-radius:3px}
+.progress-bar{height:5px;background:#e8f0f7;border-radius:3px;overflow:hidden;margin-top:3px}
+.progress-fill{height:100%;border-radius:3px}
+.empty{text-align:center;padding:28px;color:var(--text-light);font-size:13px}
+.loading-overlay{position:fixed;inset:0;background:rgba(240,244,248,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:14px}
+.spinner{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-overlay p{font-size:14px;color:var(--text-muted);font-weight:500}
+.loading-overlay p{font-size:13px;color:var(--text-muted);font-weight:500}
 .loading-sheet{font-size:12px;color:var(--text-light);margin-top:-8px}
-
-/* ─── RESPONSIVE ─── */
-@media(max-width:900px){
-  .sidebar{width:60px}
-  .sidebar-logo h1,.sidebar-logo p,.nav-item span,.nav-badge,.sidebar-label,.sync-info,.sidebar-bottom .sync-btn span{display:none}
-  .sidebar-logo-icon{margin:0 auto}
-  .sidebar-logo{padding:14px 9px}
-  .nav-item{justify-content:center;padding:12px 0}
-  .nav-icon{width:auto}
-  .app-body{margin-left:60px}
-  .grid-2{grid-template-columns:1fr}
-  .main{padding:16px}
+#perfReportCards{display:grid;grid-template-columns:1fr;gap:10px;margin-top:4px}
+/* ══ DESKTOP ══ */
+@media(min-width:768px){
+  body{display:flex}
+  .sidebar{display:flex;flex-direction:column;width:var(--sidebar-w);flex-shrink:0;background:var(--navy);min-height:100vh;position:fixed;top:0;left:0;bottom:0;z-index:100}
+  .sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .sidebar-logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#2979d4,#29b6f6);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;margin-bottom:8px}
+  .sidebar-logo h1{font-size:14px;font-weight:700;color:#fff}.sidebar-logo p{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px}
+  .sidebar-nav{padding:12px 10px;flex:1;overflow-y:auto}.sidebar-nav::-webkit-scrollbar{width:0}
+  .sidebar-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.28);letter-spacing:1px;text-transform:uppercase;padding:10px 8px 5px;margin:0}.sidebar-label:first-child{padding-top:4px}
+  .nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--r-sm);cursor:pointer;transition:all .18s;font-size:12px;font-weight:500;color:rgba(255,255,255,.6);border:none;background:transparent;width:100%;text-align:left;font-family:inherit;margin-bottom:2px}
+  .nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+  .nav-item.active{background:var(--blue);color:#fff;box-shadow:0 2px 10px rgba(41,121,212,.35)}
+  .nav-item .nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+  .nav-item .nav-badge{margin-left:auto;background:rgba(255,255,255,.15);border-radius:20px;padding:1px 7px;font-size:10px}
+  .sidebar-bottom{padding:12px 10px;border-top:1px solid rgba(255,255,255,.08)}
+  .sync-info{padding:8px 10px;background:rgba(255,255,255,.06);border-radius:var(--r-sm);margin-bottom:8px}
+  .sync-info .gs-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#4caf50;margin-right:5px;vertical-align:middle;animation:pulse 2s infinite}
+  .sync-info span{font-size:11px;color:rgba(255,255,255,.5);vertical-align:middle}
+  #syncTime{font-size:10px;color:rgba(255,255,255,.35);display:block;margin-top:3px;padding-left:11px}
+  .sync-btn{width:100%;padding:9px;font-size:12px}
+  .app-body{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;padding-bottom:0}
+  .bottom-nav{display:none}
+  .topbar{padding:0 24px;height:60px}
+  .topbar-title{font-size:15px}
+  .main{padding:20px 24px}
+  .filter-bar{flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:12px}
+  .filter-top{display:contents}.filter-bottom{display:contents}.filter-group{flex-direction:row;align-items:center;gap:7px}
+  .filter-group label{white-space:nowrap;margin-bottom:0}
+  .filter-group input,.filter-group select{width:auto}
+  .filter-actions{display:contents}
+  .btn-apply{flex:none;padding:8px 18px}.btn-reset{padding:8px 14px}
+  .kpi-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .chart-wrap{height:225px}.chart-wrap-sm{height:170px}
+  #perfReportCards{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
 }
+
 </style>
 </head>
 <body>
@@ -213,89 +152,82 @@ tr:hover td{background:#f5f9ff}
   <div class="loading-sheet" id="loadingSheet"></div>
 </div>
 
-<!-- SIDEBAR -->
+<!-- SIDEBAR (desktop) -->
 <aside class="sidebar">
   <div class="sidebar-logo">
     <div class="sidebar-logo-icon">OR</div>
-    <h1>OnaRoll</h1>
-    <p>Management Dashboard</p>
+    <h1>OnaRoll Dashboard</h1>
+    <p>ระบบจัดการพนักงาน</p>
   </div>
-
   <nav class="sidebar-nav">
     <div class="sidebar-label">เมนูหลัก</div>
-    <button class="nav-item active" onclick="switchSection('attendance',this)">
-      <span class="nav-icon">📋</span>
-      <span>การเข้างาน</span>
-    </button>
-    <button class="nav-item" onclick="switchSection('sales',this)">
-      <span class="nav-icon">💰</span>
-      <span>ยอดขาย</span>
-    </button>
-    <button class="nav-item" onclick="switchSection('expenses',this)">
-      <span class="nav-icon">🧾</span>
-      <span>ค่าใช้จ่าย</span>
-    </button>
-    <button class="nav-item" onclick="switchSection('performance',this)">
-      <span class="nav-icon">📊</span>
-      <span>ประเมินผล</span>
-    </button>
-    <div class="sidebar-label">การเงิน</div>
-    <button class="nav-item" onclick="switchSection('payroll',this)">
-      <span class="nav-icon">💵</span>
-      <span>เงินเดือน</span>
-    </button>
+    <button class="nav-item active" onclick="switchSection('attendance',this)"><span class="nav-icon">📋</span><span>การเข้างาน</span></button>
+    <button class="nav-item" onclick="switchSection('sales',this)"><span class="nav-icon">💰</span><span>ยอดขาย</span></button>
+    <button class="nav-item" onclick="switchSection('expenses',this)"><span class="nav-icon">🧾</span><span>ค่าใช้จ่าย</span></button>
+    <button class="nav-item" onclick="switchSection('performance',this)"><span class="nav-icon">📊</span><span>ประเมินผล</span></button>
   </nav>
-
   <div class="sidebar-bottom">
     <div class="sync-info">
       <span class="gs-dot" id="gsDot" style="background:#888"></span>
       <span id="gsLabel">กำลังเชื่อมต่อ...</span>
       <span id="syncTime"></span>
     </div>
-    <button class="sync-btn" id="syncBtn" onclick="loadAllSheets()" disabled>
-      🔄 <span>รีเฟรชข้อมูล</span>
-    </button>
+    <button class="sync-btn" id="syncBtn" onclick="loadAllSheets()" disabled>🔄 รีเฟรชข้อมูล</button>
   </div>
 </aside>
 
-<!-- MAIN BODY -->
+<!-- APP BODY -->
 <div class="app-body">
+  <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-title" id="topbarTitle">การเข้างาน</div>
     <div class="topbar-right">
       <div class="gs-pill">
-        <span style="width:7px;height:7px;border-radius:50%;background:#4caf50;display:inline-block;animation:pulse 2s infinite"></span>
-        Google Sheets Live
+        <span class="gs-dot" id="gsDotTop" style="background:#888"></span>
+        <span id="gsLabelTop">กำลังโหลด...</span>
       </div>
+      <span style="font-size:10px;color:var(--text-muted)" id="syncTimeMobile"></span>
     </div>
   </div>
 
   <div class="main">
     <div class="error-bar" id="errorBar"></div>
 
+    <!-- FILTER BAR -->
     <div class="filter-bar">
-      <div class="filter-group"><label>ช่วงวันที่</label>
-        <input type="date" id="dateFrom"/>
-        <span>ถึง</span>
-        <input type="date" id="dateTo"/>
+      <div class="filter-top">
+        <div class="filter-group">
+          <label>วันเริ่มต้น</label>
+          <input type="date" id="dateFrom"/>
+        </div>
+        <div class="filter-group">
+          <label>วันสิ้นสุด</label>
+          <input type="date" id="dateTo"/>
+        </div>
       </div>
-      <div class="filter-group"><label>พนักงาน</label>
-        <select id="empFilter"><option value="">ทุกคน</option></select>
+      <div class="filter-bottom">
+        <div class="filter-group" style="flex:1;min-width:120px">
+          <label>พนักงาน</label>
+          <select id="empFilter"><option value="">ทุกคน</option></select>
+        </div>
+        <div class="filter-group" style="flex:1;min-width:120px">
+          <label>ช่วงด่วน</label>
+          <select id="quickRange">
+            <option value="">เลือกช่วง</option>
+            <option value="7">7 วันล่าสุด</option>
+            <option value="30">30 วันล่าสุด</option>
+            <option value="90">90 วันล่าสุด</option>
+            <option value="m">เดือนนี้</option>
+            <option value="prev">เดือนที่แล้ว</option>
+            <option value="all">ทั้งหมด</option>
+          </select>
+        </div>
       </div>
-      <div class="filter-group"><label>ด่วน</label>
-        <select id="quickRange">
-          <option value="">เลือกช่วง</option>
-          <option value="7">7 วันล่าสุด</option>
-          <option value="30">30 วันล่าสุด</option>
-          <option value="90">90 วันล่าสุด</option>
-          <option value="m">เดือนนี้</option>
-          <option value="prev">เดือนที่แล้ว</option>
-          <option value="all">ทั้งหมด</option>
-        </select>
+      <div class="filter-actions">
+        <button class="btn-apply" onclick="applyFilter()">🔍 ค้นหา</button>
+        <button class="btn-reset" onclick="resetFilter()">รีเซ็ต</button>
+        <span id="filterStatus" style="font-size:10px;color:var(--text-light);align-self:center"></span>
       </div>
-      <button class="btn-apply" onclick="applyFilter()">🔍 ค้นหา</button>
-      <button class="btn-reset" onclick="resetFilter()">รีเซ็ต</button>
-      <span id="filterStatus" style="font-size:11px;color:var(--text-light)"></span>
     </div>
 
   <!-- ATTENDANCE -->
@@ -316,7 +248,7 @@ tr:hover td{background:#f5f9ff}
   <!-- SALES -->
   <div class="section" id="sec-sales">
     <div class="kpi-grid" id="sales-kpi"></div>
-    <div class="card"><div class="card-title">💹 ยอดขายรายวัน</div><div class="chart-wrap" style="height:245px"><canvas id="salesLineChart" role="img" aria-label="กราฟยอดขาย">ยอดขายรายวัน</canvas></div></div>
+    <div class="card"><div class="card-title">💹 ยอดขายรายวัน</div><div class="chart-wrap"><canvas id="salesLineChart" role="img" aria-label="กราฟยอดขาย">ยอดขายรายวัน</canvas></div></div>
     <div class="grid-2">
       <div class="card"><div class="card-title">💳 ประเภทการชำระเงิน</div><div class="chart-wrap-sm"><canvas id="paymentChart" role="img" aria-label="กราฟการชำระ">การชำระเงิน</canvas></div></div>
       <div class="card"><div class="card-title">📊 ยอดขายรายเดือน</div><div class="chart-wrap-sm"><canvas id="monthlySalesChart" role="img" aria-label="ยอดขายรายเดือน">รายเดือน</canvas></div></div>
@@ -338,6 +270,7 @@ tr:hover td{background:#f5f9ff}
     </div>
   </div>
 
+  <!-- PERFORMANCE -->
   <!-- PERFORMANCE -->
   <div class="section" id="sec-performance">
     <div class="kpi-grid" id="perf-kpi"></div>
@@ -437,6 +370,10 @@ function showError(msg) {
 function setConnected(ok) {
   var dot = document.getElementById("gsDot");
   var label = document.getElementById("gsLabel");
+  var dotTop = document.getElementById("gsDotTop");
+  var labelTop = document.getElementById("gsLabelTop");
+  if(dotTop) dotTop.style.background = ok ? "#4caf50" : "#e53935";
+  if(labelTop) labelTop.textContent = ok ? "เชื่อมต่อแล้ว" : "ไม่สำเร็จ";
   if (dot) dot.style.background = ok ? "#4caf50" : "#e53935";
   if (label) label.textContent = ok ? "เชื่อมต่อแล้ว" : "เชื่อมต่อไม่สำเร็จ";
 }
@@ -517,8 +454,9 @@ async function loadAllSheets() {
     initFilters();
     renderSection();
     var now = new Date();
-    document.getElementById("syncTime").textContent =
-      "อัพเดต " + now.toLocaleTimeString("th-TH", {hour:"2-digit", minute:"2-digit"});
+    var st = now.toLocaleTimeString("th-TH", {hour:"2-digit", minute:"2-digit"});
+    document.getElementById("syncTime").textContent = "อัพเดต " + st;
+    var sm = document.getElementById("syncTimeMobile"); if(sm) sm.textContent = "อัพเดต "+st;
     setConnected(true);
   } catch(e) {
     setConnected(false);
@@ -1180,5 +1118,25 @@ loadAllSheets();
 
 </div><!-- end main -->
 </div><!-- end app-body -->
+
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bottom-nav">
+  <button class="bnav-btn active" id="bn-att" onclick="bnavSwitch('attendance',this)"><div class="bnav-icon">📋</div><div class="bnav-label">เข้างาน</div></button>
+  <button class="bnav-btn" id="bn-sal" onclick="bnavSwitch('sales',this)"><div class="bnav-icon">💰</div><div class="bnav-label">ยอดขาย</div></button>
+  <button class="bnav-btn" id="bn-exp" onclick="bnavSwitch('expenses',this)"><div class="bnav-icon">🧾</div><div class="bnav-label">รายจ่าย</div></button>
+  <button class="bnav-btn" id="bn-per" onclick="bnavSwitch('performance',this)"><div class="bnav-icon">📊</div><div class="bnav-label">ประเมินผล</div></button>
+</nav>
+<script>
+function bnavSwitch(name, btn) {
+  document.querySelectorAll(".bnav-btn").forEach(function(b){b.classList.remove("active")});
+  btn.classList.add("active");
+  // find sidebar nav-item
+  var sideItems = document.querySelectorAll(".nav-item");
+  var fakeBtn = null;
+  sideItems.forEach(function(b){ if(b.getAttribute("onclick") && b.getAttribute("onclick").includes("'"+name+"'")) fakeBtn=b; });
+  if(fakeBtn) switchSection(name, fakeBtn);
+  else switchSection(name, {classList:{add:function(){},remove:function(){},toggle:function(){}}});
+}
+</script>
 </body>
 </html>
