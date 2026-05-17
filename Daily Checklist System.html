@@ -791,16 +791,24 @@ input,textarea,select{font-size:16px!important}
                         if (ph && ph.parentNode) ph.remove();
                     };
                     img.onerror = function() {
-                        wrap.innerHTML = '';
-                        const err = document.createElement('span');
-                        err.style.cssText = 'font-size:11px;color:#e74c3c;padding:8px';
-                        err.textContent = 'โหลดรูปไม่สำเร็จ';
-                        wrap.appendChild(err);
+                        // ซ่อน slot ที่โหลดไม่ได้ทิ้งเลย ไม่แสดง error ที่รก UI
+                        wrap.style.display = 'none';
+                        // ลบ dot indicator ของรูปนี้ด้วย
+                        const dots = document.querySelectorAll('#pagination-dots .dot');
+                        if (dots[i]) dots[i].style.display = 'none';
                     };
                     wrap.appendChild(img);
                     gallery.appendChild(wrap);
                     // stagger load 150ms ต่อรูป ไม่แย่ง bandwidth
-                    setTimeout(function() { img.src = u; }, i * 150);
+                    // ล้าง URL ก่อน — กันกรณี URL มี quote หรือ > ปะปน
+                    const cleanUrl = u.trim().replace(/['"<>]/g, '');
+                    setTimeout(function() {
+                        if (cleanUrl.startsWith('http')) {
+                            img.src = cleanUrl;
+                        } else {
+                            img.onerror();
+                        }
+                    }, i * 150);
                 });
             }
 
