@@ -1,232 +1,408 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Checklist Hub Pro - Intelligence Console</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap');
-        :root { --primary: #2563eb; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --dark: #0f172a; }
-        body { font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif; background-color: #f8fafc; color: #1e293b; -webkit-tap-highlight-color: transparent; }
-        
-        .app-header { 
-            background: linear-gradient(135deg, var(--dark) 0%, #1e293b 100%); 
-            border-bottom-left-radius: 3.5rem; border-bottom-right-radius: 3.5rem; 
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12); 
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Daily Checklist — OnaRoll</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Kanit",sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;padding-bottom:80px;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#1a2b5e;--blue:#2979d4;--blue-light:#e8f1fd;--blue-pale:#f0f6ff;
+  --surface:#fff;--surface2:#f7fafd;--bg:#f0f4f8;
+  --text:#1a2332;--muted:#5a7184;--light:#92a8bb;--border:#dde6ef;
+  --success:#00897b;--success-bg:#e0f5f2;
+  --danger:#e53935;--danger-bg:#fdecea;
+  --warn:#f57c00;--warn-bg:#fff3e0;
+  --r:12px;--r-sm:8px;
+  --shadow:0 2px 8px rgba(26,43,94,.08);
+  --shadow-md:0 6px 24px rgba(26,43,94,.13);
+}
+input,textarea,select{font-size:16px!important}
+.or-hidden{display:none!important}
 
-        /* 🟦 Stat Boxes */
-        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 1.25rem; }
-        .premium-stat-box {
-            position: relative; aspect-ratio: 1 / 0.8; border-radius: 1.5rem;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 0.5rem; color: white; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.08); cursor: pointer;
-        }
-        .premium-stat-box:active { transform: scale(0.92); }
-        .active-filter { ring: 3px solid white; ring-offset: 2px; transform: scale(1.05); z-index: 10; }
-        .stat-done { background: linear-gradient(145deg, #3b82f6, #1d4ed8); border-bottom: 4px solid #1e40af; }
-        .stat-fix { background: linear-gradient(145deg, #f59e0b, #d97706); border-bottom: 4px solid #b45309; }
-        .stat-pending { background: linear-gradient(145deg, #f43f5e, #be123c); border-bottom: 4px solid #9f1239; }
-        .stat-label { font-size: 0.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.1rem; opacity: 0.85; }
-        .stat-value { font-size: 2.2rem; font-weight: 900; font-style: italic; line-height: 1; }
+/* ══ HEADER ══ */
+.app-header{background:linear-gradient(135deg,#1a2b5e 0%,#243580 100%);border-radius:0 0 26px 26px;padding:18px 18px 14px;color:#fff;box-shadow:0 8px 24px rgba(26,43,94,.28);position:sticky;top:0;z-index:60}
+.hdr-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:10px}
+.hdr-brand .hdr-title{font-size:15px;font-weight:700;color:#fff;line-height:1.2}
+.hdr-brand .hdr-sub{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
+.hdr-right{text-align:right;flex-shrink:0}
+.hdr-pct{font-size:36px;font-weight:700;color:#fff;line-height:1;letter-spacing:-1px}
+.hdr-status{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px}
+.btn-sync{width:34px;height:34px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;transition:all .2s;flex-shrink:0;margin-top:4px}
+.btn-sync:active{background:rgba(255,255,255,.25)}
 
-        /* 💊 Navigation */
-        .nav-tabs-container { display: flex; align-items: center; justify-content: center; padding: 6px; background-color: rgba(255, 255, 255, 0.1); border-radius: 9999px; margin-top: 1.2rem; width: fit-content; margin-left: auto; margin-right: auto; backdrop-blur-md; }
-        .tab-btn { padding: 8px 16px; border-radius: 9999px; font-size: 10px; font-weight: 800; color: rgba(255, 255, 255, 0.5); transition: all 0.3s; cursor: pointer; border: none; background: transparent; }
-        .tab-active { background-color: white !important; color: var(--dark) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+/* Progress */
+.prog-wrap{margin-bottom:13px}
+.prog-meta{display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.4);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px}
+.prog-track{height:5px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#29b6f6,#4caf50);border-radius:3px;transition:width 1s ease}
 
-        /* 💊 Task UI */
-        .task-capsule { 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 1.2rem 1.4rem; background: white; border-radius: 2.5rem; 
-            margin-bottom: 0.8rem; border: 1px solid #f1f5f9; 
-            box-shadow: 0 4px 12px -5px rgba(0, 0, 0, 0.04);
-            transition: all 0.2s ease; text-align: left;
-        }
-        .border-done { border-left: 6px solid var(--success); }
-        .border-fix { border-left: 6px solid var(--warning); }
-        .border-pending { border-left: 6px solid #e2e8f0; }
+/* Tab pills */
+.tab-pills{display:flex;background:rgba(255,255,255,.1);border-radius:24px;padding:3px;gap:2px}
+.tab-btn{flex:1;padding:8px 6px;border-radius:21px;border:none;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.55);background:transparent;white-space:nowrap;text-transform:uppercase;letter-spacing:.3px}
+.tab-btn.tab-active{background:#fff;color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.tab-btn:active{transform:scale(.96)}
 
-        .confirm-btn {
-            width: 3.5rem; height: 3.5rem; border-radius: 9999px; border-width: 4px;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.3s; flex-shrink: 0;
-        }
-        .btn-ready { @apply border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-200 cursor-pointer active:scale-90; }
-        .btn-not-ready { @apply border-slate-100 bg-white text-slate-100 cursor-not-allowed opacity-50; }
+/* ══ MAIN ══ */
+.main{max-width:600px;margin:0 auto;padding:16px 14px}
 
-        .thumb-square { width: 44px; height: 44px; min-width: 44px; border-radius: 0.85rem; object-fit: cover; border: 2px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.06); margin-left: 0.6rem; }
-        
-        .image-gallery { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 5px; }
-        .image-gallery::-webkit-scrollbar { display: none; }
-        .gallery-item { flex: 0 0 85%; aspect-ratio: 1 / 1; scroll-snap-align: center; border-radius: 2rem; overflow: hidden; border: 3px solid white; background-color: #f1f5f9; }
-        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
-        .dot { width: 5px; height: 5px; border-radius: 50%; background-color: #e2e8f0; transition: all 0.3s ease; }
-        .dot.active { background-color: var(--primary); width: 15px; border-radius: 4px; }
+/* ══ DASHBOARD ══ */
+.dash-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding:10px 14px;background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow)}
+.dt-left .dt-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.dt-left .dt-pos{font-size:12px;font-weight:700;color:var(--blue);margin-top:2px}
+.date-picker{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:7px 12px;font-family:inherit;font-size:13px;font-weight:700;color:var(--blue);background:#fff;outline:none;cursor:pointer;-webkit-appearance:none}
+.date-picker:focus{border-color:var(--blue)}
 
-        .date-capsule-container {
-            @apply flex items-center bg-white rounded-full border border-slate-200 shadow-sm px-4 py-2 relative overflow-hidden;
-            max-width: 160px;
-        }
-        .date-input-premium {
-            @apply font-black text-blue-600 text-xs outline-none bg-transparent border-none p-0 cursor-pointer;
-            -webkit-appearance: none; appearance: none;
-            width: 100%; text-align: center;
-            z-index: 10;
-        }
-        .date-input-premium::-webkit-calendar-picker-indicator {
-            position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
-        }
+/* KPI strip */
+.kpi-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.kpi-box{border-radius:var(--r);padding:14px 10px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.kpi-box::after{content:"";position:absolute;inset:0;border-radius:var(--r);border:3px solid transparent;transition:border-color .2s}
+.kpi-box.kb-blue{background:linear-gradient(145deg,#2979d4,#1565c0);box-shadow:0 4px 14px rgba(41,121,212,.35)}
+.kpi-box.kb-warn{background:linear-gradient(145deg,#f57c00,#e65100);box-shadow:0 4px 14px rgba(245,124,0,.35)}
+.kpi-box.kb-red{background:linear-gradient(145deg,#e53935,#b71c1c);box-shadow:0 4px 14px rgba(229,57,53,.35)}
+.kpi-box.active-filter::after{border-color:rgba(255,255,255,.55)}
+.kpi-box.active-filter{transform:scale(1.04);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.kpi-box:active{transform:scale(.95)}
+.kb-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.kb-value{font-size:30px;font-weight:700;color:#fff;line-height:1}
 
-        .filter-pill { @apply flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-tight border border-blue-100 shadow-sm animate-in zoom-in; }
-        .modal-zoom { animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-    </style>
+/* Chart */
+.chart-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:14px}
+.chart-card-hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:10px}
+.chart-card-title{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px}
+.chart-hint{font-size:10px;color:var(--blue);font-weight:600}
+.chart-wrap{height:160px;position:relative}
+
+/* Timeline section */
+.tl-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px}
+.tl-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.filter-chips{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.filter-pill{background:var(--blue-light);color:var(--blue);border:1px solid #b3d4f7;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px}
+.filter-pill.staff-pill{background:var(--blue);color:#fff;border-color:var(--blue)}
+.filter-pill .x{font-size:12px;opacity:.7}
+.clear-btn{font-size:11px;font-weight:700;color:var(--blue);cursor:pointer;text-decoration:underline;white-space:nowrap;background:none;border:none;font-family:inherit}
+
+/* Task capsule (timeline & checklist) */
+.task-capsule{
+  background:#fff;border:1px solid var(--border);border-radius:var(--r);
+  padding:12px 14px;margin-bottom:8px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  cursor:pointer;transition:all .18s;box-shadow:var(--shadow);
+  border-left:4px solid var(--border);text-align:left;
+}
+.task-capsule:active{transform:scale(.98);box-shadow:var(--shadow-md)}
+.border-done{border-left-color:var(--success)}
+.border-fix{border-left-color:var(--warn);background:#fffcf5}
+.border-pending{border-left-color:#dde6ef}
+.thumb-square{width:44px;height:44px;min-width:44px;border-radius:10px;object-fit:cover;border:2px solid var(--border);flex-shrink:0}
+
+/* Status badges */
+.s-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.sb-done{background:var(--success-bg);color:var(--success)}
+.sb-fix{background:var(--warn-bg);color:var(--warn)}
+.sb-pending{background:#eef2f7;color:var(--muted)}
+
+/* ══ CHECKLIST VIEW ══ */
+.zone-section{margin-bottom:18px}
+.zone-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px;padding:0 2px}
+.zone-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0}
+.task-capsule.border-fix{border-left-color:var(--warn)}
+
+/* Photo strip */
+.photo-strip-inner{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.pt-thumb{width:46px;height:46px;border-radius:10px;object-fit:cover;border:2px solid var(--border);box-shadow:var(--shadow)}
+.pt-add{width:46px;height:46px;border-radius:10px;background:var(--surface2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--light);flex-shrink:0;transition:all .2s}
+.pt-add:active{background:var(--blue-light);border-color:var(--blue)}
+
+/* Confirm button */
+.confirm-btn{width:48px;height:48px;border-radius:50%;border:4px solid;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;cursor:pointer}
+.btn-ready{border-color:var(--blue);background:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(41,121,212,.35)}
+.btn-ready:active{transform:scale(.88)}
+.btn-not-ready{border-color:var(--border);background:#fff;color:var(--border);cursor:not-allowed;opacity:.5}
+
+/* ══ MODAL ══ */
+.modal-bg{position:fixed;inset:0;background:rgba(10,15,30,.88);backdrop-filter:blur(5px);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-bg:not(.or-hidden){display:flex}
+.modal-box{background:#fff;border-radius:var(--r) var(--r) 0 0;width:100%;max-width:540px;max-height:93vh;display:flex;flex-direction:column;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 0;flex-shrink:0}
+.fix-banner{background:var(--warn);color:#fff;padding:8px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;text-align:center;flex-shrink:0}
+.modal-hdr{padding:13px 16px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
+.modal-hdr-meta{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.modal-hdr-name{font-size:14px;font-weight:700;color:var(--blue)}
+.modal-x{width:30px;height:30px;border:1px solid var(--border);border-radius:7px;background:#fff;cursor:pointer;font-size:14px;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-body{overflow-y:auto;flex:1;padding:16px}
+.modal-body::-webkit-scrollbar{width:3px}
+.modal-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.modal-sec{margin-bottom:14px}
+.modal-sec-label{display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+
+/* Gallery */
+.image-gallery{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}
+.image-gallery::-webkit-scrollbar{display:none}
+.gallery-item{flex:0 0 85%;aspect-ratio:1;scroll-snap-align:center;border-radius:var(--r-sm);overflow:hidden;background:var(--surface2);border:2px solid var(--border)}
+.gallery-item img{width:100%;height:100%;object-fit:cover}
+.gallery-dots{display:flex;justify-content:center;gap:5px;margin-top:7px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--border);transition:all .25s}
+.dot.active{background:var(--blue);width:14px;border-radius:3px}
+
+/* Revision box */
+.revision-note-box{background:var(--warn-bg);border:1px solid #ffcc80;border-radius:var(--r-sm);padding:12px;margin-bottom:12px}
+.rn-label{font-size:10px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px}
+.rn-text{font-size:12px;color:#e65100;font-weight:600;font-style:italic;line-height:1.5}
+
+/* Fix zone */
+.staff-fix-zone{padding-top:12px;border-top:2px solid var(--border);margin-top:4px}
+.fix-photo-strip{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.photo-preview-item{width:60px;height:60px;border-radius:10px;overflow:hidden;border:2px solid var(--border)}
+.photo-preview-item img{width:100%;height:100%;object-fit:cover}
+.btn-fix-cam{width:100%;border:2px dashed #ffcc80;background:var(--warn-bg);border-radius:var(--r-sm);padding:13px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:var(--warn);transition:all .2s}
+.btn-fix-cam svg{width:22px;height:22px}
+.btn-fix-cam span{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.staff-fix-note{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-family:inherit;font-size:14px;color:var(--text);background:#fff;width:100%;outline:none;resize:none;margin-top:8px;transition:border-color .2s}
+.staff-fix-note:focus{border-color:var(--blue)}
+
+/* Manager zone */
+.manager-input-zone{margin-bottom:12px}
+.manager-input{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-family:inherit;font-size:14px;color:var(--text);background:#fff;width:100%;outline:none;resize:none;transition:border-color .2s}
+.manager-input:focus{border-color:var(--blue)}
+
+/* Meta row */
+.meta-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.meta-cell{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;text-align:center}
+.mc-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px}
+.mc-val{font-size:12px;font-weight:700;color:var(--text)}
+#manager-rating{border:none;background:transparent;font-family:inherit;font-size:14px;font-weight:700;color:var(--blue);outline:none;width:100%;text-align:center;cursor:pointer}
+
+/* Modal footer */
+.modal-footer{padding:13px 16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+.manager-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-approve{background:var(--success);color:#fff;border:none;border-radius:var(--r-sm);padding:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-approve:active{background:#00695c}
+.btn-reject{background:#fff;color:var(--danger);border:1.5px solid var(--danger);border-radius:var(--r-sm);padding:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-reject:active{background:var(--danger-bg)}
+#btn-submit-fix{width:100%;background:var(--warn);color:#fff;border:none;border-radius:var(--r-sm);padding:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.btn-line{width:100%;background:#06C755;color:#fff;border:none;border-radius:var(--r-sm);padding:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-line:active{background:#04a844}
+
+/* ══ EMPTY & TOAST ══ */
+#empty-state{text-align:center;padding:48px 20px;color:var(--light)}
+#empty-state .ei{font-size:40px;margin-bottom:12px}
+#empty-state p{font-size:13px;font-weight:500}
+#toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:1000;border-radius:var(--r);padding:11px 20px;font-weight:700;font-size:13px;color:#fff;box-shadow:var(--shadow-md);text-align:center;pointer-events:none;min-width:240px;max-width:92vw}
+
+@media(min-width:600px){
+  body{padding-bottom:0}
+  .main{padding:24px 20px}
+  .modal-box{border-radius:var(--r);margin:auto}
+  .modal-bg:not(.or-hidden){align-items:center}
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.animate-spin{animation:spin .7s linear infinite}
+</style>
 </head>
-<body class="min-h-screen pb-40 font-black text-center">
+<body>
 
-    <header class="app-header pt-12 pb-8 px-6 text-white relative font-black text-left">
-        <div class="flex justify-between items-start mb-6">
-            <div class="flex items-center gap-4">
-                <button onclick="window.location.href='Main_Hub.html'" class="p-3 bg-white/10 rounded-2xl border border-white/10 text-white transition-all active:scale-95"><svg class="w-6 h-6 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-width="2.5" /></svg></button>
-                <div><h1 class="text-2xl font-black uppercase tracking-tighter leading-tight italic text-white">รายงานภาพรวม<br/><span class="text-blue-400 font-black text-xs uppercase tracking-widest">การทำงาน</span></h1></div>
-            </div>
-            <div class="text-right flex flex-col items-end">
-                <p id="header-staff-name" class="text-[10px] font-black text-white/50 italic uppercase tracking-tighter mb-1">Verified Staff: -</p>
-                <div class="flex items-end gap-1">
-                    <span id="header-percent" class="text-5xl font-black italic tracking-tighter text-white leading-none">0%</span>
-                </div>
-            </div>
+<!-- MODAL -->
+<div id="action-modal" class="modal-bg or-hidden" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div id="fix-banner" class="fix-banner or-hidden">🚨 REVISION MODE — กรุณาดำเนินการแก้ไขงาน</div>
+    <div class="modal-hdr">
+      <div>
+        <div class="modal-hdr-meta" id="modal-header-text">Task Information</div>
+        <div class="modal-hdr-name" id="modal-task-title">—</div>
+      </div>
+      <button class="modal-x" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Gallery -->
+      <div class="modal-sec">
+        <div class="modal-sec-label">
+          <span>📸 หลักฐานการทำงาน</span>
+          <span id="gallery-count"></span>
         </div>
+        <div id="modal-gallery" class="image-gallery" onscroll="updateGalleryDots(this)"></div>
+        <div id="pagination-dots" class="gallery-dots"></div>
+      </div>
 
-        <div class="px-2 space-y-2">
-            <div class="flex justify-between items-center text-[8px] font-black uppercase tracking-[0.2em] opacity-40">
-                <span>Job Efficiency Goal</span>
-                <span id="job-status-text" class="text-emerald-400 italic">Connected</span>
-            </div>
-            <div class="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                <div id="header-progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-emerald-400 transition-all duration-1000" style="width: 0%;"></div>
-            </div>
+      <!-- Revision note -->
+      <div id="revision-note-box" class="revision-note-box or-hidden">
+        <div class="rn-label">📋 คำสั่งจากเจ้าของร้าน:</div>
+        <div class="rn-text" id="prev-comment">—</div>
+      </div>
+
+      <!-- Staff Fix Zone -->
+      <div id="staff-fix-zone" class="staff-fix-zone or-hidden">
+        <div class="modal-sec-label" style="margin-bottom:10px">📷 แนบหลักฐานการแก้ไข (ถ่ายใหม่)</div>
+        <div id="fix-photo-strip" class="fix-photo-strip"></div>
+        <div class="btn-fix-cam" onclick="document.getElementById('fix-camera').click()">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <span>แตะถ่ายรูปยืนยันการแก้ไข</span>
         </div>
+        <textarea id="staff-fix-note" rows="2" class="staff-fix-note" placeholder="ระบุสิ่งที่แก้ไข..."></textarea>
+        <input type="file" id="fix-camera" accept="image/*" capture="environment" class="or-hidden" onchange="handleAddFixPhoto(this)">
+      </div>
 
-        <div class="nav-tabs-container mt-8 font-black">
-            <button onclick="changeTab('Opening')" id="tab-Opening" class="tab-btn font-black">เปิดร้าน</button>
-            <button onclick="changeTab('ShiftChange')" id="tab-ShiftChange" class="tab-btn font-black">ระหว่างวัน</button>
-            <button onclick="changeTab('Closing')" id="tab-Closing" class="tab-btn font-black">ปิดร้าน</button>
-            <button onclick="changeTab('Dashboard')" id="tab-Dashboard" class="tab-btn tab-active font-black font-black">แดชบอร์ด</button>
+      <!-- Manager Zone -->
+      <div id="manager-input-zone" class="manager-input-zone">
+        <div class="modal-sec-label">💬 Manager's Feedback</div>
+        <textarea id="manager-input" rows="2" class="manager-input" placeholder="ระบุคอมเมนต์..."></textarea>
+      </div>
+
+      <!-- Meta -->
+      <div class="meta-row">
+        <div class="meta-cell"><div class="mc-label">พนักงาน</div><div class="mc-val" id="modal-staff-name">—</div></div>
+        <div class="meta-cell" id="rating-zone">
+          <div class="mc-label">ประเมิน</div>
+          <select id="manager-rating">
+            <option value="5">⭐⭐⭐⭐⭐</option>
+            <option value="4">⭐⭐⭐⭐</option>
+            <option value="3">⭐⭐⭐</option>
+            <option value="2">⭐⭐</option>
+            <option value="1">⭐</option>
+          </select>
         </div>
-    </header>
-
-    <main class="max-w-xl mx-auto p-5 -mt-6 relative z-10 text-left font-black">
-        
-        <div id="dashboard-view" class="space-y-6">
-            <div class="flex justify-between items-center mb-4 font-black">
-                <div class="flex flex-col text-left">
-                    <p class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">สถานะปัจจุบัน</p>
-                    <span id="display-user-pos" class="text-xs font-black text-blue-600 italic uppercase">POS: Staff</span>
-                </div>
-                <div class="date-capsule-container font-black">
-                    <input type="date" id="dash-date-picker" onchange="fetchData()" class="date-input-premium font-black">
-                </div>
-            </div>
-
-            <div class="stat-grid font-black">
-                <div id="filter-done" onclick="setFilter('done')" class="premium-stat-box stat-done font-black"><span class="stat-label">เสร็จสิ้น</span><span id="count-done" class="stat-value">00</span></div>
-                <div id="filter-fix" onclick="setFilter('fix')" class="premium-stat-box stat-fix font-black"><span class="stat-label font-black">รอแก้ไข</span><span id="count-fix" class="stat-value">00</span></div>
-                <div id="filter-pending" onclick="setFilter('pending')" class="premium-stat-box stat-pending font-black"><span class="stat-label font-black font-black">ค้างอยู่</span><span id="count-pending" class="stat-value font-black">00</span></div>
-            </div>
-
-            <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 text-center mb-6 font-black">
-                <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <h3 class="text-[9px] font-black text-slate-400 uppercase tracking-widest italic text-left">Personnel Analytics</h3>
-                    <p class="text-[7px] text-blue-500 font-bold uppercase animate-pulse">💡 แตะที่แท่งกราฟเพื่อดูงานรายคน</p>
-                </div>
-                <div class="h-44 font-black relative" style="z-index: 1;">
-                    <canvas id="performanceChart"></canvas>
-                </div>
-            </div>
-
-            <div class="space-y-3 pb-20 font-black">
-                <div class="flex justify-between items-center px-4 h-8">
-                    <h3 class="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">Timeline Analytics</h3>
-                    <div id="filter-status-container" class="flex gap-2 items-center">
-                        <div id="status-badge" class="hidden"><button onclick="setFilter('all')" class="filter-pill font-black"><span id="status-filter-text">FILTER</span> ✕</button></div>
-                        <div id="staff-badge" class="hidden"><button onclick="setStaffFilter(null)" class="filter-pill !bg-blue-600 !text-white !border-none font-black"><span id="staff-filter-text">STAFF</span> ✕</button></div>
-                        <button id="clear-all-btn" onclick="clearAllFilters()" class="hidden text-[9px] text-blue-600 font-black uppercase underline">ล้างการกรอง</button>
-                    </div>
-                </div>
-                <div id="timeline-list" class="space-y-1.5 font-black"></div>
-            </div>
-        </div>
-
-        <div id="checklist-view" class="hidden space-y-4 pb-24 font-black text-center">
-            <div id="checklist-container" class="space-y-6"></div>
-            <div id="empty-state" class="hidden py-40 text-center text-slate-300 italic font-black uppercase tracking-widest">Everything is clear.</div>
-        </div>
-    </main>
-
-    <!-- 📜 Action Modal -->
-    <div id="action-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[500] hidden flex items-center justify-center p-4 font-black">
-        <div class="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden flex flex-col max-h-[90vh] shadow-2xl modal-zoom font-black text-left">
-            <div id="fix-banner" class="hidden bg-orange-500 py-3 text-white text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3">
-                <span class="animate-pulse font-black font-black">🚨 REVISION MODE / กรุณาดำเนินการแก้ไขงาน</span>
-            </div>
-            <div class="p-6 bg-slate-50 border-b flex justify-between items-center font-black">
-                <div><h3 id="modal-header-text" class="font-black text-slate-900 uppercase italic tracking-tighter text-xs font-black">Task Information</h3><p id="modal-task-title" class="text-[10px] text-blue-600 font-bold uppercase mt-1 font-black">TASK NAME</p></div>
-                <button onclick="closeModal()" class="p-2 border rounded-xl text-slate-400 font-black font-black font-black transition-all active:scale-95">✕</button>
-            </div>
-            <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-white font-black text-left">
-                <div class="space-y-3 font-black">
-                    <div class="flex justify-between items-center px-1 font-black"><label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Evidence Review</label><span id="gallery-count" class="text-[9px] font-black text-blue-600">1 / 1</span></div>
-                    <div id="modal-gallery" class="image-gallery font-black" onscroll="updateGalleryDots(this)"></div>
-                    <div id="pagination-dots" class="flex justify-center gap-1.5 mt-2"></div>
-                </div>
-                <div id="revision-note-box" class="hidden bg-orange-50 p-5 rounded-3xl border border-orange-200 font-black">
-                    <p class="text-[9px] font-black text-orange-600 uppercase tracking-widest mb-1 italic underline">คำสั่งจากเจ้าของร้าน:</p>
-                    <p id="prev-comment" class="text-xs text-orange-800 font-bold italic leading-relaxed">-</p>
-                </div>
-                <div id="staff-fix-zone" class="hidden space-y-4 pt-4 border-t-2 border-slate-50 font-black">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2 font-black">แนบหลักฐานการแก้ไข (ถ่ายใหม่)</label>
-                    <div id="fix-photo-strip" class="photo-strip font-black"></div>
-                    <button onclick="document.getElementById('fix-camera').click()" class="w-full py-4 bg-orange-50 border-2 border-dashed border-orange-200 rounded-2xl flex flex-col items-center justify-center gap-1 active:scale-95 transition-all text-orange-400">
-                        <svg class="w-6 h-6 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-width="2"></path><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" stroke-width="2"></path></svg>
-                        <span class="text-[8px] font-black uppercase font-black">แตะถ่ายรูปยืนยันการแก้</span>
-                        <input type="file" id="fix-camera" accept="image/*" capture="environment" class="hidden font-black" onchange="handleAddFixPhoto(this)">
-                    </button>
-                    <textarea id="staff-fix-note" rows="2" class="w-full p-4 rounded-2xl border-2 border-slate-100 outline-none text-sm font-bold font-black" placeholder="ระบุสิ่งที่แก้ไข..."></textarea>
-                </div>
-                <div id="manager-input-zone" class="space-y-3 font-black text-left">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2 font-black">Manager's Feedback</label>
-                    <textarea id="manager-input" rows="2" class="w-full p-4 rounded-2xl bg-slate-50 border-2 border-slate-100 focus:border-blue-500 outline-none text-sm font-black font-black font-black" placeholder="ระบุคอมเมนต์..."></textarea>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="p-4 bg-slate-50 rounded-2xl border text-center font-black"><span class="text-[9px] font-black text-slate-400 uppercase block mb-1">พนักงาน</span><p id="modal-staff-name" class="font-black text-slate-700 italic font-black">-</p></div>
-                    <div id="rating-zone" class="p-4 bg-slate-50 rounded-2xl border text-center font-black font-black font-black"><span class="text-[9px] font-black text-slate-400 uppercase block mb-1 font-black">ประเมิน</span><select id="manager-rating" class="bg-transparent font-black text-blue-600 outline-none text-xs w-full text-center font-black"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select></div>
-                </div>
-            </div>
-            <div class="p-6 bg-slate-50 border-t space-y-3 font-black">
-                <div id="manager-actions" class="flex gap-3 font-black">
-                    <button onclick="saveManagerReview('Fix Required')" class="flex-1 py-4 bg-rose-500 text-white rounded-2xl font-black text-[10px] uppercase shadow-lg font-black transition-all active:scale-95">สั่งแก้ไขงาน</button>
-                    <button onclick="saveManagerReview('Completed')" class="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-black text-[10px] uppercase shadow-lg font-black transition-all active:scale-95">อนุมัติผ่าน</button>
-                </div>
-                <button id="btn-submit-fix" onclick="submitStaffFix()" class="hidden w-full py-5 bg-orange-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all active:scale-95">ยืนยันการแก้ไขและส่งงานใหม่</button>
-                <button onclick="sendToLine()" class="w-full py-4 bg-[#06C755] text-white rounded-2xl font-black text-[10px] uppercase shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 10.3c0-4.5-4.5-8.3-10-8.3S4 5.8 4 10.3c0 4 3.5 7.4 8.3 8.1l-1.1 2.2c-.1.2 0 .5.2.6.1.1.2.1.3.1.1 0 .2 0 .3-.1l2.5-1.9c4.3-.8 9.5-4.2 9.5-9z"/></svg>
-                    ส่งความเห็นเข้า LINE
-                </button>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden font-black" onchange="handleImageCaptured(this)">
-    <div id="toast" class="fixed top-10 left-1/2 -translate-x-1/2 z-[1000] px-10 py-6 rounded-full shadow-2xl bg-slate-900 text-white font-black text-center min-w-[300px] border-b-4 border-blue-600 opacity-0 pointer-events-none transition-all font-black"></div>
+    <!-- Footer -->
+    <div class="modal-footer">
+      <div id="manager-actions" class="manager-actions">
+        <button class="btn-reject" onclick="saveManagerReview('Fix Required')">🔴 สั่งแก้ไขงาน</button>
+        <button class="btn-approve" onclick="saveManagerReview('Completed')">✅ อนุมัติผ่าน</button>
+      </div>
+      <button id="btn-submit-fix" class="or-hidden" onclick="submitStaffFix()">✅ ยืนยันการแก้ไขและส่งงานใหม่</button>
+      <button class="btn-line" onclick="sendToLine()">
+        <svg width="17" height="17" fill="currentColor" viewBox="0 0 24 24"><path d="M24 10.3c0-4.5-4.5-8.3-10-8.3S4 5.8 4 10.3c0 4 3.5 7.4 8.3 8.1l-1.1 2.2c-.1.2 0 .5.2.6.1.1.2.1.3.1.1 0 .2 0 .3-.1l2.5-1.9c4.3-.8 9.5-4.2 9.5-9z"/></svg>
+        ส่งความเห็นเข้า LINE
+      </button>
+    </div>
+  </div>
+</div>
 
-    <script>
-        Chart.register(ChartDataLabels);
+<!-- CAMERA INPUT (hidden) -->
+<input type="file" id="camera-input" accept="image/*" capture="environment" class="or-hidden" onchange="handleImageCaptured(this)">
+
+<!-- TOAST -->
+<div id="toast" class="or-hidden"></div>
+
+<!-- ══ HEADER ══ -->
+<div class="app-header">
+  <div class="hdr-top">
+    <div class="hdr-brand">
+      <div class="hdr-title">Daily Checklist</div>
+      <div class="hdr-sub" id="header-staff-name">Staff: —</div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="hdr-right">
+      <div class="hdr-pct" id="header-percent">0%</div>
+      <div class="hdr-status" id="job-status-text">กำลังโหลด...</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <button class="btn-sync" onclick="fetchData()">
+        <svg id="sync-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="prog-wrap">
+    <div class="prog-meta">
+      <span>Job Efficiency</span>
+      <span id="display-user-pos">Staff</span>
+    </div>
+    <div class="prog-track">
+      <div class="prog-fill" id="header-progress-bar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="tab-pills">
+    <button class="tab-btn" id="tab-Opening" onclick="changeTab('Opening')">เปิดร้าน</button>
+    <button class="tab-btn" id="tab-ShiftChange" onclick="changeTab('ShiftChange')">ระหว่างวัน</button>
+    <button class="tab-btn" id="tab-Closing" onclick="changeTab('Closing')">ปิดร้าน</button>
+    <button class="tab-btn tab-active" id="tab-Dashboard" onclick="changeTab('Dashboard')">แดชบอร์ด</button>
+  </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- DASHBOARD VIEW -->
+  <div id="dashboard-view">
+
+    <!-- Toolbar -->
+    <div class="dash-toolbar">
+      <div class="dt-left">
+        <div class="dt-label">สถานะประจำวัน</div>
+        <div class="dt-pos" id="display-user-pos2"></div>
+      </div>
+      <input type="date" id="dash-date-picker" onchange="fetchData()" class="date-picker">
+    </div>
+
+    <!-- KPI -->
+    <div class="kpi-strip">
+      <div class="kpi-box kb-blue" id="filter-done" onclick="setFilter('done')">
+        <div class="kb-label">เสร็จสิ้น</div>
+        <div class="kb-value" id="count-done">00</div>
+      </div>
+      <div class="kpi-box kb-warn" id="filter-fix" onclick="setFilter('fix')">
+        <div class="kb-label">รอแก้ไข</div>
+        <div class="kb-value" id="count-fix">00</div>
+      </div>
+      <div class="kpi-box kb-red" id="filter-pending" onclick="setFilter('pending')">
+        <div class="kb-label">ค้างอยู่</div>
+        <div class="kb-value" id="count-pending">00</div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-card">
+      <div class="chart-card-hdr">
+        <div class="chart-card-title">
+          <span style="width:4px;height:18px;background:var(--blue);border-radius:2px;display:inline-block"></span>
+          ผลงานรายคน
+        </div>
+        <span class="chart-hint">แตะแท่งเพื่อกรอง</span>
+      </div>
+      <div class="chart-wrap"><canvas id="performanceChart"></canvas></div>
+    </div>
+
+    <!-- Timeline -->
+    <div>
+      <div class="tl-hdr">
+        <div class="tl-title">รายการงานทั้งหมด</div>
+        <div class="filter-chips" id="filter-status-container">
+          <div id="status-badge" class="or-hidden">
+            <button class="filter-pill" onclick="setFilter('all')"><span id="status-filter-text">FILTER</span><span class="x">✕</span></button>
+          </div>
+          <div id="staff-badge" class="or-hidden">
+            <button class="filter-pill staff-pill" onclick="setStaffFilter(null)"><span id="staff-filter-text">STAFF</span><span class="x">✕</span></button>
+          </div>
+          <button id="clear-all-btn" class="clear-btn or-hidden" onclick="clearAllFilters()">ล้าง</button>
+        </div>
+      </div>
+      <div id="timeline-list" style="padding-bottom:16px"></div>
+    </div>
+  </div>
+
+  <!-- CHECKLIST VIEW -->
+  <div id="checklist-view" class="or-hidden" style="padding-bottom:24px">
+    <div id="checklist-container"></div>
+    <div id="empty-state" class="or-hidden">
+      <div class="ei">✅</div>
+      <p>ไม่มีงานค้างในช่วงนี้</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+Chart.register(ChartDataLabels);
         const API_URL = 'https://script.google.com/macros/s/AKfycbxxjcQkhViS0-_7HVY_Ud9ADeKfXxBrq30hegHai_AGrjgQm_oTliQuMB1dpLe75Zc/exec';
         const IMGBB_KEY = '412005bc434fd396c0f0163133dfa205';
 
@@ -279,11 +455,36 @@
             } catch (e) { return "-"; }
         };
 
+        
+        // ── CACHE (3 min TTL) ──────────────────────────────────────────────
+        const CACHE_KEY = 'or_checklist_v2';
+        const CACHE_TTL = 3 * 60 * 1000;
+        function _saveCache() {
+            try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), masterTasks, todayRecordsMap, fullHistory })); } catch(e) {}
+        }
+        function _loadCache() {
+            try {
+                const raw = localStorage.getItem(CACHE_KEY);
+                if (!raw) return false;
+                const o = JSON.parse(raw);
+                if (Date.now() - o.ts > CACHE_TTL) return false;
+                masterTasks = o.masterTasks || [];
+                todayRecordsMap = o.todayRecordsMap || {};
+                fullHistory = o.fullHistory || [];
+                return true;
+            } catch(e) { return false; }
+        }
+
         window.onload = () => {
             const todayStr = new Date().toLocaleDateString('en-CA');
             document.getElementById('dash-date-picker').value = todayStr;
             document.getElementById('header-staff-name').innerText = `Staff: ${userName}`;
             document.getElementById('display-user-pos').innerText = `Status: ${userPos.toUpperCase()}`;
+            // Show cache instantly, then fetch fresh
+            if (_loadCache()) {
+                document.getElementById('job-status-text').innerText = 'Cache ⚡';
+                setTimeout(renderDashboard, 30);
+            }
             fetchData();
         };
 
@@ -305,8 +506,9 @@
                 } else {
                    renderChecklist();
                 }
-                document.getElementById('job-status-text').innerText = "Connected";
-            } catch(e) { document.getElementById('job-status-text').innerText = "System Offline"; }
+                _saveCache();
+                document.getElementById('job-status-text').innerText = "🟢 Live";
+            } catch(e) { document.getElementById('job-status-text').innerText = "⚠️ Offline"; }
             finally { icon?.classList.remove('animate-spin'); }
         }
 
@@ -315,8 +517,8 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
             document.getElementById(`tab-${tabId}`).classList.add('tab-active');
             const isDash = tabId === 'Dashboard';
-            document.getElementById('dashboard-view').classList.toggle('hidden', !isDash);
-            document.getElementById('checklist-view').classList.toggle('hidden', isDash);
+            document.getElementById('dashboard-view').classList.toggle('or-hidden', !isDash);
+            document.getElementById('checklist-view').classList.toggle('or-hidden', isDash);
             if(isDash) setTimeout(renderDashboard, 100); else renderChecklist();
         }
 
@@ -346,8 +548,8 @@
                 return belongsToTab && isForMe && (!latest || latest.status === "Fix Required");
             });
 
-            if (list.length === 0) { container.innerHTML = ""; document.getElementById('empty-state').classList.remove('hidden'); return; }
-            document.getElementById('empty-state').classList.add('hidden');
+            if (list.length === 0) { container.innerHTML = ""; document.getElementById('empty-state').classList.remove('or-hidden'); return; }
+            document.getElementById('empty-state').classList.add('or-hidden');
             const grouped = list.reduce((acc, t) => { const z = normalize(t.zone || t.โซน || 'ทั่วไป'); if(!acc[z]) acc[z] = []; acc[z].push(t); return acc; }, {});
             container.innerHTML = Object.keys(grouped).map(z => `<div class="mb-8 font-black"><h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-4 flex items-center gap-3 font-black"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full font-black"></span> ${z}</h3>${grouped[z].map(t => createTaskCard(t)).join('')}</div>`).join('');
         }
@@ -434,14 +636,14 @@
             const hasStaff = currentStaffFilter !== null;
             
             const statusBadge = document.getElementById('status-badge');
-            statusBadge.classList.toggle('hidden', !hasStatus);
+            statusBadge.classList.toggle('or-hidden', !hasStatus);
             if(hasStatus) document.getElementById('status-filter-text').innerText = { done: 'เสร็จสิ้น', fix: 'รอแก้ไข', pending: 'ค้างอยู่' }[currentStatusFilter] || 'FILTER';
             
             const staffBadge = document.getElementById('staff-badge');
-            staffBadge.classList.toggle('hidden', !hasStaff);
+            staffBadge.classList.toggle('or-hidden', !hasStaff);
             if(hasStaff) document.getElementById('staff-filter-text').innerText = currentStaffFilter;
             
-            document.getElementById('clear-all-btn').classList.toggle('hidden', !hasStatus && !hasStaff);
+            document.getElementById('clear-all-btn').classList.toggle('or-hidden', !hasStatus && !hasStaff);
             
             ['filter-done','filter-fix','filter-pending'].forEach(id => {
                 const el = document.getElementById(id);
@@ -556,12 +758,12 @@
             const status = normalize(getSmartVal(r, 'Status', 'สถานะ'));
             const isFix = status === "Fix Required";
             
-            document.getElementById('fix-banner').classList.toggle('hidden', !isFix);
-            document.getElementById('revision-note-box').classList.toggle('hidden', !isFix);
-            document.getElementById('staff-fix-zone').classList.toggle('hidden', !isFix);
-            document.getElementById('btn-submit-fix').classList.toggle('hidden', !isFix);
-            document.getElementById('manager-input-zone').classList.toggle('hidden', isFix);
-            document.getElementById('manager-actions').classList.toggle('hidden', isFix);
+            document.getElementById('fix-banner').classList.toggle('or-hidden', !isFix);
+            document.getElementById('revision-note-box').classList.toggle('or-hidden', !isFix);
+            document.getElementById('staff-fix-zone').classList.toggle('or-hidden', !isFix);
+            document.getElementById('btn-submit-fix').classList.toggle('or-hidden', !isFix);
+            document.getElementById('manager-input-zone').classList.toggle('or-hidden', isFix);
+            document.getElementById('manager-actions').classList.toggle('or-hidden', isFix);
             
             if(isFix) {
                 document.getElementById('prev-comment').innerText = `"${getSmartVal(r, 'Manager_Comment', 'คอมเมนต์จากผู้จัดการ') || "แก้ไขตามจุดที่ระบุ"}"`;
@@ -574,7 +776,7 @@
             document.getElementById('modal-gallery').innerHTML = photoUrls.map(u => `<div class="gallery-item"><img src="${u}"></div>`).join('');
             document.getElementById('pagination-dots').innerHTML = photoUrls.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
             
-            document.getElementById('action-modal').classList.remove('hidden');
+            document.getElementById('action-modal').classList.remove('or-hidden');
         }
 
         async function saveManagerReview(status) {
@@ -647,7 +849,7 @@
         }
 
         function openCamera(id) { currentTaskId = id; document.getElementById('camera-input').click(); }
-        function closeModal() { document.getElementById('action-modal').classList.add('hidden'); fixPhotos = []; }
+        function closeModal() { document.getElementById('action-modal').classList.add('or-hidden'); fixPhotos = []; }
         function showToast(m, t) { const el = document.getElementById('toast'); el.innerText = m; el.className = `fixed top-10 left-1/2 -translate-x-1/2 z-[1000] px-10 py-6 rounded-full shadow-2xl text-white font-black text-center min-w-[300px] border-b-4 opacity-100 ${t==='error'?'bg-rose-600 border-rose-900':'bg-slate-900 border-blue-600'} font-black font-black`; setTimeout(() => el.classList.replace('opacity-100', 'opacity-0'), 3500); }
         
         function sendToLine() { 
@@ -664,6 +866,158 @@
         }
         
         function updateGalleryDots(el) { const index = Math.round(el.scrollLeft / (el.offsetWidth * 0.85 + 10)); document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === index)); }
-    </script>
+
+// Patch createTaskCard inline HTML to use new CSS classes
+(function patchCreateTaskCard(){
+  const orig = createTaskCard;
+  // re-wrap photo strip and button styles
+  window.createTaskCard = function(t) {
+    const rawId = t.checklist_id || t.id;
+    const safeId = getSafeId(rawId);
+    const latest = todayRecordsMap[safeId];
+    const isFix = latest?.status === "Fix Required";
+    const photos = pendingPhotos[safeId] || [];
+    const reqVal = normalize(getSmartVal(t, "Require_Photo", "ต้องแนบรูป") || "NO").toUpperCase();
+    const isPhotoRequired = reqVal === "YES";
+    const isReady = !isPhotoRequired || photos.length > 0;
+    const taskName = t.task_name || t.รายการงาน || "—";
+    const comment = latest?.comment || "";
+    return `<div class="task-capsule ${isFix ? "border-fix" : "border-slate-100"}" style="cursor:default">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:5px">
+          ${isPhotoRequired ? `<span class="s-badge" style="background:var(--danger-bg);color:var(--danger)">📷 ต้องแนบรูป</span>` : `<span class="s-badge sb-pending">Standard</span>`}
+          ${isFix ? `<span class="s-badge sb-fix">🔴 รอแก้ไข</span>` : ""}
+        </div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.3">${taskName}</div>
+        ${isFix ? `<div style="font-size:11px;color:var(--warn);font-style:italic;margin-top:4px">🚩 "${comment}"</div>` : ""}
+        <div class="photo-strip-inner">
+          ${photos.filter(s=>s.startsWith("http")).map(s=>`<img src="${s}" class="pt-thumb">`).join("")}
+          <div class="pt-add" onclick="openCamera('${rawId}')">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+        </div>
+      </div>
+      <button onclick="${isReady ? `submitNormalTask('${rawId}','${taskName.replace(/'/g,"\\'")}','${t.time_block||t.Group}','${t.zone||t.โซน}')` : `showToast('🚨 งานนี้จำเป็นต้องแนบรูป','error')`}" class="confirm-btn ${isReady?"btn-ready":"btn-not-ready"}">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="3.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+      </button>
+    </div>`;
+  };
+})();
+
+// Patch renderChecklist to use new zone markup
+(function patchRenderChecklist(){
+  const origRender = renderChecklist;
+  window.renderChecklist = function() {
+    const container = document.getElementById("checklist-container");
+    if(!container) return;
+    const map = {"opening":"Opening","เปิดร้าน":"Opening","shiftchange":"ShiftChange","ระหว่างวัน":"ShiftChange","closing":"Closing","ปิดร้าน":"Closing"};
+    const list = masterTasks.filter(t => {
+      const taskStatus = normalize(getSmartVal(t,"Status","สถานะ")).toLowerCase();
+      const isActive = taskStatus===""||taskStatus==="active"||taskStatus==="ใช้งาน";
+      if(!isActive) return false;
+      const rawId = t.checklist_id||t.id;
+      const safeId = getSafeId(rawId);
+      const latest = todayRecordsMap[safeId];
+      const groupName = normalize(t.time_block||t.Group||"").toLowerCase();
+      const belongsToTab = map[groupName]===activeTab;
+      const taskPos = normalize(getSmartVal(t,"Position","ตำแหน่ง")).toLowerCase();
+      const userPosLower = normalize(userPos).toLowerCase();
+      const userRole = localStorage.getItem("user_role")?.toLowerCase();
+      const isForMe = userRole==="admin"||userRole==="manager"||taskPos===""||taskPos==="all"||taskPos==="ทั้งหมด"||taskPos.includes(userPosLower);
+      return belongsToTab && isForMe && (!latest||latest.status==="Fix Required");
+    });
+    if(!list.length){ container.innerHTML=""; document.getElementById("empty-state").classList.remove("or-hidden"); return; }
+    document.getElementById("empty-state").classList.add("or-hidden");
+    const grouped = list.reduce((acc,t)=>{const z=normalize(t.zone||t.โซน||"ทั่วไป");if(!acc[z])acc[z]=[];acc[z].push(t);return acc;},{});
+    container.innerHTML = Object.keys(grouped).map(z=>`<div class="zone-section"><div class="zone-label"><div class="zone-dot"></div>${z}</div>${grouped[z].map(t=>createTaskCard(t)).join("")}</div>`).join("");
+  };
+})();
+
+// Patch timeline items to use new CSS
+(function patchTimeline(){
+  const origTL = renderTimeline;
+  window.renderTimeline = function(latestDataMap, allDailyData) {
+    const list = document.getElementById("timeline-list");
+    if(!list) return;
+    let itemsToShow = [];
+    if(currentStatusFilter==="pending"){
+      itemsToShow = masterTasks.filter(task=>{
+        const s=normalize(getSmartVal(task,"Status","สถานะ")).toLowerCase();
+        if(!["","active","ใช้งาน"].includes(s)) return false;
+        const safeId=getSafeId(task.checklist_id||task.id);
+        return !latestDataMap[safeId];
+      }).map(t=>({isPendingTask:true,Checklist_ID:t.checklist_id||t.id,Task_Name:t.task_name||t.รายการงาน||t.รายการ,Staff_Name:"ยังไม่ได้ระบุ",Status:"Pending",Timestamp:"-",Photo_URL:""}));
+    } else {
+      itemsToShow = currentStaffFilter ? allDailyData : Object.values(latestDataMap);
+      if(currentStatusFilter==="done") itemsToShow=itemsToShow.filter(x=>normalize(getSmartVal(x,"Status","สถานะ"))==="Completed");
+      else if(currentStatusFilter==="fix") itemsToShow=itemsToShow.filter(x=>normalize(getSmartVal(x,"Status","สถานะ"))==="Fix Required");
+    }
+    if(currentStaffFilter&&currentStatusFilter!=="pending") itemsToShow=itemsToShow.filter(x=>normalize(getSmartVal(x,"Staff_Name","พนักงาน"))===currentStaffFilter);
+    if(!itemsToShow.length){list.innerHTML='<div style="padding:32px;text-align:center;color:var(--light);font-size:13px">ไม่พบข้อมูลประวัติ</div>';return;}
+    list.innerHTML=itemsToShow.sort((a,b)=>{
+      if(a.isPendingTask) return 1;
+      return new Date(getSmartVal(b,"Timestamp","เวลา")||0)-new Date(getSmartVal(a,"Timestamp","เวลา")||0);
+    }).map(r=>{
+      const status=normalize(getSmartVal(r,"Status","สถานะ"))||"Pending";
+      const isFix=status==="Fix Required", isPending=status==="Pending";
+      const timeStr=r.isPendingTask?"-":formatToThaiTime(getSmartVal(r,"Timestamp","เวลา"));
+      const borderCls=isPending?"border-pending":isFix?"border-fix":"border-done";
+      const badgeCls=isPending?"sb-pending":isFix?"sb-fix":"sb-done";
+      const badgeTxt=isPending?"⏳ ค้างอยู่":isFix?"🔴 รอแก้ไข":"✅ สำเร็จ";
+      const photoUrlRaw=getSmartVal(r,"Photo_URL","รูปภาพ")||"";
+      const thumbUrl=photoUrlRaw.startsWith("http")?photoUrlRaw.split(",")[0]:"";
+      return `<div class="task-capsule ${borderCls}" onclick="${isPending?`showToast('🚨 งานนี้ยังไม่มีการบันทึก')`:` openActionModal('${getSmartVal(r,"Checklist_ID","id")}')`}">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span class="s-badge ${badgeCls}">${badgeTxt}</span>
+            <span style="font-size:10px;color:var(--light);font-weight:700">${timeStr}</span>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${getSmartVal(r,"Task_Name","รายการงาน")||r.งาน||"Unknown Task"}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:600">👤 ${getSmartVal(r,"Staff_Name","พนักงาน")||"-"}</div>
+        </div>
+        ${thumbUrl?`<img src="${thumbUrl}" class="thumb-square">`:""}
+      </div>`;
+    }).join("");
+  };
+})();
+
+// Patch showToast to use new CSS
+window.showToast = function(m, t) {
+  const el = document.getElementById("toast");
+  el.innerText = m;
+  el.style.cssText = `background:${t==="error"?"var(--danger)":"var(--navy)"};opacity:1`;
+  el.classList.remove("or-hidden");
+  clearTimeout(el._tid);
+  el._tid = setTimeout(()=>{ el.style.opacity="0"; setTimeout(()=>el.classList.add("or-hidden"),300); }, 3200);
+};
+
+// Patch closeModal
+window.closeModal = function() {
+  document.getElementById("action-modal").classList.add("or-hidden");
+  fixPhotos = [];
+};
+
+// Patch changeTab to use or-hidden
+window.changeTab = function(tabId) {
+  activeTab = tabId;
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("tab-active"));
+  document.getElementById(`tab-${tabId}`).classList.add("tab-active");
+  const isDash = tabId === "Dashboard";
+  document.getElementById("dashboard-view").style.display = isDash ? "block" : "none";
+  document.getElementById("checklist-view").style.display = isDash ? "none" : "block";
+  if(isDash) setTimeout(renderDashboard,100); else renderChecklist();
+};
+
+// Patch display-user-pos2
+const _origOnload = window.onload;
+window.onload = function() {
+  _origOnload && _origOnload();
+  const p2 = document.getElementById("display-user-pos2");
+  if(p2) p2.innerText = userPos || "Staff";
+  // init views
+  document.getElementById("dashboard-view").style.display = "block";
+  document.getElementById("checklist-view").style.display = "none";
+};
+</script>
 </body>
 </html>
