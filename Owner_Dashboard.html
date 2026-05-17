@@ -151,7 +151,7 @@ html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:
   <div class="sb-logo"><div class="sb-logo-icon">OR</div><div><h1>OnaRoll</h1><p>Owner Dashboard</p></div></div>
   <div class="sb-body" id="drawerNav"></div>
   <div class="sb-footer">
-    <div class="user-card"><div class="user-avatar">OR</div><div class="user-info"><div class="uname">Owner</div><div class="urole">Full Access</div></div></div>
+    <div class="user-card"><div class="user-avatar" id="drawerAv">—</div><div class="user-info"><div class="uname" id="drawerName">—</div><div class="urole" id="drawerRole">—</div></div></div>
     <div class="sb-time" id="drawerTime">—</div>
   </div>
 </aside>
@@ -161,7 +161,7 @@ html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:
   <div class="sb-logo"><div class="sb-logo-icon">OR</div><div><h1>OnaRoll</h1><p>Owner Dashboard</p></div></div>
   <div class="sb-body" id="desktopNav"></div>
   <div class="sb-footer">
-    <div class="user-card"><div class="user-avatar">OR</div><div class="user-info"><div class="uname">Owner</div><div class="urole">Full Access</div></div></div>
+    <div class="user-card"><div class="user-avatar" id="sidebarAv">—</div><div class="user-info"><div class="uname" id="sidebarName">—</div><div class="urole" id="sidebarRole">—</div></div></div>
     <div class="sb-time" id="sidebarTime">—</div>
   </div>
 </aside>
@@ -183,7 +183,7 @@ html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:
     <div class="welcome" id="welcomeScreen">
       <div class="w-hero">
         <div class="w-logo">OR</div>
-        <div class="w-title">ยินดีต้อนรับ, Owner</div>
+        <div class="w-title" id="welcomeTitle">ยินดีต้อนรับ</div>
         <div class="w-sub">เลือกระบบจากเมนูด้านล่าง<br>หรือกดเมนูด่วนด้านล่าง</div>
       </div>
       <div class="kpi-strip">
@@ -234,26 +234,47 @@ html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:
 </div>
 
 <script>
-var NAV = [
+// ── USER จาก localStorage (set โดย index.html login) ──
+var _role = (localStorage.getItem('user_role') || 'owner').toLowerCase();
+var _name = localStorage.getItem('user_name') || 'Owner';
+var _id   = localStorage.getItem('user_id')   || 'OWNER';
+var _pos  = localStorage.getItem('user_pos')  || 'เจ้าของร้าน';
+// owner/admin เข้าได้ตรงๆ — role อื่นที่ไม่ใช่ admin/manager/user redirect กลับ
+if (_role !== 'owner' && _role !== 'admin' && _role !== 'manager' && _role !== 'user') {
+  window.location.href = 'index.html';
+}
+
+// ── NAV ทั้งหมด (แสดงตาม role) ──
+var NAV_ALL = [
   {s:'แดชบอร์ดวิเคราะห์', items:[
-    {src:'index_dashboard',title:'ภาพรวม',icon:'🏠',sub:'Overview'},
-    {src:'OR_Dashboard_Live.html',title:'แดชบอร์ดหลัก',icon:'📊',sub:'Analytics'},
+    {src:'index_dashboard',title:'ภาพรวม',icon:'🏠',sub:'Overview', roles:['owner','admin','manager','user']},
+    {src:'OR_Dashboard_Live.html',title:'แดชบอร์ดหลัก',icon:'📊',sub:'Analytics', roles:['owner','admin','manager']},
   ]},
   {s:'ระบบปฏิบัติการ', items:[
-    {src:'Manager_Console.html',title:'Manager Console',icon:'🛡️',sub:'Audit & Control',badge:'Admin'},
-    {src:'Sales Tracking.html',title:'ยอดขาย',icon:'💰',sub:'Sales Tracking'},
-    {src:'Expenses.html',title:'รายจ่าย',icon:'🧾',sub:'Expenses'},
+    {src:'Manager_Console.html',title:'Manager Console',icon:'🛡️',sub:'Audit & Control',badge:'Admin', roles:['owner','admin','manager']},
+    {src:'Daily Checklist System.html',title:'Checklist',icon:'✅',sub:'Daily Tasks', roles:['owner','admin','manager','user']},
+    {src:'Sales Tracking.html',title:'ยอดขาย',icon:'💰',sub:'Sales Tracking', roles:['owner','admin','manager']},
+    {src:'Expenses.html',title:'รายจ่าย',icon:'🧾',sub:'Expenses', roles:['owner','admin','manager']},
   ]},
   {s:'จัดการพนักงาน', items:[
-    {src:'OR_Payroll_System.html',title:'เงินเดือน',icon:'💵',sub:'Payroll'},
-    {src:'HR Management.html',title:'จัดการพนักงาน',icon:'👥',sub:'HR'},
-    {src:'Weekly Scheduler.html',title:'จัด Job',icon:'📅',sub:'Scheduler'},
+    {src:'OR_Payroll_System.html',title:'เงินเดือน',icon:'💵',sub:'Payroll', roles:['owner','admin']},
+    {src:'HR Management.html',title:'จัดการพนักงาน',icon:'👥',sub:'HR', roles:['owner','admin']},
+    {src:'Weekly Scheduler.html',title:'จัด Job',icon:'📅',sub:'Scheduler', roles:['owner','admin','manager']},
   ]},
   {s:'มาตรฐาน & คู่มือ', items:[
-    {src:'SOP Master and Training.html',title:'SOP Master',icon:'📖',sub:'Standards'},
-    {src:'Daily Checklist System.html',title:'Checklist',icon:'✅',sub:'Daily Tasks'},
+    {src:'SOP Master and Training.html',title:'SOP Master',icon:'📖',sub:'Standards', roles:['owner','admin','manager','user']},
+  ]},
+  {s:'ข้อมูลส่วนตัว', items:[
+    {src:'Employee Portal.html',title:'ข้อมูลพนักงาน',icon:'👤',sub:'My Portal', roles:['owner','admin','manager','user']},
   ]},
 ];
+
+// กรองเฉพาะเมนูที่ role นั้นมีสิทธิ์
+var NAV = NAV_ALL.map(function(g){
+  var allowed = g.items.filter(function(i){ return i.roles.indexOf(_role) !== -1; });
+  return allowed.length ? {s:g.s, items:allowed} : null;
+}).filter(Boolean);
+
 var currentSrc='', moreOpen=false;
 
 function buildNav(id) {
@@ -269,10 +290,34 @@ function buildNav(id) {
     });
     h+='<div class="sb-divider"></div>';
   });
+  // ปุ่ม logout ท้าย nav
+  h+='<div class="sb-divider"></div>';
+  h+='<button class="nav-item" style="color:rgba(239,68,68,.7)" onclick="doLogout()">'+
+    '<div class="nav-icon" style="background:rgba(239,68,68,.1)">↩</div>'+
+    '<div class="nav-label"><span class="main">ออกจากระบบ</span><span class="sub">Logout</span></div>'+
+    '</button>';
   document.getElementById(id).innerHTML=h;
 }
 buildNav('drawerNav'); buildNav('desktopNav');
 document.querySelectorAll('[data-src="index_dashboard"]').forEach(function(b){b.classList.add('active')});
+
+// ── อัปเดต user card ใน sidebar ──
+function updateUserCard(){
+  var initial = (_name||'?').charAt(0).toUpperCase();
+  var roleTh  = _role==='owner'?'Owner':_role==='admin'?'Admin':_role==='manager'?'Manager':'User';
+  ['sidebarAv','drawerAv'].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent=initial;});
+  ['sidebarName','drawerName'].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent=_name;});
+  var wt=document.getElementById('welcomeTitle'); if(wt)wt.textContent='ยินดีต้อนรับ, '+_name;
+  var ud=document.getElementById('user-display'); if(ud)ud.textContent='Staff: '+_name+' ('+roleTh+')';
+}
+updateUserCard();
+
+// ── Logout ──
+function doLogout(){
+  if(!confirm('ออกจากระบบ?'))return;
+  ['user_role','user_name','user_id','user_pos'].forEach(function(k){localStorage.removeItem(k);});
+  window.location.href='index.html';
+}
 
 function navClick(btn){
   var src=btn.getAttribute('data-src');
@@ -307,10 +352,11 @@ function loadPageByKey(src,title){
   document.getElementById('iframeWrapper').style.display='flex';
   document.getElementById('frameLoader').classList.remove('hide');
   document.getElementById('frameLoaderText').textContent='กำลังโหลด '+title+'...';
-  localStorage.setItem('user_role','admin');
-  localStorage.setItem('user_name','Owner');
-  localStorage.setItem('user_id','OWNER');
-  localStorage.setItem('user_pos','เจ้าของร้าน');
+  // ส่ง user ที่ login อยู่จริงเข้า iframe (ไม่ hardcode)
+  localStorage.setItem('user_role', _role);
+  localStorage.setItem('user_name', _name);
+  localStorage.setItem('user_id',   _id);
+  localStorage.setItem('user_pos',  _pos);
   document.getElementById('mainIframe').src=src;
 }
 function onFrameLoad(){
@@ -353,10 +399,7 @@ function updateClock(){
   if(kd){var m=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];kd.textContent=now.getDate()+' '+m[now.getMonth()]+' '+(now.getFullYear()+543);}
 }
 setInterval(updateClock,1000); updateClock();
-localStorage.setItem('user_role','admin');
-localStorage.setItem('user_name','Owner');
-localStorage.setItem('user_id','OWNER');
-localStorage.setItem('user_pos','เจ้าของร้าน');
+// user_role/name/id/pos ถูก set โดย index.html login แล้ว
 </script>
 </body>
 </html>
