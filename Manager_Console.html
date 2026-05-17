@@ -2,17 +2,17 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Manager Console — OnaRoll</title>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;font-size:14px}
+body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;font-size:14px;-webkit-tap-highlight-color:transparent}
 :root{
   --navy:#1a2b5e;--blue:#2979d4;--blue-light:#e8f1fd;--blue-pale:#f0f6ff;
   --surface:#fff;--surface2:#f7fafd;--bg:#f0f4f8;
   --text:#1a2332;--muted:#5a7184;--light:#92a8bb;
-  --border:#dde6ef;--border2:#b8cedd;
+  --border:#dde6ef;
   --success:#00897b;--success-bg:#e0f5f2;
   --danger:#e53935;--danger-bg:#fdecea;
   --warn:#f57c00;--warn-bg:#fff3e0;
@@ -25,186 +25,156 @@ body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:
 /* ─── TOPBAR ─── */
 .topbar{
   background:#fff;border-bottom:3px solid var(--blue);
-  padding:0 24px;height:60px;
+  padding:0 16px;height:56px;
   display:flex;align-items:center;justify-content:space-between;
   box-shadow:var(--shadow);position:sticky;top:0;z-index:50;
 }
-.topbar-logo{display:flex;align-items:center;gap:12px}
-.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
-.topbar-title{font-size:15px;font-weight:700;color:var(--navy)}
+.topbar-logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.topbar-title{font-size:14px;font-weight:700;color:var(--navy);line-height:1.2}
 .topbar-sub{font-size:10px;color:var(--muted)}
-.topbar-right{display:flex;align-items:center;gap:10px}
-.badge-pill{background:var(--blue-light);border:1px solid #b3d4f7;border-radius:20px;padding:4px 12px;font-size:11px;color:var(--blue);font-weight:600}
+.badge-pill{background:var(--blue-light);border:1px solid #b3d4f7;border-radius:20px;padding:4px 10px;font-size:11px;color:var(--blue);font-weight:600;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis}
 
-/* ─── LAYOUT ─── */
-.main{max-width:1100px;margin:0 auto;padding:24px 20px;display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+/* ─── MAIN ─── */
+.main{max-width:600px;margin:0 auto;padding:16px}
 
 /* ─── TABS ─── */
-.tab-bar{display:flex;gap:6px;margin-bottom:18px;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:5px;box-shadow:var(--shadow)}
-.tab-btn{flex:1;padding:9px 16px;border-radius:var(--r-sm);border:none;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;transition:all .2s;color:var(--muted);background:transparent;display:flex;align-items:center;justify-content:center;gap:7px;position:relative}
+.tab-bar{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:16px;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:4px;box-shadow:var(--shadow)}
+.tab-btn{padding:10px 8px;border-radius:var(--r-sm);border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;transition:all .2s;color:var(--muted);background:transparent;display:flex;align-items:center;justify-content:center;gap:5px}
 .tab-btn.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(41,121,212,.3)}
-.tab-btn:hover:not(.active){background:var(--blue-light);color:var(--blue)}
-.tab-dot{width:8px;height:8px;border-radius:50%;background:var(--danger);display:none}
-.tab-dot.show{display:inline-block}
-.tab-count{background:var(--danger);color:#fff;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;display:none}
+.tab-btn:active{transform:scale(.97)}
+.tab-count{background:var(--danger);color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;display:none}
 .tab-count.show{display:inline-block}
 
 /* ─── CARD ─── */
-.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
-.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.card-title{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px}
-.card-icon{width:26px;height:26px;border-radius:7px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:13px}
-.card-body{padding:18px}
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+.card:last-child{margin-bottom:0}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px}
+.card-icon{width:24px;height:24px;border-radius:6px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.card-body{padding:14px 16px}
 
-/* ─── FILTER BAR ─── */
-.filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
-.field-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:120px}
-.field-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
-.field-input{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;font-family:inherit;font-size:13px;color:var(--text);background:#fff;transition:border-color .2s;width:100%}
+/* ─── FILTER ─── */
+.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.field-group{display:flex;flex-direction:column;gap:4px}
+.field-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.field-input{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;font-family:inherit;font-size:14px;color:var(--text);background:#fff;width:100%;transition:border-color .2s;-webkit-appearance:none}
 .field-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(41,121,212,.1)}
-.btn{border:none;cursor:pointer;font-family:inherit;font-weight:600;border-radius:var(--r-sm);padding:9px 20px;font-size:13px;transition:all .2s;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
-.btn-primary{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(41,121,212,.25)}
-.btn-primary:hover{background:#1565c0}
-.btn-primary:disabled{opacity:.5;pointer-events:none}
-.btn-success{background:var(--success);color:#fff;box-shadow:0 2px 8px rgba(0,137,123,.2)}
-.btn-success:hover{background:#00695c}
-.btn-outline{background:#fff;color:var(--muted);border:1.5px solid var(--border)}
-.btn-outline:hover{background:var(--surface2)}
-
-/* ─── QUICK RANGE BUTTONS ─── */
-.quick-ranges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.quick-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .2s}
-.quick-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.btn-sync{width:100%;background:var(--blue);color:#fff;border:none;border-radius:var(--r-sm);padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 8px rgba(41,121,212,.25);transition:all .2s;margin-top:4px}
+.btn-sync:active{background:#1565c0;transform:scale(.98)}
+.btn-sync:disabled{opacity:.5;pointer-events:none}
+.quick-ranges{display:flex;gap:6px;flex-wrap:wrap}
+.quick-btn{padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .2s;-webkit-tap-highlight-color:transparent}
 .quick-btn.active{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.quick-btn:active{transform:scale(.95)}
 
-/* ─── SUMMARY HEADER ─── */
-.summary-bar{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
-  margin-bottom:16px;
-}
-.sum-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
-.sum-card::before{content:'';display:block;height:3px;border-radius:2px;margin-bottom:10px}
+/* ─── SUMMARY BAR ─── */
+.summary-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;display:none}
+.sum-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;box-shadow:var(--shadow)}
+.sum-card::before{content:'';display:block;height:3px;border-radius:2px;margin-bottom:8px}
 .sum-card.blue::before{background:var(--blue)}
 .sum-card.green::before{background:var(--success)}
 .sum-card.red::before{background:var(--danger)}
 .sum-card.purple::before{background:var(--purple)}
-.sum-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
-.sum-value{font-size:22px;font-weight:700;color:var(--navy)}
-.sum-sub{font-size:11px;color:var(--light);margin-top:3px}
+.sum-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px}
+.sum-value{font-size:24px;font-weight:700;color:var(--navy)}
+.sum-sub{font-size:10px;color:var(--light);margin-top:2px}
 
 /* ─── EMP AUDIT CARD ─── */
-.emp-audit-card{
-  border:1.5px solid var(--border);border-radius:var(--r);
-  background:#fff;transition:box-shadow .2s;margin-bottom:12px;
-  overflow:hidden;
-}
-.emp-audit-card:last-child{margin-bottom:0}
-.emp-audit-card:hover{box-shadow:var(--shadow-md)}
-.emp-audit-header{
-  padding:14px 16px;display:flex;align-items:center;gap:12px;
-  border-bottom:1px solid var(--border);background:var(--surface2);
-  cursor:pointer;
-}
-.emp-avatar{
-  width:40px;height:40px;border-radius:10px;
-  background:linear-gradient(135deg,var(--navy),var(--blue));
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;font-weight:700;color:#fff;flex-shrink:0;
-  overflow:hidden;
-}
+.emp-audit-card{border:1.5px solid var(--border);border-radius:var(--r);background:#fff;margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow)}
+.emp-audit-card:last-child{margin-bottom:80px}
+.emp-audit-header{padding:14px;display:flex;align-items:center;gap:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.emp-avatar{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,var(--navy),var(--blue));display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden}
 .emp-avatar img{width:100%;height:100%;object-fit:cover}
-.emp-name{font-size:14px;font-weight:700;color:var(--text)}
-.emp-id{font-size:11px;color:var(--muted);margin-top:2px}
-.emp-stats{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
-.stat-chip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px}
+.emp-info{flex:1;min-width:0}
+.emp-name{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emp-id{font-size:11px;color:var(--muted);margin-top:1px}
+.emp-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.stat-chip{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-flex;align-items:center;gap:3px}
 .chip-days{background:var(--blue-light);color:var(--blue)}
 .chip-late{background:var(--danger-bg);color:var(--danger)}
 .chip-ot{background:var(--purple-bg);color:var(--purple)}
+.chevron{font-size:11px;color:var(--light);transition:transform .2s;flex-shrink:0;margin-left:4px}
+.chevron.open{transform:rotate(180deg)}
 
-.emp-audit-body{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.emp-audit-body{padding:14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--border);background:var(--surface2)}
 .emp-audit-body.collapsed{display:none}
 .audit-field{display:flex;flex-direction:column;gap:5px}
 .audit-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
-.audit-input{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;font-family:inherit;font-size:13px;color:var(--text);background:var(--surface2);transition:all .2s;width:100%}
+.audit-input{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px;font-family:inherit;font-size:15px;color:var(--text);background:#fff;width:100%;transition:all .2s;-webkit-appearance:none}
 .audit-input:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(41,121,212,.1)}
-.audit-input.warn:focus{border-color:var(--warn)}
-.audit-input.danger:focus{border-color:var(--danger)}
-
-.emp-audit-footer{padding:10px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2)}
-.net-preview{font-size:12px;color:var(--muted)}
-.net-preview strong{font-size:14px;font-weight:700;color:var(--navy)}
-
-/* ─── SAVE BUTTON STICKY ─── */
-.save-sticky{
-  position:sticky;bottom:20px;z-index:20;
-  display:flex;justify-content:center;
-  pointer-events:none;
-  margin-top:16px;
-}
-.save-sticky.show{pointer-events:all}
-.save-sticky button{
-  background:var(--success);color:#fff;
-  border:none;border-radius:var(--r);
-  padding:14px 40px;font-size:14px;font-weight:700;
-  font-family:inherit;cursor:pointer;
-  box-shadow:0 6px 24px rgba(0,137,123,.35);
-  transition:all .2s;display:flex;align-items:center;gap:10px;
-  opacity:0;transform:translateY(8px);
-  transition:opacity .25s,transform .25s,background .2s;
-}
-.save-sticky.show button{opacity:1;transform:translateY(0)}
-.save-sticky button:hover{background:#00695c;box-shadow:0 8px 28px rgba(0,137,123,.4)}
-
-/* ─── RIGHT PANEL ─── */
-.right-panel{display:flex;flex-direction:column;gap:16px;position:sticky;top:80px}
+.audit-input.warn:focus{border-color:var(--warn);box-shadow:0 0 0 3px rgba(245,124,0,.1)}
+.audit-input.danger:focus{border-color:var(--danger);box-shadow:0 0 0 3px rgba(229,57,53,.1)}
+.emp-audit-footer{padding:10px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);background:var(--surface2)}
 
 /* ─── PETITION CARD ─── */
-.petition-card{
-  border:1.5px solid var(--border);border-radius:var(--r);
-  background:#fff;padding:16px;transition:box-shadow .2s;
-  margin-bottom:10px;
-}
-.petition-card:last-child{margin-bottom:0}
-.petition-card:hover{box-shadow:var(--shadow-md)}
+.petition-card{border:1.5px solid var(--border);border-radius:var(--r);background:#fff;padding:16px;margin-bottom:10px;box-shadow:var(--shadow)}
+.petition-card:last-child{margin-bottom:80px}
 .petition-type{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px}
 .type-leave{background:var(--warn-bg);color:var(--warn)}
 .type-sick{background:var(--danger-bg);color:var(--danger)}
 .type-correction{background:var(--blue-light);color:var(--blue)}
 .type-other{background:var(--surface2);color:var(--muted)}
-.petition-emp{font-size:14px;font-weight:700;color:var(--text)}
+.petition-emp{font-size:15px;font-weight:700;color:var(--text)}
 .petition-id{font-size:11px;color:var(--muted);margin-top:2px}
 .petition-date{font-size:11px;color:var(--light)}
-.petition-reason{
-  background:var(--surface2);border-radius:var(--r-sm);
-  padding:10px 12px;margin:10px 0;
-  font-size:12px;color:var(--muted);line-height:1.6;
-  border-left:3px solid var(--border2);
-}
-.petition-actions{display:flex;gap:8px}
-.btn-approve{flex:1;background:var(--success);color:#fff;border:none;border-radius:var(--r-sm);padding:9px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s}
-.btn-approve:hover{background:#00695c}
-.btn-reject{flex:1;background:#fff;color:var(--danger);border:1.5px solid var(--danger);border-radius:var(--r-sm);padding:9px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s}
-.btn-reject:hover{background:var(--danger-bg)}
+.petition-reason{background:var(--surface2);border-radius:var(--r-sm);padding:12px;margin:10px 0;font-size:13px;color:var(--muted);line-height:1.6;border-left:3px solid var(--border)}
+.petition-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.btn-approve{background:var(--success);color:#fff;border:none;border-radius:var(--r-sm);padding:12px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s}
+.btn-approve:active{background:#00695c;transform:scale(.97)}
+.btn-reject{background:#fff;color:var(--danger);border:1.5px solid var(--danger);border-radius:var(--r-sm);padding:12px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s}
+.btn-reject:active{background:var(--danger-bg);transform:scale(.97)}
 
-/* ─── LOADING / EMPTY / TOAST ─── */
-.loading-overlay{position:fixed;inset:0;background:rgba(240,244,248,.92);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+/* ─── SAVE STICKY ─── */
+.save-sticky{
+  position:fixed;bottom:0;left:0;right:0;
+  padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));
+  background:rgba(240,244,248,.95);backdrop-filter:blur(8px);
+  border-top:1px solid var(--border);z-index:40;
+  display:none;
+}
+.save-sticky.show{display:block}
+.save-sticky button{
+  width:100%;max-width:600px;margin:0 auto;display:flex;
+  background:var(--success);color:#fff;border:none;
+  border-radius:var(--r);padding:15px;
+  font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;
+  align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 4px 16px rgba(0,137,123,.3);
+}
+.save-sticky button:active{background:#00695c;transform:scale(.98)}
+
+/* ─── MISC ─── */
+.section{display:none}.section.active{display:block}
+.empty-state{text-align:center;padding:40px 20px;color:var(--light)}
+.empty-state .ei{font-size:36px;margin-bottom:10px}
+.empty-state p{font-size:13px;font-weight:500}
+.btn-sm{border:1.5px solid var(--border);background:#fff;color:var(--muted);border-radius:var(--r-sm);padding:7px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:5px}
+.btn-sm:active{background:var(--surface2)}
+.loading-overlay{position:fixed;inset:0;background:rgba(240,244,248,.95);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 .loading-overlay.show{display:flex}
 .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-overlay p{font-size:13px;color:var(--muted);font-weight:500}
-.empty-state{text-align:center;padding:40px 20px;color:var(--light)}
-.empty-state .ei{font-size:40px;margin-bottom:12px}
-.empty-state p{font-size:13px;font-weight:500}
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:300;border-radius:var(--r);padding:12px 24px;font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-md);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:300;border-radius:var(--r);padding:12px 20px;font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-md);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:90vw}
 .toast.show{opacity:1}
 .toast.success{background:var(--success);color:#fff}
 .toast.error{background:var(--danger);color:#fff}
 .toast.warn{background:var(--warn);color:#fff}
 
-.chevron{font-size:12px;color:var(--light);transition:transform .2s}
-.chevron.open{transform:rotate(180deg)}
-.section{display:none}
-.section.active{display:block}
+/* ─── DESKTOP ─── */
+@media(min-width:768px){
+  .main{max-width:1100px;display:grid;grid-template-columns:1fr 320px;gap:20px;padding:24px 20px;align-items:start}
+  .summary-bar{grid-template-columns:repeat(4,1fr)}
+  .emp-audit-card:last-child{margin-bottom:14px}
+  .petition-card:last-child{margin-bottom:0}
+  .save-sticky{position:sticky;bottom:20px;background:transparent;border:none;backdrop-filter:none;padding:0;display:none}
+  .save-sticky.show{display:flex;justify-content:center}
+  .save-sticky button{max-width:500px;border-radius:var(--r);box-shadow:0 6px 24px rgba(0,137,123,.35)}
+  .toast{bottom:30px}
+  .left-col{min-width:0}
+  .right-col{position:sticky;top:76px;display:flex;flex-direction:column;gap:14px}
+}
 </style>
 </head>
 <body>
@@ -221,40 +191,38 @@ body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:
     <div class="logo-icon">🛡️</div>
     <div>
       <div class="topbar-title">Manager Console</div>
-      <div class="topbar-sub">Audit & Approval System</div>
+      <div class="topbar-sub">Audit & Approval</div>
     </div>
   </div>
-  <div class="topbar-right">
-    <span class="badge-pill" id="topbarRange">เลือกช่วงวันที่</span>
-  </div>
+  <span class="badge-pill" id="topbarRange">เลือกช่วงวันที่</span>
 </div>
 
 <div class="main">
 
-  <!-- ─── LEFT COLUMN ─── -->
-  <div>
+  <!-- ─── LEFT COL ─── -->
+  <div class="left-col">
 
-    <!-- Tab Bar -->
+    <!-- TABS -->
     <div class="tab-bar">
       <button class="tab-btn active" id="btn-tab-audit" onclick="switchTab('audit',this)">
         📋 Audit สรุปผล
       </button>
       <button class="tab-btn" id="btn-tab-petitions" onclick="switchTab('petitions',this)">
-        📝 คำร้องรออนุมัติ
+        📝 คำร้อง
         <span class="tab-count" id="tab-count-badge">0</span>
       </button>
     </div>
 
-    <!-- ─── AUDIT TAB ─── -->
+    <!-- ─── AUDIT ─── -->
     <div class="section active" id="sec-audit">
 
       <!-- Filter Card -->
-      <div class="card" style="margin-bottom:16px">
+      <div class="card">
         <div class="card-header">
           <div class="card-title"><div class="card-icon">🗓️</div>เลือกช่วงเวลา</div>
         </div>
         <div class="card-body">
-          <div class="filter-row">
+          <div class="filter-grid">
             <div class="field-group">
               <label class="field-label">วันเริ่มต้น</label>
               <input type="date" id="start-date" class="field-input">
@@ -263,146 +231,87 @@ body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:
               <label class="field-label">วันสิ้นสุด</label>
               <input type="date" id="end-date" class="field-input">
             </div>
-            <button class="btn btn-primary" id="syncBtn" onclick="syncData()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" id="syncIcon"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-              Sync ข้อมูล
-            </button>
           </div>
-          <div class="quick-ranges" id="quickRanges">
+          <div class="quick-ranges" style="margin-bottom:10px">
             <button class="quick-btn" onclick="setRange('thisMonth')">เดือนนี้</button>
             <button class="quick-btn" onclick="setRange('lastMonth')">เดือนที่แล้ว</button>
-            <button class="quick-btn" onclick="setRange('last7')">7 วันล่าสุด</button>
-            <button class="quick-btn" onclick="setRange('last30')">30 วันล่าสุด</button>
+            <button class="quick-btn" onclick="setRange('last7')">7 วัน</button>
+            <button class="quick-btn" onclick="setRange('last30')">30 วัน</button>
           </div>
+          <button class="btn-sync" id="syncBtn" onclick="syncData()">
+            <svg id="syncIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Sync ข้อมูลจาก Google Sheets
+          </button>
         </div>
       </div>
 
-      <!-- Summary Bar -->
-      <div class="summary-bar" id="summaryBar" style="display:none">
-        <div class="sum-card blue">
-          <div class="sum-label">พนักงานทั้งหมด</div>
-          <div class="sum-value" id="sum-total">—</div>
-          <div class="sum-sub">คน</div>
-        </div>
-        <div class="sum-card green">
-          <div class="sum-label">วันงานเฉลี่ย</div>
-          <div class="sum-value" id="sum-days">—</div>
-          <div class="sum-sub">วัน/คน</div>
-        </div>
-        <div class="sum-card red">
-          <div class="sum-label">สายรวม</div>
-          <div class="sum-value" id="sum-late">—</div>
-          <div class="sum-sub">ครั้ง</div>
-        </div>
-        <div class="sum-card purple">
-          <div class="sum-label">OT รวม</div>
-          <div class="sum-value" id="sum-ot">—</div>
-          <div class="sum-sub">ชั่วโมง</div>
-        </div>
+      <!-- Summary -->
+      <div class="summary-bar" id="summaryBar">
+        <div class="sum-card blue"><div class="sum-label">พนักงาน</div><div class="sum-value" id="sum-total">—</div><div class="sum-sub">คน</div></div>
+        <div class="sum-card green"><div class="sum-label">วันงานเฉลี่ย</div><div class="sum-value" id="sum-days">—</div><div class="sum-sub">วัน/คน</div></div>
+        <div class="sum-card red"><div class="sum-label">สายรวม</div><div class="sum-value" id="sum-late">—</div><div class="sum-sub">ครั้ง</div></div>
+        <div class="sum-card purple"><div class="sum-label">OT รวม</div><div class="sum-value" id="sum-ot">—</div><div class="sum-sub">ชั่วโมง</div></div>
       </div>
 
       <!-- Audit Board -->
       <div id="audit-board">
-        <div class="empty-state">
-          <div class="ei">📊</div>
-          <p>กด "Sync ข้อมูล" เพื่อดึงสรุปผลจาก Google Sheets</p>
-        </div>
+        <div class="empty-state"><div class="ei">📊</div><p>กด Sync เพื่อดึงข้อมูล</p></div>
       </div>
 
-      <!-- Save Sticky -->
-      <div class="save-sticky" id="saveSticky">
-        <button onclick="submitAudit()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          บันทึก Audit ทั้งหมดลง Sheet
-        </button>
-      </div>
-    </div>
+    </div><!-- end sec-audit -->
 
-    <!-- ─── PETITIONS TAB ─── -->
+    <!-- ─── PETITIONS ─── -->
     <div class="section" id="sec-petitions">
       <div class="card">
         <div class="card-header">
           <div class="card-title"><div class="card-icon">📝</div>คำร้องรออนุมัติ</div>
-          <button class="btn btn-outline" style="font-size:12px;padding:6px 14px" onclick="fetchPetitions()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/></svg>
+          <button class="btn-sm" onclick="fetchPetitions()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/></svg>
             รีเฟรช
           </button>
         </div>
-        <div class="card-body" id="petition-list">
+        <div style="padding:14px" id="petition-list">
           <div class="empty-state"><div class="ei">🎉</div><p>ไม่มีคำร้องรออนุมัติ</p></div>
         </div>
       </div>
     </div>
 
-  </div><!-- end left column -->
+  </div><!-- end left-col -->
 
-  <!-- ─── RIGHT PANEL ─── -->
-  <div class="right-panel">
+  <!-- ─── RIGHT COL (desktop only) ─── -->
+  <div class="right-col" style="display:none" id="rightCol">
 
-    <!-- Pending Petitions preview -->
     <div class="card">
       <div class="card-header">
         <div class="card-title"><div class="card-icon">🔔</div>คำร้องล่าสุด</div>
-        <span id="petition-count-chip" style="background:var(--danger-bg);color:var(--danger);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">0 รอ</span>
+        <span id="petition-count-chip" style="background:var(--success-bg);color:var(--success);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">0 รอ</span>
       </div>
-      <div id="petition-preview" style="padding:16px">
-        <div class="empty-state" style="padding:20px 10px"><div class="ei" style="font-size:28px">✅</div><p style="font-size:12px">ไม่มีคำร้อง</p></div>
+      <div id="petition-preview" style="padding:14px">
+        <div class="empty-state" style="padding:20px 0"><div class="ei" style="font-size:28px">✅</div><p style="font-size:12px">ไม่มีคำร้อง</p></div>
       </div>
     </div>
 
-    <!-- Quick Guide -->
     <div class="card">
-      <div class="card-header">
-        <div class="card-title"><div class="card-icon">💡</div>วิธีใช้งาน</div>
-      </div>
-      <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
-        <div style="display:flex;gap:10px;align-items:flex-start">
-          <span style="width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</span>
-          <span style="font-size:12px;color:var(--muted);line-height:1.5">เลือกช่วงวันที่แล้วกด <strong style="color:var(--navy)">Sync ข้อมูล</strong></span>
-        </div>
-        <div style="display:flex;gap:10px;align-items:flex-start">
-          <span style="width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</span>
-          <span style="font-size:12px;color:var(--muted);line-height:1.5">กรอกข้อมูล Audit ของแต่ละคน (คลิกชื่อเพื่อขยาย)</span>
-        </div>
-        <div style="display:flex;gap:10px;align-items:flex-start">
-          <span style="width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</span>
-          <span style="font-size:12px;color:var(--muted);line-height:1.5">กด <strong style="color:var(--success)">บันทึก Audit</strong> เพื่อส่งข้อมูลขึ้น Sheet</span>
-        </div>
-        <div style="display:flex;gap:10px;align-items:flex-start">
-          <span style="width:24px;height:24px;border-radius:50%;background:var(--warn);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</span>
-          <span style="font-size:12px;color:var(--muted);line-height:1.5">ตรวจสอบคำร้องในแท็บ <strong style="color:var(--navy)">คำร้องรออนุมัติ</strong></span>
-        </div>
+      <div class="card-header"><div class="card-title"><div class="card-icon">💡</div>วิธีใช้งาน</div></div>
+      <div style="padding:14px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</span><span style="font-size:12px;color:var(--muted);line-height:1.5">เลือกช่วงวันที่ → กด <strong style="color:var(--navy)">Sync</strong></span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</span><span style="font-size:12px;color:var(--muted);line-height:1.5">คลิกชื่อพนักงาน → กรอกข้อมูล Audit</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</span><span style="font-size:12px;color:var(--muted);line-height:1.5">กด <strong style="color:var(--success)">บันทึก Audit</strong> ด้านล่าง</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:22px;height:22px;border-radius:50%;background:var(--warn);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</span><span style="font-size:12px;color:var(--muted);line-height:1.5">แท็บ <strong style="color:var(--navy)">คำร้อง</strong> → อนุมัติ/ไม่อนุมัติ</span></div>
       </div>
     </div>
 
-    <!-- Audit Fields Reference -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><div class="card-icon">📋</div>ฟิลด์ Audit</div>
-      </div>
-      <div style="padding:14px;display:flex;flex-direction:column;gap:8px">
-        <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border)">
-          <span style="color:var(--muted)">Audit Short</span>
-          <span style="color:var(--text);font-weight:600">บันทึกย่อ/ผลประเมิน</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border)">
-          <span style="color:var(--muted)">เงินเบิก</span>
-          <span style="color:var(--warn);font-weight:600">ยอดเบิกล่วงหน้า</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border)">
-          <span style="color:var(--muted)">หักสินค้า</span>
-          <span style="color:var(--danger);font-weight:600">ค่าของ/ค่าเสียหาย</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0">
-          <span style="color:var(--muted)">เงินขาดหน้าเครื่อง</span>
-          <span style="color:var(--danger);font-weight:600">ส่วนต่าง POS</span>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- end right panel -->
+  </div><!-- end right-col -->
 
 </div><!-- end main -->
+
+<!-- SAVE STICKY -->
+<div class="save-sticky" id="saveSticky">
+  <button onclick="submitAudit()">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    บันทึก Audit ทั้งหมดลง Sheet
+  </button>
+</div>
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbxvProkNuSUhJSGgO2M94x_ybX_S-9ZtRx75RsBKIMQgmuSw23P_-7z8XPAflKMq6XR9g/exec';
@@ -715,6 +624,14 @@ function toast(msg, type) {
   el.className = 'toast show ' + (type||'success');
   setTimeout(function() { el.classList.remove('show'); }, 3000);
 }
+
+// Show right col on desktop
+function checkDesktop(){
+  var rc = document.getElementById('rightCol');
+  if(rc) rc.style.display = window.innerWidth >= 768 ? 'flex' : 'none';
+}
+window.addEventListener('resize', checkDesktop);
+checkDesktop();
 </script>
 </body>
 </html>
