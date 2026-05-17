@@ -762,23 +762,47 @@ input,textarea,select{font-size:16px!important}
                 document.getElementById('manager-rating').value = '5';
             }
 
-            // lazy-load รูป — แสดง placeholder ก่อน โหลดจริงทีละรูป
-            const photoUrls = (getSmartVal(r, 'Photo_URL', 'รูปภาพ') || "").split(',').filter(u => u.startsWith('http'));
+            // lazy-load รูป — ใช้ DOM API หลีกเลี่ยงปัญหา escape ซ้อนกัน
+            const photoUrls = (getSmartVal(r, 'Photo_URL', 'รูปภาพ') || "").split(',').filter(u => u.trim().startsWith('http'));
             const gallery = document.getElementById('modal-gallery');
-            gallery.innerHTML = photoUrls.length === 0
-                ? '<p style="color:#94a3b8;font-size:12px;text-align:center;padding:20px 0">ไม่มีรูปภาพ</p>'
-                : photoUrls.map((u, i) => '<div class="gallery-item" style="position:relative;background:#f1f5f9;display:flex;align-items:center;justify-content:center;min-height:180px">'
-                    + '<span id="img-ph-' + i + '" style="font-size:11px;color:#94a3b8;position:absolute">กำลังโหลด...</span>'
-                    + '<img data-src="' + u + '" style="opacity:0;transition:opacity .3s;width:100%;height:100%;object-fit:cover"'
-                    + ' onload="this.style.opacity=1;var ph=document.getElementById(\'img-ph-' + i + '\');if(ph)ph.remove()"'
-                    + ' onerror="this.parentElement.innerHTML=\'<span style=\\\"font-size:11px;color:#e74c3c\\\">โหลดรูปไม่สำเร็จ</span>\'">'
-                    + '</div>').join('');
+            gallery.innerHTML = '';
             document.getElementById('pagination-dots').innerHTML = photoUrls.map((_, i) => '<div class="dot ' + (i===0?'active':'') + '"></div>').join('');
 
-            // stagger load — ไม่โหลดพร้อมกันทุกรูป
-            gallery.querySelectorAll('img[data-src]').forEach(function(img, i) {
-                setTimeout(function() { img.src = img.dataset.src; }, i * 120);
-            });
+            if (photoUrls.length === 0) {
+                const noImg = document.createElement('p');
+                noImg.style.cssText = 'color:#94a3b8;font-size:12px;text-align:center;padding:20px 0;width:100%';
+                noImg.textContent = 'ไม่มีรูปภาพ';
+                gallery.appendChild(noImg);
+            } else {
+                photoUrls.forEach(function(u, i) {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'gallery-item';
+                    wrap.style.cssText = 'position:relative;background:#f1f5f9;display:flex;align-items:center;justify-content:center;min-height:180px';
+
+                    const ph = document.createElement('span');
+                    ph.style.cssText = 'font-size:11px;color:#94a3b8;position:absolute';
+                    ph.textContent = 'กำลังโหลด...';
+                    wrap.appendChild(ph);
+
+                    const img = document.createElement('img');
+                    img.style.cssText = 'opacity:0;transition:opacity .3s;width:100%;height:100%;object-fit:cover';
+                    img.onload = function() {
+                        img.style.opacity = 1;
+                        if (ph && ph.parentNode) ph.remove();
+                    };
+                    img.onerror = function() {
+                        wrap.innerHTML = '';
+                        const err = document.createElement('span');
+                        err.style.cssText = 'font-size:11px;color:#e74c3c;padding:8px';
+                        err.textContent = 'โหลดรูปไม่สำเร็จ';
+                        wrap.appendChild(err);
+                    };
+                    wrap.appendChild(img);
+                    gallery.appendChild(wrap);
+                    // stagger load 150ms ต่อรูป ไม่แย่ง bandwidth
+                    setTimeout(function() { img.src = u; }, i * 150);
+                });
+            }
 
             _setEl('action-modal', true);
             document.getElementById('action-modal').style.display = 'flex';
