@@ -2,554 +2,361 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>OnaRoll — Owner Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;display:flex;overflow:hidden;height:100vh}
+html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;-webkit-tap-highlight-color:transparent}
 :root{
-  --navy:#1a2b5e;--navy-dark:#111d45;--navy-mid:#243580;
-  --blue:#2979d4;--blue-light:#e8f1fd;
+  --navy:#1a2b5e;--blue:#2979d4;--blue-light:#e8f1fd;
   --surface:#fff;--bg:#f0f4f8;
   --text:#1a2332;--muted:#5a7184;--light:#92a8bb;
   --border:#dde6ef;
   --success:#00897b;--danger:#e53935;--warn:#f57c00;
   --r:12px;--r-sm:8px;
-  --sidebar-w:240px;
   --shadow:0 2px 8px rgba(26,43,94,.08);
   --shadow-md:0 4px 20px rgba(26,43,94,.14);
+  --topbar-h:52px;
+  --bottom-nav-h:60px;
+  --sidebar-w:230px;
 }
 
-/* ─── SIDEBAR ─── */
-.sidebar{
-  width:var(--sidebar-w);flex-shrink:0;
-  background:var(--navy);
-  display:flex;flex-direction:column;
-  height:100vh;overflow-y:auto;overflow-x:hidden;
-  position:relative;z-index:10;
-}
-.sidebar::-webkit-scrollbar{width:0}
-
-.sidebar-logo{
-  padding:22px 18px 18px;
-  border-bottom:1px solid rgba(255,255,255,.07);
-  display:flex;align-items:center;gap:12px;flex-shrink:0;
-}
-.logo-icon{
-  width:40px;height:40px;flex-shrink:0;
-  background:linear-gradient(135deg,#2979d4,#29b6f6);
-  border-radius:11px;display:flex;align-items:center;justify-content:center;
-  font-size:15px;font-weight:700;color:#fff;
-  box-shadow:0 4px 12px rgba(41,121,212,.4);
-}
-.logo-text h1{font-size:15px;font-weight:700;color:#fff;line-height:1.2}
-.logo-text p{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;line-height:1.3}
-
-.sidebar-body{flex:1;padding:12px 10px;overflow-y:auto}
-.sidebar-body::-webkit-scrollbar{width:0}
-
-.nav-section-label{
-  font-size:9px;font-weight:700;
-  color:rgba(255,255,255,.28);
-  letter-spacing:1.2px;text-transform:uppercase;
-  padding:14px 8px 6px;
-}
-.nav-section-label:first-child{padding-top:4px}
-
-.nav-item{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 12px;border-radius:var(--r-sm);
-  cursor:pointer;transition:all .18s;
-  font-size:13px;font-weight:500;color:rgba(255,255,255,.58);
-  border:none;background:transparent;width:100%;text-align:left;
-  font-family:inherit;margin-bottom:2px;
-}
-.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
-.nav-item.active{
-  background:var(--blue);color:#fff;
-  box-shadow:0 2px 12px rgba(41,121,212,.35);
-}
-.nav-icon{
-  width:32px;height:32px;flex-shrink:0;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:15px;background:rgba(255,255,255,.07);
-  transition:background .18s;
-}
-.nav-item.active .nav-icon{background:rgba(255,255,255,.18)}
-.nav-item:hover:not(.active) .nav-icon{background:rgba(255,255,255,.1)}
-.nav-label{flex:1;line-height:1.3}
-.nav-label .main{display:block;font-size:13px;font-weight:600}
-.nav-label .sub{display:block;font-size:10px;opacity:.5;font-weight:400;margin-top:1px}
-.nav-badge{
-  background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);
-  border-radius:20px;padding:2px 7px;font-size:10px;font-weight:600;
-  flex-shrink:0;
-}
-.nav-item.active .nav-badge{background:rgba(255,255,255,.25);color:#fff}
-
-.sidebar-divider{height:1px;background:rgba(255,255,255,.06);margin:8px 4px}
-
-.sidebar-footer{
-  padding:14px 10px;
-  border-top:1px solid rgba(255,255,255,.07);
-  flex-shrink:0;
-}
-.user-card{
-  background:rgba(255,255,255,.06);border-radius:var(--r-sm);
-  padding:10px 12px;display:flex;align-items:center;gap:10px;
-}
-.user-avatar{
-  width:34px;height:34px;border-radius:9px;
-  background:linear-gradient(135deg,#2979d4,#29b6f6);
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:700;color:#fff;flex-shrink:0;
-}
-.user-info .name{font-size:12px;font-weight:600;color:#fff}
-.user-info .role{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px}
-.user-time{font-size:11px;color:rgba(255,255,255,.35);margin-top:8px;text-align:center;letter-spacing:.3px}
-
-/* ─── CONTENT AREA ─── */
-.content-area{
-  flex:1;display:flex;flex-direction:column;
-  height:100vh;overflow:hidden;
-}
-
-/* ─── TOPBAR ─── */
+/* ══════ TOPBAR ══════ */
 .topbar{
-  background:#fff;
-  border-bottom:1px solid var(--border);
-  height:56px;flex-shrink:0;
-  display:flex;align-items:center;padding:0 24px;
-  justify-content:space-between;
-  box-shadow:var(--shadow);position:relative;z-index:5;
+  position:fixed;top:0;left:0;right:0;height:var(--topbar-h);
+  background:#fff;border-bottom:2px solid var(--blue);
+  display:flex;align-items:center;padding:0 14px;gap:10px;
+  z-index:100;box-shadow:var(--shadow);
 }
-.topbar-left{display:flex;align-items:center;gap:10px}
-.topbar-title{font-size:15px;font-weight:700;color:var(--navy)}
-.topbar-sub{font-size:11px;color:var(--muted);margin-top:1px}
-.topbar-divider{width:1px;height:20px;background:var(--border);margin:0 4px}
-.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
-.breadcrumb span{color:var(--navy);font-weight:600}
+.menu-toggle{width:36px;height:36px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;color:var(--navy);flex-shrink:0}
+.menu-toggle:active{background:var(--blue-light)}
+.topbar-title{font-size:14px;font-weight:700;color:var(--navy);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-status{font-size:11px;color:var(--muted);white-space:nowrap;display:none}
+.clock-chip{background:var(--navy);color:#fff;border-radius:7px;padding:5px 11px;font-size:12px;font-weight:700;flex-shrink:0}
 
-.topbar-right{display:flex;align-items:center;gap:10px}
-.topbar-badge{
-  background:var(--blue-light);border:1px solid #b3d4f7;
-  border-radius:20px;padding:5px 14px;
-  font-size:11px;color:var(--blue);font-weight:600;
-  display:flex;align-items:center;gap:6px;
-}
-.topbar-badge-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:#4caf50;animation:pulse 2s infinite;
-}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.clock-chip{
-  background:var(--navy);color:#fff;
-  border-radius:var(--r-sm);padding:6px 14px;
-  font-size:13px;font-weight:700;letter-spacing:.5px;
-}
+/* ══════ DRAWER OVERLAY ══════ */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.open{opacity:1;pointer-events:all}
 
-/* ─── IFRAME AREA ─── */
-.iframe-area{flex:1;overflow:hidden;position:relative;background:var(--bg)}
-.iframe-area iframe{
-  width:100%;height:100%;border:none;display:block;
-}
+/* ══════ SHARED SIDEBAR STYLES ══════ */
+.sb-logo{padding:16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.sb-logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#2979d4,#29b6f6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-logo h1{font-size:14px;font-weight:700;color:#fff;line-height:1.2}
+.sb-logo p{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px}
+.sb-body{flex:1;padding:10px 8px;overflow-y:auto}
+.sb-body::-webkit-scrollbar{width:0}
+.sb-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.28);letter-spacing:1.2px;text-transform:uppercase;padding:12px 8px 5px}
+.sb-label:first-child{padding-top:4px}
+.sb-divider{height:1px;background:rgba(255,255,255,.06);margin:6px 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--r-sm);cursor:pointer;transition:all .16s;font-size:12px;font-weight:500;color:rgba(255,255,255,.6);border:none;background:transparent;width:100%;text-align:left;font-family:inherit;margin-bottom:2px}
+.nav-item:active,.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.active{background:var(--blue);color:#fff;box-shadow:0 2px 10px rgba(41,121,212,.35)}
+.nav-icon{width:30px;height:30px;flex-shrink:0;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;background:rgba(255,255,255,.07)}
+.nav-item.active .nav-icon{background:rgba(255,255,255,.18)}
+.nav-label .main{display:block;font-size:13px;font-weight:600}
+.nav-label .sub{display:block;font-size:10px;opacity:.5;margin-top:1px}
+.nav-badge{background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);border-radius:20px;padding:1px 7px;font-size:10px;font-weight:600;flex-shrink:0;margin-left:auto}
+.nav-item.active .nav-badge{background:rgba(255,255,255,.25);color:#fff}
+.sb-footer{padding:12px 8px;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0}
+.user-card{background:rgba(255,255,255,.06);border-radius:var(--r-sm);padding:9px 11px;display:flex;align-items:center;gap:9px}
+.user-avatar{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#2979d4,#29b6f6);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.user-info .uname{font-size:12px;font-weight:600;color:#fff}
+.user-info .urole{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px}
+.sb-time{font-size:11px;color:rgba(255,255,255,.3);margin-top:6px;text-align:center}
 
-/* ─── WELCOME SCREEN ─── */
-.welcome-screen{
-  width:100%;height:100%;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:32px;padding:40px;background:var(--bg);
-}
-.welcome-logo{
-  width:80px;height:80px;
-  background:linear-gradient(135deg,var(--navy),var(--blue));
-  border-radius:24px;display:flex;align-items:center;justify-content:center;
-  font-size:32px;font-weight:700;color:#fff;
-  box-shadow:0 8px 32px rgba(26,43,94,.25);
-}
-.welcome-title{font-size:28px;font-weight:700;color:var(--navy);text-align:center}
-.welcome-sub{font-size:15px;color:var(--muted);text-align:center;max-width:420px;line-height:1.6}
-.quick-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
-  width:100%;max-width:700px;
-}
-.quick-card{
-  background:#fff;border:1px solid var(--border);border-radius:var(--r);
-  padding:18px 16px;cursor:pointer;transition:all .2s;
-  display:flex;flex-direction:column;align-items:center;gap:10px;
-  text-align:center;box-shadow:var(--shadow);
-}
-.quick-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:#b3d4f7}
-.quick-card:active{transform:translateY(0)}
-.quick-card .qc-icon{font-size:28px}
-.quick-card .qc-label{font-size:13px;font-weight:600;color:var(--navy)}
-.quick-card .qc-sub{font-size:11px;color:var(--muted)}
+/* ══════ MOBILE DRAWER ══════ */
+.drawer{position:fixed;top:0;left:0;bottom:0;width:260px;background:var(--navy);z-index:201;transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
+.drawer.open{transform:translateX(0)}
 
-/* ─── KPI STRIP on welcome ─── */
-.kpi-strip{
-  display:flex;gap:14px;width:100%;max-width:700px;
-  flex-wrap:wrap;justify-content:center;
-}
-.kpi-mini{
-  background:#fff;border:1px solid var(--border);border-radius:var(--r);
-  padding:14px 20px;min-width:140px;box-shadow:var(--shadow);
-  flex:1;
-}
-.kpi-mini .km-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
-.kpi-mini .km-value{font-size:22px;font-weight:700;color:var(--navy)}
-.kpi-mini .km-sub{font-size:11px;color:var(--light);margin-top:3px}
-.kpi-mini.accent{border-top:3px solid var(--blue)}
-.kpi-mini.green{border-top:3px solid var(--success)}
-.kpi-mini.orange{border-top:3px solid var(--warn)}
+/* ══════ DESKTOP SIDEBAR ══════ */
+.desktop-sb{display:none;position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--navy);z-index:50;flex-direction:column;overflow:hidden}
 
-/* ─── LOADING FRAME ─── */
-.frame-loader{
-  position:absolute;inset:0;
-  background:var(--bg);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:14px;z-index:2;transition:opacity .3s;
-}
+/* ══════ CONTENT ══════ */
+.content-area{position:fixed;top:var(--topbar-h);left:0;right:0;bottom:var(--bottom-nav-h);overflow:hidden}
+.iframe-area{width:100%;height:100%;position:relative;background:var(--bg)}
+.iframe-area iframe{width:100%;height:100%;border:none;display:block}
+
+/* ══════ WELCOME ══════ */
+.welcome{width:100%;height:100%;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;background:var(--bg)}
+.w-hero{display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:4px;text-align:center}
+.w-logo{width:56px;height:56px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;box-shadow:0 6px 20px rgba(26,43,94,.2)}
+.w-title{font-size:18px;font-weight:700;color:var(--navy)}
+.w-sub{font-size:12px;color:var(--muted);line-height:1.6}
+.kpi-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.kpi-mini{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;box-shadow:var(--shadow)}
+.kpi-mini.a{border-top:3px solid var(--blue)}
+.kpi-mini.g{border-top:3px solid var(--success)}
+.kpi-mini.o{border-top:3px solid var(--warn)}
+.km-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.km-value{font-size:14px;font-weight:700;color:var(--navy)}
+.km-sub{font-size:9px;color:var(--light);margin-top:2px}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.quick-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:12px;cursor:pointer;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.quick-card:active{background:var(--blue-light);border-color:#b3d4f7;transform:scale(.97)}
+.qc-icon{font-size:22px;flex-shrink:0}
+.qc-label{font-size:13px;font-weight:600;color:var(--navy);line-height:1.3}
+.qc-sub{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* ══════ FRAME LOADER ══════ */
+.frame-loader{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:2;transition:opacity .3s}
 .frame-loader.hide{opacity:0;pointer-events:none}
-.spinner{
-  width:40px;height:40px;
-  border:3px solid var(--border);border-top-color:var(--blue);
-  border-radius:50%;animation:spin .8s linear infinite;
-}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .frame-loader p{font-size:13px;color:var(--muted);font-weight:500}
 
-@media(max-width:900px){
-  :root{--sidebar-w:200px}
+/* ══════ BOTTOM NAV ══════ */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--bottom-nav-h);padding-bottom:env(safe-area-inset-bottom);background:#fff;border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -2px 12px rgba(26,43,94,.08)}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border:none;background:transparent;font-family:inherit;color:var(--light);transition:color .15s;padding:6px 2px}
+.bnav-item.active{color:var(--blue)}
+.bnav-item:active{transform:scale(.9)}
+.bi{font-size:20px;line-height:1}
+.bl{font-size:9px;font-weight:600}
+
+/* ══════ MORE MENU ══════ */
+.more-menu{position:fixed;bottom:calc(var(--bottom-nav-h) + 8px);left:8px;right:8px;background:#fff;border-radius:var(--r);box-shadow:var(--shadow-md);border:1px solid var(--border);z-index:150;transform:translateY(10px);opacity:0;pointer-events:none;transition:all .2s}
+.more-menu.open{transform:translateY(0);opacity:1;pointer-events:all}
+.mm-header{padding:10px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.mm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)}
+.mm-item{background:#fff;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;border:none;font-family:inherit}
+.mm-item:active{background:var(--blue-light)}
+.mm-i{font-size:22px}
+.mm-l{font-size:11px;font-weight:600;color:var(--navy);text-align:center;line-height:1.3}
+
+/* ══════ DESKTOP ══════ */
+@media(min-width:768px){
+  .menu-toggle{display:none}
+  .drawer,.overlay,.bottom-nav,.more-menu{display:none!important}
+  .desktop-sb{display:flex}
+  .topbar{left:var(--sidebar-w)}
+  .topbar-status{display:block}
+  .content-area{left:var(--sidebar-w);bottom:0}
+  .welcome{padding:32px;align-items:center;justify-content:center}
+  .w-hero{margin-bottom:8px}
+  .w-logo{width:68px;height:68px;font-size:26px}
+  .w-title{font-size:22px}
+  .kpi-strip{max-width:600px;width:100%}
+  .km-value{font-size:20px}
+  .quick-grid{grid-template-columns:repeat(3,1fr);max-width:600px;width:100%}
+  .quick-card{flex-direction:column;text-align:center;padding:16px 12px}
 }
 </style>
 </head>
 <body>
 
-<!-- ─── SIDEBAR ─── -->
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-icon">OR</div>
-    <div class="logo-text">
-      <h1>OnaRoll</h1>
-      <p>Owner Dashboard</p>
-    </div>
-  </div>
+<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
 
-  <div class="sidebar-body">
-
-    <!-- แดชบอร์ดวิเคราะห์ -->
-    <div class="nav-section-label">แดชบอร์ดวิเคราะห์</div>
-
-    <button class="nav-item active" data-src="index_dashboard" data-title="ภาพรวมธุรกิจ" onclick="loadPage(this)">
-      <div class="nav-icon">🏠</div>
-      <div class="nav-label">
-        <span class="main">ภาพรวม</span>
-        <span class="sub">Overview</span>
-      </div>
-    </button>
-
-    <button class="nav-item" data-src="OR_Dashboard_Live.html" data-title="แดชบอร์ดหลัก" onclick="loadPage(this)">
-      <div class="nav-icon">📊</div>
-      <div class="nav-label">
-        <span class="main">แดชบอร์ดหลัก</span>
-        <span class="sub">Analytics Dashboard</span>
-      </div>
-    </button>
-
-    <div class="sidebar-divider"></div>
-
-    <!-- ระบบปฏิบัติการ -->
-    <div class="nav-section-label">ระบบปฏิบัติการ</div>
-
-    <button class="nav-item" data-src="Manager_Console.html" data-title="ระบบจัดการผู้บริหาร" onclick="loadPage(this)">
-      <div class="nav-icon">🛡️</div>
-      <div class="nav-label">
-        <span class="main">Manager Console</span>
-        <span class="sub">Audit & Control</span>
-      </div>
-      <span class="nav-badge">Admin</span>
-    </button>
-
-    <button class="nav-item" data-src="Sales Tracking.html" data-title="รายงานยอดขาย" onclick="loadPage(this)">
-      <div class="nav-icon">💰</div>
-      <div class="nav-label">
-        <span class="main">ยอดขาย</span>
-        <span class="sub">Sales Tracking</span>
-      </div>
-    </button>
-
-    <button class="nav-item" data-src="Expenses.html" data-title="บันทึกรายจ่าย" onclick="loadPage(this)">
-      <div class="nav-icon">🧾</div>
-      <div class="nav-label">
-        <span class="main">รายจ่าย</span>
-        <span class="sub">Expenses</span>
-      </div>
-    </button>
-
-    <div class="sidebar-divider"></div>
-
-    <!-- จัดการพนักงาน -->
-    <div class="nav-section-label">จัดการพนักงาน</div>
-
-    <button class="nav-item" data-src="OR_Payroll_System.html" data-title="ระบบเงินเดือน" onclick="loadPage(this)">
-      <div class="nav-icon">💵</div>
-      <div class="nav-label">
-        <span class="main">เงินเดือน</span>
-        <span class="sub">Payroll System</span>
-      </div>
-    </button>
-
-    <button class="nav-item" data-src="HR Management.html" data-title="จัดการพนักงาน" onclick="loadPage(this)">
-      <div class="nav-icon">👥</div>
-      <div class="nav-label">
-        <span class="main">จัดการพนักงาน</span>
-        <span class="sub">HR Management</span>
-      </div>
-    </button>
-
-    <button class="nav-item" data-src="Weekly Scheduler.html" data-title="จัด Job พนักงาน" onclick="loadPage(this)">
-      <div class="nav-icon">📅</div>
-      <div class="nav-label">
-        <span class="main">จัด Job</span>
-        <span class="sub">Weekly Scheduler</span>
-      </div>
-    </button>
-
-    <div class="sidebar-divider"></div>
-
-    <!-- มาตรฐาน -->
-    <div class="nav-section-label">มาตรฐาน & คู่มือ</div>
-
-    <button class="nav-item" data-src="SOP_Master and Training.html" data-title="SOP Master" onclick="loadPage(this)">
-      <div class="nav-icon">📖</div>
-      <div class="nav-label">
-        <span class="main">SOP Master</span>
-        <span class="sub">Standards & Training</span>
-      </div>
-    </button>
-
-    <button class="nav-item" data-src="Daily Checklist System.html" data-title="Checklist งานประจำวัน" onclick="loadPage(this)">
-      <div class="nav-icon">✅</div>
-      <div class="nav-label">
-        <span class="main">Daily Checklist</span>
-        <span class="sub">Task Inspection</span>
-      </div>
-    </button>
-
-  </div><!-- end sidebar-body -->
-
-  <div class="sidebar-footer">
-    <div class="user-card">
-      <div class="user-avatar">OR</div>
-      <div class="user-info">
-        <div class="name">Owner</div>
-        <div class="role">Full Access</div>
-      </div>
-    </div>
-    <div class="user-time" id="sidebarTime">—</div>
+<!-- MOBILE DRAWER -->
+<aside class="drawer" id="drawer">
+  <div class="sb-logo"><div class="sb-logo-icon">OR</div><div><h1>OnaRoll</h1><p>Owner Dashboard</p></div></div>
+  <div class="sb-body" id="drawerNav"></div>
+  <div class="sb-footer">
+    <div class="user-card"><div class="user-avatar">OR</div><div class="user-info"><div class="uname">Owner</div><div class="urole">Full Access</div></div></div>
+    <div class="sb-time" id="drawerTime">—</div>
   </div>
 </aside>
 
-<!-- ─── CONTENT AREA ─── -->
-<div class="content-area">
-
-  <!-- TOPBAR -->
-  <div class="topbar">
-    <div class="topbar-left">
-      <div>
-        <div class="topbar-title" id="topbarTitle">ภาพรวมธุรกิจ</div>
-      </div>
-    </div>
-    <div class="topbar-right">
-      <div class="topbar-badge">
-        <div class="topbar-badge-dot"></div>
-        <span id="topbarStatus">พร้อมใช้งาน</span>
-      </div>
-      <div class="clock-chip" id="topbarClock">00:00</div>
-    </div>
+<!-- DESKTOP SIDEBAR -->
+<aside class="desktop-sb" id="desktopSb">
+  <div class="sb-logo"><div class="sb-logo-icon">OR</div><div><h1>OnaRoll</h1><p>Owner Dashboard</p></div></div>
+  <div class="sb-body" id="desktopNav"></div>
+  <div class="sb-footer">
+    <div class="user-card"><div class="user-avatar">OR</div><div class="user-info"><div class="uname">Owner</div><div class="urole">Full Access</div></div></div>
+    <div class="sb-time" id="sidebarTime">—</div>
   </div>
+</aside>
 
-  <!-- IFRAME AREA -->
-  <div class="iframe-area" id="iframeArea">
+<!-- TOPBAR -->
+<div class="topbar">
+  <button class="menu-toggle" onclick="toggleDrawer()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="topbar-title" id="topbarTitle">ภาพรวมธุรกิจ</div>
+  <span class="topbar-status" id="topbarStatus">พร้อมใช้งาน</span>
+  <div class="clock-chip" id="topbarClock">00:00</div>
+</div>
 
-    <!-- Welcome / Home screen -->
-    <div class="welcome-screen" id="welcomeScreen">
-      <div class="welcome-logo">OR</div>
-      <div>
-        <div class="welcome-title">ยินดีต้อนรับ, Owner</div>
-        <div class="welcome-sub">เลือกระบบจากเมนูซ้าย หรือคลิกเมนูด่วนด้านล่างเพื่อเริ่มใช้งาน</div>
+<!-- CONTENT -->
+<div class="content-area">
+  <div class="iframe-area">
+    <!-- WELCOME -->
+    <div class="welcome" id="welcomeScreen">
+      <div class="w-hero">
+        <div class="w-logo">OR</div>
+        <div class="w-title">ยินดีต้อนรับ, Owner</div>
+        <div class="w-sub">เลือกระบบจากเมนูด้านล่าง<br>หรือกดเมนูด่วนด้านล่าง</div>
       </div>
-
-      <div class="kpi-strip" id="welcomeKpi">
-        <div class="kpi-mini accent">
-          <div class="km-label">วันนี้</div>
-          <div class="km-value" id="kpi-date">—</div>
-          <div class="km-sub">วัน เดือน ปี</div>
-        </div>
-        <div class="kpi-mini green">
-          <div class="km-label">เวลาปัจจุบัน</div>
-          <div class="km-value" id="kpi-time">—</div>
-          <div class="km-sub">ชั่วโมง:นาที:วินาที</div>
-        </div>
-        <div class="kpi-mini orange">
-          <div class="km-label">ระบบที่เชื่อมต่อ</div>
-          <div class="km-value">10</div>
-          <div class="km-sub">ระบบทั้งหมด</div>
-        </div>
+      <div class="kpi-strip">
+        <div class="kpi-mini a"><div class="km-label">วันที่</div><div class="km-value" id="kpi-date" style="font-size:13px">—</div></div>
+        <div class="kpi-mini g"><div class="km-label">เวลา</div><div class="km-value" id="kpi-time" style="font-size:13px">—</div></div>
+        <div class="kpi-mini o"><div class="km-label">ระบบ</div><div class="km-value">10</div><div class="km-sub">ระบบ</div></div>
       </div>
-
       <div class="quick-grid">
-        <div class="quick-card" onclick="loadPageByKey('OR_Dashboard_Live.html','แดชบอร์ดหลัก')">
-          <div class="qc-icon">📊</div>
-          <div class="qc-label">แดชบอร์ดหลัก</div>
-          <div class="qc-sub">Analytics</div>
-        </div>
-        <div class="quick-card" onclick="loadPageByKey('OR_Payroll_System.html','ระบบเงินเดือน')">
-          <div class="qc-icon">💵</div>
-          <div class="qc-label">เงินเดือน</div>
-          <div class="qc-sub">Payroll</div>
-        </div>
-        <div class="quick-card" onclick="loadPageByKey('Manager_Console.html','Manager Console')">
-          <div class="qc-icon">🛡️</div>
-          <div class="qc-label">Manager Console</div>
-          <div class="qc-sub">Control Center</div>
-        </div>
-        <div class="quick-card" onclick="loadPageByKey('Sales Tracking.html','รายงานยอดขาย')">
-          <div class="qc-icon">💰</div>
-          <div class="qc-label">ยอดขาย</div>
-          <div class="qc-sub">Sales Tracking</div>
-        </div>
-        <div class="quick-card" onclick="loadPageByKey('HR Management.html','จัดการพนักงาน')">
-          <div class="qc-icon">👥</div>
-          <div class="qc-label">จัดการพนักงาน</div>
-          <div class="qc-sub">HR Management</div>
-        </div>
-        <div class="quick-card" onclick="loadPageByKey('Weekly Scheduler.html','จัด Job พนักงาน')">
-          <div class="qc-icon">📅</div>
-          <div class="qc-label">จัด Job</div>
-          <div class="qc-sub">Scheduler</div>
-        </div>
+        <div class="quick-card" onclick="loadPageByKey('OR_Dashboard_Live.html','แดชบอร์ดหลัก')"><div class="qc-icon">📊</div><div><div class="qc-label">แดชบอร์ด</div><div class="qc-sub">Analytics</div></div></div>
+        <div class="quick-card" onclick="loadPageByKey('OR_Payroll_System.html','เงินเดือน')"><div class="qc-icon">💵</div><div><div class="qc-label">เงินเดือน</div><div class="qc-sub">Payroll</div></div></div>
+        <div class="quick-card" onclick="loadPageByKey('Manager_Console.html','Manager Console')"><div class="qc-icon">🛡️</div><div><div class="qc-label">Manager</div><div class="qc-sub">Console</div></div></div>
+        <div class="quick-card" onclick="loadPageByKey('Sales Tracking.html','ยอดขาย')"><div class="qc-icon">💰</div><div><div class="qc-label">ยอดขาย</div><div class="qc-sub">Sales</div></div></div>
+        <div class="quick-card" onclick="loadPageByKey('HR Management.html','จัดการพนักงาน')"><div class="qc-icon">👥</div><div><div class="qc-label">HR</div><div class="qc-sub">จัดการพนักงาน</div></div></div>
+        <div class="quick-card" onclick="loadPageByKey('Weekly Scheduler.html','จัด Job')"><div class="qc-icon">📅</div><div><div class="qc-label">จัด Job</div><div class="qc-sub">Scheduler</div></div></div>
       </div>
     </div>
-
-    <!-- Iframe frame (hidden at start) -->
+    <!-- IFRAME -->
     <div style="position:absolute;inset:0;display:none;flex-direction:column" id="iframeWrapper">
       <div class="frame-loader" id="frameLoader">
         <div class="spinner"></div>
         <p id="frameLoaderText">กำลังโหลด...</p>
       </div>
-      <iframe id="mainIframe" title="Content Frame"
-        style="width:100%;height:100%;border:none;flex:1"
-        onload="onFrameLoad()">
-      </iframe>
+      <iframe id="mainIframe" style="width:100%;height:100%;border:none;flex:1" onload="onFrameLoad()"></iframe>
     </div>
+  </div>
+</div>
 
-  </div><!-- end iframe-area -->
-</div><!-- end content-area -->
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="bnav-item active" id="bn-home" onclick="bnavClick('home',this,'ภาพรวม')"><div class="bi">🏠</div><div class="bl">หน้าแรก</div></button>
+  <button class="bnav-item" id="bn-dash" onclick="bnavClick('OR_Dashboard_Live.html',this,'แดชบอร์ดหลัก')"><div class="bi">📊</div><div class="bl">แดชบอร์ด</div></button>
+  <button class="bnav-item" id="bn-pay" onclick="bnavClick('OR_Payroll_System.html',this,'เงินเดือน')"><div class="bi">💵</div><div class="bl">เงินเดือน</div></button>
+  <button class="bnav-item" id="bn-mgr" onclick="bnavClick('Manager_Console.html',this,'Manager Console')"><div class="bi">🛡️</div><div class="bl">Manager</div></button>
+  <button class="bnav-item" id="bn-more" onclick="toggleMore()"><div class="bi">⋯</div><div class="bl">เพิ่มเติม</div></button>
+</nav>
+
+<!-- MORE MENU -->
+<div class="more-menu" id="moreMenu">
+  <div class="mm-header">ระบบเพิ่มเติม</div>
+  <div class="mm-grid">
+    <button class="mm-item" onclick="moreClick('Sales Tracking.html','ยอดขาย')"><div class="mm-i">💰</div><div class="mm-l">ยอดขาย</div></button>
+    <button class="mm-item" onclick="moreClick('Expenses.html','รายจ่าย')"><div class="mm-i">🧾</div><div class="mm-l">รายจ่าย</div></button>
+    <button class="mm-item" onclick="moreClick('HR Management.html','จัดการพนักงาน')"><div class="mm-i">👥</div><div class="mm-l">HR</div></button>
+    <button class="mm-item" onclick="moreClick('Weekly Scheduler.html','จัด Job')"><div class="mm-i">📅</div><div class="mm-l">จัด Job</div></button>
+    <button class="mm-item" onclick="moreClick('SOP Master and Training.html','SOP Master')"><div class="mm-i">📖</div><div class="mm-l">SOP</div></button>
+    <button class="mm-item" onclick="moreClick('Daily Checklist System.html','Checklist')"><div class="mm-i">✅</div><div class="mm-l">Checklist</div></button>
+  </div>
+</div>
 
 <script>
-var currentSrc = '';
+var NAV = [
+  {s:'แดชบอร์ดวิเคราะห์', items:[
+    {src:'index_dashboard',title:'ภาพรวม',icon:'🏠',sub:'Overview'},
+    {src:'OR_Dashboard_Live.html',title:'แดชบอร์ดหลัก',icon:'📊',sub:'Analytics'},
+  ]},
+  {s:'ระบบปฏิบัติการ', items:[
+    {src:'Manager_Console.html',title:'Manager Console',icon:'🛡️',sub:'Audit & Control',badge:'Admin'},
+    {src:'Sales Tracking.html',title:'ยอดขาย',icon:'💰',sub:'Sales Tracking'},
+    {src:'Expenses.html',title:'รายจ่าย',icon:'🧾',sub:'Expenses'},
+  ]},
+  {s:'จัดการพนักงาน', items:[
+    {src:'OR_Payroll_System.html',title:'เงินเดือน',icon:'💵',sub:'Payroll'},
+    {src:'HR Management.html',title:'จัดการพนักงาน',icon:'👥',sub:'HR'},
+    {src:'Weekly Scheduler.html',title:'จัด Job',icon:'📅',sub:'Scheduler'},
+  ]},
+  {s:'มาตรฐาน & คู่มือ', items:[
+    {src:'SOP Master and Training.html',title:'SOP Master',icon:'📖',sub:'Standards'},
+    {src:'Daily Checklist System.html',title:'Checklist',icon:'✅',sub:'Daily Tasks'},
+  ]},
+];
+var currentSrc='', moreOpen=false;
 
-// ─── CLOCK ───
-function updateClock() {
-  var now = new Date();
-  var hh = String(now.getHours()).padStart(2,'0');
-  var mm = String(now.getMinutes()).padStart(2,'0');
-  var ss = String(now.getSeconds()).padStart(2,'0');
-  var timeStr = hh + ':' + mm + ':' + ss;
-  var timeShort = hh + ':' + mm;
-
-  var el = document.getElementById('topbarClock');
-  if (el) el.textContent = timeShort;
-  var el2 = document.getElementById('sidebarTime');
-  if (el2) el2.textContent = timeStr;
-  var el3 = document.getElementById('kpi-time');
-  if (el3) el3.textContent = timeStr;
-
-  var dateEl = document.getElementById('kpi-date');
-  if (dateEl) {
-    var months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-    dateEl.textContent = now.getDate() + ' ' + months[now.getMonth()] + ' ' + (now.getFullYear()+543);
-  }
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-// ─── NAVIGATE ───
-function loadPage(btn) {
-  var src = btn.getAttribute('data-src');
-  var title = btn.getAttribute('data-title');
-
-  // update active state
-  document.querySelectorAll('.nav-item').forEach(function(b) { b.classList.remove('active'); });
-  btn.classList.add('active');
-
-  if (src === 'index_dashboard') {
-    showWelcome();
-    document.getElementById('topbarTitle').textContent = 'ภาพรวมธุรกิจ';
-    return;
-  }
-  loadPageByKey(src, title);
-}
-
-function loadPageByKey(src, title) {
-  if (src === currentSrc) return;
-  currentSrc = src;
-
-  // update active nav
-  document.querySelectorAll('.nav-item').forEach(function(b) {
-    b.classList.toggle('active', b.getAttribute('data-src') === src);
+function buildNav(id) {
+  var h='';
+  NAV.forEach(function(g){
+    h+='<div class="sb-label">'+g.s+'</div>';
+    g.items.forEach(function(i){
+      h+='<button class="nav-item" data-src="'+i.src+'" onclick="navClick(this)">'+
+        '<div class="nav-icon">'+i.icon+'</div>'+
+        '<div class="nav-label"><span class="main">'+i.title+'</span><span class="sub">'+i.sub+'</span></div>'+
+        (i.badge?'<span class="nav-badge">'+i.badge+'</span>':'')+
+        '</button>';
+    });
+    h+='<div class="sb-divider"></div>';
   });
-
-  document.getElementById('topbarTitle').textContent = title || src;
-  document.getElementById('topbarStatus').textContent = 'กำลังโหลด...';
-
-  // hide welcome, show iframe wrapper
-  document.getElementById('welcomeScreen').style.display = 'none';
-  var wrapper = document.getElementById('iframeWrapper');
-  wrapper.style.display = 'flex';
-
-  // show loader
-  var loader = document.getElementById('frameLoader');
-  loader.classList.remove('hide');
-  document.getElementById('frameLoaderText').textContent = 'กำลังโหลด ' + title + '...';
-
-  // inject admin role so child pages don't redirect
-  localStorage.setItem('user_role', 'admin');
-  localStorage.setItem('user_name', 'Owner');
-  localStorage.setItem('user_id', 'OWNER');
-  localStorage.setItem('user_pos', 'เจ้าของร้าน');
-
-  var iframe = document.getElementById('mainIframe');
-  iframe.src = src;
+  document.getElementById(id).innerHTML=h;
 }
+buildNav('drawerNav'); buildNav('desktopNav');
+document.querySelectorAll('[data-src="index_dashboard"]').forEach(function(b){b.classList.add('active')});
 
-function onFrameLoad() {
-  var loader = document.getElementById('frameLoader');
-  loader.classList.add('hide');
-  document.getElementById('topbarStatus').textContent = 'โหลดสำเร็จ';
-  setTimeout(function() {
-    document.getElementById('topbarStatus').textContent = 'พร้อมใช้งาน';
-  }, 1500);
+function navClick(btn){
+  var src=btn.getAttribute('data-src');
+  var title=btn.textContent.trim().split('\n')[0];
+  closeDrawer();
+  document.querySelectorAll('.nav-item').forEach(function(b){b.classList.remove('active')});
+  document.querySelectorAll('[data-src="'+src+'"]').forEach(function(b){b.classList.add('active')});
+  if(src==='index_dashboard'){showWelcome();return;}
+  var found=null;
+  NAV.forEach(function(g){g.items.forEach(function(i){if(i.src===src)found=i;})});
+  loadPageByKey(src, found?found.title:src);
 }
-
-function showWelcome() {
-  currentSrc = '';
-  document.getElementById('welcomeScreen').style.display = 'flex';
-  document.getElementById('iframeWrapper').style.display = 'none';
-  var iframe = document.getElementById('mainIframe');
-  iframe.src = 'about:blank';
-  document.querySelectorAll('.nav-item').forEach(function(b) { b.classList.remove('active'); });
-  document.querySelector('[data-src="index_dashboard"]').classList.add('active');
-  document.getElementById('topbarStatus').textContent = 'พร้อมใช้งาน';
+function bnavClick(key,btn,title){
+  closeMore();
+  document.querySelectorAll('.bnav-item').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  if(key==='home'){showWelcome();return;}
+  loadPageByKey(key,title);
 }
-
-// set admin on load
-localStorage.setItem('user_role', 'admin');
-localStorage.setItem('user_name', 'Owner');
-localStorage.setItem('user_id', 'OWNER');
-localStorage.setItem('user_pos', 'เจ้าของร้าน');
+function moreClick(src,title){
+  closeMore();
+  document.querySelectorAll('.bnav-item').forEach(function(b){b.classList.remove('active')});
+  document.getElementById('bn-more').classList.add('active');
+  loadPageByKey(src,title);
+}
+function loadPageByKey(src,title){
+  if(src===currentSrc)return;
+  currentSrc=src;
+  document.getElementById('topbarTitle').textContent=title||src;
+  document.getElementById('topbarStatus').textContent='กำลังโหลด...';
+  document.getElementById('welcomeScreen').style.display='none';
+  document.getElementById('iframeWrapper').style.display='flex';
+  document.getElementById('frameLoader').classList.remove('hide');
+  document.getElementById('frameLoaderText').textContent='กำลังโหลด '+title+'...';
+  localStorage.setItem('user_role','admin');
+  localStorage.setItem('user_name','Owner');
+  localStorage.setItem('user_id','OWNER');
+  localStorage.setItem('user_pos','เจ้าของร้าน');
+  document.getElementById('mainIframe').src=src;
+}
+function onFrameLoad(){
+  document.getElementById('frameLoader').classList.add('hide');
+  document.getElementById('topbarStatus').textContent='พร้อมใช้งาน';
+}
+function showWelcome(){
+  currentSrc='';
+  document.getElementById('welcomeScreen').style.display='flex';
+  document.getElementById('iframeWrapper').style.display='none';
+  document.getElementById('mainIframe').src='about:blank';
+  document.querySelectorAll('.nav-item').forEach(function(b){b.classList.remove('active')});
+  document.querySelectorAll('[data-src="index_dashboard"]').forEach(function(b){b.classList.add('active')});
+  document.querySelectorAll('.bnav-item').forEach(function(b){b.classList.remove('active')});
+  document.getElementById('bn-home').classList.add('active');
+}
+function toggleDrawer(){
+  document.getElementById('drawer').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+function toggleMore(){
+  moreOpen=!moreOpen;
+  document.getElementById('moreMenu').classList.toggle('open',moreOpen);
+}
+function closeMore(){ moreOpen=false; document.getElementById('moreMenu').classList.remove('open'); }
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.more-menu')&&!e.target.closest('#bn-more'))closeMore();
+});
+function updateClock(){
+  var now=new Date(),hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0'),ss=String(now.getSeconds()).padStart(2,'0');
+  var tc=document.getElementById('topbarClock'); if(tc)tc.textContent=hh+':'+mm;
+  var st=document.getElementById('sidebarTime'); if(st)st.textContent=hh+':'+mm+':'+ss;
+  var dt=document.getElementById('drawerTime'); if(dt)dt.textContent=hh+':'+mm+':'+ss;
+  var kt=document.getElementById('kpi-time'); if(kt)kt.textContent=hh+':'+mm+':'+ss;
+  var kd=document.getElementById('kpi-date');
+  if(kd){var m=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];kd.textContent=now.getDate()+' '+m[now.getMonth()]+' '+(now.getFullYear()+543);}
+}
+setInterval(updateClock,1000); updateClock();
+localStorage.setItem('user_role','admin');
+localStorage.setItem('user_name','Owner');
+localStorage.setItem('user_id','OWNER');
+localStorage.setItem('user_pos','เจ้าของร้าน');
 </script>
 </body>
 </html>
