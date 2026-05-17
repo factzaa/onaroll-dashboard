@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OnaRoll — ระบบลงเวลา</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        :root {
+            --bg:        #0a0f1e;
+            --bg2:       #111827;
+            --bg3:       #1a2340;
+            --blue:      #3b82f6;
+            --blue-d:    #1d4ed8;
+            --blue-glow: rgba(59,130,246,.18);
+            --green:     #10b981;
+            --green-glow:rgba(16,185,129,.18);
+            --red:       #ef4444;
+            --red-glow:  rgba(239,68,68,.18);
+            --amber:     #f59e0b;
+            --border:    rgba(255,255,255,.08);
+            --border2:   rgba(255,255,255,.14);
+            --muted:     rgba(255,255,255,.4);
+            --hint:      rgba(255,255,255,.2);
+            --surface:   rgba(255,255,255,.05);
+            --surface2:  rgba(255,255,255,.09);
+            --r:         16px;
+            --r-sm:      12px;
+            --r-full:    9999px;
+        }
+
+        html, body { height: 100%; background: var(--bg); color: #fff; font-family: 'Kanit', sans-serif; overflow-x: hidden; }
+
+        /* ── BACKGROUND MESH ── */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 80% 50% at 20% -10%, rgba(59,130,246,.12) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 110%, rgba(16,185,129,.08) 0%, transparent 60%);
+        }
+
+        .page-wrap {
+            position: relative; z-index: 1;
+            min-height: 100vh; max-width: 480px; margin: 0 auto;
+            display: flex; flex-direction: column;
+            padding: 0 0 env(safe-area-inset-bottom);
+        }
+
+        /* ── HEADER ── */
+        .app-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 20px 0;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand-logo {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, var(--blue), var(--blue-d));
+            border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 20px var(--blue-glow);
+        }
+        .brand-logo svg { width: 20px; height: 20px; color: #fff; }
+        .brand-name { font-size: 15px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+        .brand-sub  { font-size: 9px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-top: 1px; }
+
+        .btn-admin {
+            width: 38px; height: 38px;
+            background: var(--surface2); border: 1px solid var(--border2);
+            border-radius: 11px; cursor: pointer; color: var(--muted);
+            display: flex; align-items: center; justify-content: center;
+            transition: all .2s;
+        }
+        .btn-admin:active { background: var(--blue-glow); border-color: var(--blue); color: var(--blue); transform: scale(.92); }
+
+        /* ── CLOCK SECTION ── */
+        .clock-section {
+            text-align: center; padding: 24px 20px 18px;
+        }
+        #live-clock {
+            font-size: clamp(52px, 15vw, 72px);
+            font-weight: 800; letter-spacing: -3px;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+            background: linear-gradient(135deg, #fff 60%, rgba(255,255,255,.5));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        #live-date {
+            font-size: 11px; font-weight: 500; color: var(--muted);
+            text-transform: uppercase; letter-spacing: .5px; margin-top: 6px;
+        }
+
+        /* ── GPS BANNER ── */
+        .gps-wrap { padding: 0 20px 14px; }
+        #gps-banner {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: var(--r-full); padding: 10px 16px;
+            transition: all .3s;
+        }
+        #gps-banner.in-zone  { background: var(--green-glow); border-color: rgba(16,185,129,.3); }
+        #gps-banner.out-zone { background: var(--red-glow);   border-color: rgba(239,68,68,.3); }
+        .gps-left { display: flex; align-items: center; gap: 8px; }
+        #gps-dot {
+            width: 8px; height: 8px; border-radius: 50%; background: var(--muted);
+            flex-shrink: 0; transition: all .3s;
+        }
+        .dot-in  { background: var(--green) !important; box-shadow: 0 0 8px var(--green); }
+        .dot-out { background: var(--red)   !important; box-shadow: 0 0 8px var(--red); }
+        .dot-searching { background: var(--amber) !important; animation: blink 1s ease-in-out infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+        #gps-text { font-size: 10px; font-weight: 700; color: #fff; letter-spacing: .4px; }
+        .btn-refresh {
+            font-size: 10px; font-weight: 700; color: var(--blue);
+            background: none; border: none; cursor: pointer; letter-spacing: .3px;
+            padding: 2px 0;
+        }
+
+        /* ── CAMERA ── */
+        .camera-wrap { padding: 0 20px 16px; }
+        .camera-frame {
+            position: relative; width: 100%; aspect-ratio: 1/1;
+            background: var(--bg3); border-radius: 28px;
+            overflow: hidden; cursor: pointer;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 0 1px rgba(255,255,255,.04), inset 0 1px 0 rgba(255,255,255,.08);
+        }
+        #video-feed, #captured-image {
+            width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);
+            position: absolute; inset: 0;
+        }
+        #captured-image { display: none; }
+        .camera-overlay {
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-end;
+            background: linear-gradient(to top, rgba(0,0,0,.5) 0%, transparent 50%);
+            padding-bottom: 16px; opacity: 0; transition: opacity .2s;
+        }
+        .camera-frame:hover .camera-overlay,
+        .camera-frame:active .camera-overlay { opacity: 1; }
+        .camera-tap-hint {
+            font-size: 10px; font-weight: 700; color: #fff;
+            background: rgba(0,0,0,.4); backdrop-filter: blur(6px);
+            padding: 6px 16px; border-radius: var(--r-full);
+            text-transform: uppercase; letter-spacing: .5px;
+        }
+        /* corner brackets */
+        .cam-corner {
+            position: absolute; width: 22px; height: 22px;
+            border-color: rgba(255,255,255,.35); border-style: solid;
+            pointer-events: none;
+        }
+        .cam-corner.tl { top: 14px;    left: 14px;   border-width: 2px 0 0 2px; border-radius: 6px 0 0 0; }
+        .cam-corner.tr { top: 14px;    right: 14px;  border-width: 2px 2px 0 0; border-radius: 0 6px 0 0; }
+        .cam-corner.bl { bottom: 14px; left: 14px;   border-width: 0 0 2px 2px; border-radius: 0 0 0 6px; }
+        .cam-corner.br { bottom: 14px; right: 14px;  border-width: 0 2px 2px 0; border-radius: 0 0 6px 0; }
+        /* captured checkmark overlay */
+        .cam-captured-badge {
+            position: absolute; top: 12px; right: 12px;
+            background: var(--green); border-radius: 50%;
+            width: 28px; height: 28px;
+            display: none; align-items: center; justify-content: center;
+            box-shadow: 0 0 12px var(--green-glow);
+        }
+        #retake-row {
+            display: none; margin-top: 8px; text-align: center;
+        }
+        #retake-container { display: contents; }
+        .btn-retake {
+            font-size: 11px; font-weight: 600; color: var(--red);
+            background: none; border: none; cursor: pointer;
+            border-bottom: 1px solid rgba(239,68,68,.3); padding-bottom: 1px;
+        }
+
+        /* ── ID INPUT ── */
+        .id-section { padding: 0 20px 16px; }
+        .id-label {
+            font-size: 10px; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: .5px;
+            display: block; margin-bottom: 8px; text-align: center;
+        }
+        #emp-id {
+            width: 100%; padding: 16px;
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: var(--r); color: #fff;
+            font-family: 'Kanit', sans-serif;
+            font-size: 28px; font-weight: 800;
+            text-align: center; text-transform: uppercase; letter-spacing: 4px;
+            outline: none; transition: border-color .2s, box-shadow .2s;
+            -webkit-appearance: none;
+        }
+        #emp-id::placeholder { color: var(--hint); letter-spacing: 2px; font-size: 16px; font-weight: 500; }
+        #emp-id:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px var(--blue-glow);
+        }
+
+        /* ── ACTION BUTTONS ── */
+        .action-row { display: flex; gap: 12px; padding: 0 20px 24px; }
+        .btn-action {
+            flex: 1; padding: 18px 12px;
+            border: none; border-radius: var(--r);
+            font-family: 'Kanit', sans-serif;
+            font-size: 15px; font-weight: 700;
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: all .18s; letter-spacing: .3px;
+        }
+        .btn-action::after {
+            content: ''; position: absolute; inset: 0;
+            background: rgba(255,255,255,.12); opacity: 0; transition: opacity .15s;
+        }
+        .btn-action:active::after { opacity: 1; }
+        .btn-action:active { transform: scale(.97); }
+        #btn-clock-in {
+            background: linear-gradient(135deg, var(--blue), var(--blue-d));
+            color: #fff; box-shadow: 0 8px 24px rgba(59,130,246,.25);
+        }
+        #btn-clock-out {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff; box-shadow: 0 8px 24px rgba(239,68,68,.25);
+        }
+        .btn-disabled {
+            opacity: .35; cursor: not-allowed; pointer-events: none;
+            box-shadow: none !important;
+        }
+
+
+        /* ── TODAY HISTORY ── */
+        .hist-section { padding: 0 20px 32px; }
+        .hist-title {
+            font-size: 10px; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .hist-title::before { content:''; display:block; width:4px; height:4px; border-radius:50%; background:var(--blue); }
+        #hist-list { display: flex; flex-direction: column; gap: 8px; }
+        .hist-empty { text-align:center; font-size:12px; font-weight:500; color:var(--hint); padding:18px 0; }
+        .hist-row {
+            display:flex; align-items:center; gap:10px;
+            background:var(--surface2); border:1px solid var(--border);
+            border-radius:var(--r-sm); padding:11px 14px;
+            animation:fadeRow .3s ease;
+        }
+        @keyframes fadeRow { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+        .hist-badge { padding:3px 9px; border-radius:var(--r-full); font-size:10px; font-weight:700; white-space:nowrap; flex-shrink:0; }
+        .hist-badge.in  { background:var(--green-glow); color:var(--green); border:1px solid rgba(16,185,129,.3); }
+        .hist-badge.out { background:var(--red-glow);   color:var(--red);   border:1px solid rgba(239,68,68,.3); }
+        .hist-name { font-size:13px; font-weight:700; color:#fff; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .hist-time { font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
+        .hist-zone { font-size:10px; font-weight:600; white-space:nowrap; flex-shrink:0; }
+        .hist-zone.ok  { color:var(--green); }
+        .hist-zone.no  { color:var(--red); }
+        .hist-late { font-size:10px; font-weight:600; color:var(--amber); flex-shrink:0; }
+
+        /* ── RESULT SCREEN ── */
+        #result-screen {
+            position: fixed; inset: 0; z-index: 500;
+            background: rgba(10,15,30,.92); backdrop-filter: blur(16px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px;
+        }
+        #result-screen.hidden { display: none; }
+        .result-card {
+            background: var(--bg2); border: 1px solid var(--border2);
+            border-radius: 28px; padding: 36px 28px;
+            width: 100%; max-width: 360px; text-align: center;
+            animation: slideUp .3s ease-out;
+        }
+        @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        .result-icon {
+            width: 68px; height: 68px; border-radius: 50%;
+            background: var(--green-glow); border: 2px solid rgba(16,185,129,.4);
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+        }
+        #res-name { font-size: 28px; font-weight: 800; color: #fff; }
+        #res-status { font-size: 11px; font-weight: 600; color: var(--green); text-transform: uppercase; letter-spacing: .6px; margin-top: 4px; }
+        #res-detail {
+            margin: 16px 0 20px; padding: 14px 18px;
+            background: var(--surface); border-radius: var(--r-sm);
+            font-size: 13px; font-weight: 500; color: var(--muted);
+            line-height: 1.7; white-space: pre-line;
+        }
+        .btn-ack {
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, var(--blue), var(--blue-d));
+            border: none; border-radius: var(--r);
+            color: #fff; font-family: 'Kanit', sans-serif;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+            letter-spacing: .4px; box-shadow: 0 6px 20px var(--blue-glow);
+        }
+        .btn-ack:active { transform: scale(.97); }
+
+        /* ── ADMIN MODAL ── */
+        #admin-modal {
+            position: fixed; inset: 0;
+            background: rgba(10,15,30,.9); backdrop-filter: blur(14px);
+            z-index: 600; display: flex; align-items: flex-end; justify-content: center;
+            padding: 0; padding-bottom: env(safe-area-inset-bottom);
+        }
+        #admin-modal.hidden { display: none; }
+        .admin-sheet {
+            background: var(--bg2); border: 1px solid var(--border2);
+            border-radius: 28px 28px 0 0; width: 100%; max-width: 480px;
+            padding: 10px 24px 36px;
+            animation: sheetUp .28s cubic-bezier(.22,1,.36,1);
+        }
+        @keyframes sheetUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+        .sheet-handle {
+            width: 40px; height: 4px; background: var(--border2);
+            border-radius: 2px; margin: 0 auto 22px;
+        }
+        .admin-title { font-size: 20px; font-weight: 800; color: #fff; text-align: center; }
+        .admin-sub { font-size: 11px; font-weight: 500; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; margin-bottom: 22px; }
+        .admin-inp {
+            width: 100%; padding: 14px 16px; margin-bottom: 10px;
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: var(--r-sm); color: #fff;
+            font-family: 'Kanit', sans-serif; font-size: 15px; font-weight: 600;
+            text-align: center; outline: none; transition: border-color .2s;
+            -webkit-appearance: none;
+        }
+        .admin-inp::placeholder { color: var(--hint); }
+        .admin-inp:focus { border-color: var(--blue); }
+        .admin-btns { display: flex; gap: 10px; margin-top: 6px; }
+        .btn-cancel-admin {
+            flex: 1; padding: 14px;
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: var(--r-sm); color: var(--muted);
+            font-family: 'Kanit', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer;
+        }
+        .btn-cancel-admin:active { opacity: .7; }
+        #btn-login-hub {
+            flex: 2; padding: 14px;
+            background: linear-gradient(135deg, var(--blue), var(--blue-d));
+            border: none; border-radius: var(--r-sm);
+            color: #fff; font-family: 'Kanit', sans-serif;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 16px var(--blue-glow);
+        }
+        #btn-login-hub:active { transform: scale(.97); }
+
+        /* ── TOAST ── */
+        #toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-8px);
+            z-index: 1000; padding: 11px 22px; border-radius: var(--r-full);
+            font-family: 'Kanit', sans-serif; font-size: 13px; font-weight: 600;
+            min-width: 240px; text-align: center; pointer-events: none;
+            opacity: 0; transition: all .3s;
+            background: var(--bg3); color: #fff;
+            border: 1px solid var(--border2);
+        }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        #toast.error { background: rgba(239,68,68,.95); border-color: transparent; }
+    </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+    <!-- HEADER -->
+    <header class="app-header">
+        <div class="brand">
+            <div class="brand-logo">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+                <div class="brand-name">OnaRoll</div>
+                <div class="brand-sub">ระบบลงเวลา</div>
+            </div>
+        </div>
+        <button class="btn-admin" onclick="toggleAdminLogin()" aria-label="เข้าสู่ระบบผู้ดูแล">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+    </header>
+
+    <!-- CLOCK -->
+    <div class="clock-section">
+        <div id="live-clock">00:00:00</div>
+        <p id="live-date">ระบบพร้อมใช้งาน</p>
+    </div>
+
+    <!-- GPS -->
+    <div class="gps-wrap">
+        <div id="gps-banner">
+            <div class="gps-left">
+                <div id="gps-dot" class="dot-searching"></div>
+                <span id="gps-text">ตรวจหาพิกัด...</span>
+            </div>
+            <button class="btn-refresh" onclick="initLocation()">Refresh</button>
+        </div>
+    </div>
+
+    <!-- CAMERA -->
+    <div class="camera-wrap">
+        <div class="camera-frame" onclick="takeSnapshot()">
+            <video id="video-feed" autoplay playsinline muted></video>
+            <img id="captured-image">
+            <div class="cam-corner tl"></div>
+            <div class="cam-corner tr"></div>
+            <div class="cam-corner bl"></div>
+            <div class="cam-corner br"></div>
+            <div class="camera-overlay">
+                <div class="camera-tap-hint">แตะเพื่อสแกนใบหน้า</div>
+            </div>
+            <div class="cam-captured-badge" id="cam-check">
+                <svg width="14" height="14" fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+            </div>
+        </div>
+        <div id="retake-row">
+            <div id="retake-container">
+                <button class="btn-retake" onclick="resetCamera(event)">↺ ถ่ายรูปใหม่</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EMP ID -->
+    <div class="id-section">
+        <label class="id-label" for="emp-id">รหัสพนักงาน (ID)</label>
+        <input type="text" id="emp-id" placeholder="ระบุ ID..." autocomplete="off" autocapitalize="characters">
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="action-row">
+        <button onclick="handleCheckAction('CHECK_IN')"  id="btn-clock-in"  class="btn-action btn-disabled">บันทึกเข้างาน</button>
+        <button onclick="handleCheckAction('CHECK_OUT')" id="btn-clock-out" class="btn-action btn-disabled">บันทึกออกงาน</button>
+    </div>
+
+
+    <!-- TODAY HISTORY -->
+    <div class="hist-section">
+        <div class="hist-title">ประวัติการบันทึกวันนี้</div>
+        <div id="hist-list"><div class="hist-empty">ยังไม่มีรายการวันนี้</div></div>
+    </div>
+
+</div><!-- /page-wrap -->
+
+<!-- SUCCESS SCREEN -->
+<div id="result-screen" class="hidden">
+    <div class="result-card">
+        <div class="result-icon">
+            <svg width="30" height="30" fill="none" stroke="var(--green)" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <h2 id="res-name">—</h2>
+        <p id="res-status">—</p>
+        <div id="res-detail"></div>
+        <button class="btn-ack" onclick="location.reload()">รับทราบ</button>
+    </div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div id="admin-modal" class="hidden">
+    <div class="admin-sheet">
+        <div class="sheet-handle"></div>
+        <div class="admin-title">เข้าสู่ระบบ</div>
+        <div class="admin-sub">Admin & Manager Access</div>
+        <input type="text"     id="admin-emp-id" placeholder="Employee ID" class="admin-inp" autocapitalize="characters">
+        <input type="password" id="admin-pin"    placeholder="PIN Code"    class="admin-inp" inputmode="numeric">
+        <div class="admin-btns">
+            <button class="btn-cancel-admin" onclick="toggleAdminLogin()">ยกเลิก</button>
+            <button id="btn-login-hub" onclick="loginToHub()">เข้าสู่ระบบ</button>
+        </div>
+    </div>
+</div>
+
+<canvas id="canvas" style="display:none"></canvas>
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════════════════
+     LOGIC เดิมทุกบรรทัด — ไม่มีการแก้ไข
+     ═══════════════════════════════════════════ -->
+<script>
+    const SHOP_LAT = 16.728082, SHOP_LON = 101.292051, RADIUS_LIMIT = 200, RADIUS_IN = 50;
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzcRsD5gzvZWoBs2jV3PncNiunIkDPia37Pwf3Y6ZT_mZEPXXtIy0-PVQEIQXSh3_aDCg/exec';
+    const IMGBB_KEY = '412005bc434fd396c0f0163133dfa205';
+    let userPos = null, capturedBlob = null, stream = null;
+
+    window.onload = () => { updateClock(); initLocation(); startCamera(); loadHistory(); };
+
+    function updateClock() { 
+        const now = new Date();
+        document.getElementById('live-clock').innerText = now.toLocaleTimeString('th-TH', { hour12: false }); 
+        document.getElementById('live-date').innerText = now.toLocaleDateString('th-TH', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+        setTimeout(updateClock, 1000); 
+    }
+
+    function calculateDistance(la1, lo1, la2, lo2) { const R = 6371e3; const φ1 = la1*Math.PI/180, φ2 = la2*Math.PI/180, Δφ = (la2-la1)*Math.PI/180, Δλ = (lo2-lo1)*Math.PI/180; const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2; return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
+    
+    function initLocation() { 
+        const dot  = document.getElementById('gps-dot');
+        const text = document.getElementById('gps-text');
+        const banner = document.getElementById('gps-banner');
+        const btns = [document.getElementById('btn-clock-in'), document.getElementById('btn-clock-out')];
+
+        dot.className = 'dot-searching'; text.innerText = 'กำลังหาพิกัด...';
+        banner.className = '';
+
+        navigator.geolocation.getCurrentPosition(pos => { 
+            userPos = pos.coords;
+            const dist = calculateDistance(userPos.latitude, userPos.longitude, SHOP_LAT, SHOP_LON);
+            if (dist <= RADIUS_IN) {
+                dot.className = 'dot-in';
+                text.innerText = `✅ อยู่ในพื้นที่ร้าน (${Math.round(dist)}ม.)`;
+                banner.className = 'in-zone';
+                document.getElementById('btn-clock-in').classList.remove('btn-disabled');
+                document.getElementById('btn-clock-out').classList.remove('btn-disabled');
+            } else if (dist <= RADIUS_LIMIT) {
+                dot.className = 'dot-out';
+                text.innerText = `⚠️ นอกรัศมีเช็คอิน (${Math.round(dist)}ม.)`;
+                banner.className = 'out-zone';
+                document.getElementById('btn-clock-in').classList.add('btn-disabled');
+                document.getElementById('btn-clock-out').classList.remove('btn-disabled');
+            } else {
+                dot.className = 'dot-out';
+                text.innerText = `❌ นอกพื้นที่ทำงาน (${Math.round(dist)}ม.)`;
+                banner.className = 'out-zone';
+                document.getElementById('btn-clock-in').classList.add('btn-disabled');
+                document.getElementById('btn-clock-out').classList.add('btn-disabled');
+            }
+        }, (err) => {
+            navigator.geolocation.getCurrentPosition(p => { userPos = p.coords; }, null, { enableHighAccuracy: false });
+            showToast("⚠️ กรุณาอนุญาตสิทธิ์พิกัด", "error");
+        }, { enableHighAccuracy: true, timeout: 5000 });
+    }
+
+    async function startCamera() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+            document.getElementById('video-feed').srcObject = stream;
+        } catch (e) { showToast("⚠️ เปิดกล้องไม่ได้", "error"); }
+    }
+
+    function takeSnapshot() {
+        if (!stream || capturedBlob) return;
+        const video = document.getElementById('video-feed');
+        const canvas = document.getElementById('canvas');
+        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+            capturedBlob = blob;
+            document.getElementById('captured-image').src = URL.createObjectURL(blob);
+            document.getElementById('video-feed').classList.add('hidden');
+            document.getElementById('captured-image').style.display = 'block';
+            document.getElementById('retake-row').style.display = 'block';
+            document.getElementById('cam-check').style.display = 'flex';
+            showToast("📸 สแกนใบหน้าสำเร็จ");
+        }, 'image/jpeg', 0.8);
+    }
+
+    function resetCamera(e) {
+        if (e) e.stopPropagation();
+        capturedBlob = null;
+        document.getElementById('video-feed').classList.remove('hidden');
+        document.getElementById('captured-image').style.display = 'none';
+        document.getElementById('retake-row').style.display = 'none';
+        document.getElementById('cam-check').style.display = 'none';
+    }
+
+    function toggleAdminLogin() { document.getElementById('admin-modal').classList.toggle('hidden'); }
+
+    function getSmartVal(obj, ...keys) {
+        if (!obj) return null;
+        for (let k of keys) {
+            if (obj[k] !== undefined && obj[k] !== "") return obj[k];
+            const foundKey = Object.keys(obj).find(key => key.toLowerCase().replace(/[^a-z0-9ก-๙]/g, '') === k.toLowerCase().replace(/[^a-z0-9ก-๙]/g, ''));
+            if (foundKey) return obj[foundKey];
+        }
+        return null;
+    }
+
+    function parseTime(val) {
+        if (!val) return { h: 0, m: 0 };
+        try {
+            if (typeof val === 'string' && val.includes('T')) {
+                const d = new Date(val);
+                let h = d.getUTCHours() + 7; if (h >= 24) h -= 24;
+                return { h: h, m: d.getUTCMinutes() };
+            }
+            const parts = String(val).replace('.', ':').split(':');
+            return { h: parseInt(parts[0], 10) || 0, m: parseInt(parts[1], 10) || 0 };
+        } catch(e) { return { h: 0, m: 0 }; }
+    }
+
+    async function handleCheckAction(type) {
+        const id = document.getElementById('emp-id').value.trim().toUpperCase();
+        if (!id || !capturedBlob) return showToast("⚠️ กรุณากรอก ID และสแกนหน้า", "error");
+        if (type === 'CHECK_IN' && userPos) {
+            const dGuard = calculateDistance(userPos.latitude, userPos.longitude, SHOP_LAT, SHOP_LON);
+            if (dGuard > RADIUS_IN) return showToast(`❌ อยู่นอกพื้นที่ (${Math.round(dGuard)}ม.) — ไม่สามารถเช็คอินได้`, "error");
+        }
+        const btn = type === 'CHECK_IN' ? document.getElementById('btn-clock-in') : document.getElementById('btn-clock-out');
+        const originalText = btn.innerText; btn.disabled = true; btn.innerText = "กำลังบันทึก..."; 
+
+        try {
+            const resEmp = await fetch(`${API_URL}?action=GET_EMPLOYEES&t=${Date.now()}`);
+            if (!resEmp.ok) throw new Error("NetErr");
+            const emps = await resEmp.json();
+            
+            const emp = emps.find(e => String(getSmartVal(e, 'รหัสพนักงาน', 'Employee_ID') || "").toUpperCase() === id);
+            if (!emp) { showToast("❌ ไม่พบรหัสพนักงาน", "error"); btn.disabled = false; btn.innerText = originalText; return; }
+
+            const now = new Date();
+            let status = "ปกติ", lateMinutes = 0, otHours = 0;
+            
+            if (type === 'CHECK_IN') {
+                const sched = parseTime(getSmartVal(emp, 'เวลาเริ่มงาน', 'startTime', 'start_work_time'));
+                const workStart = new Date(now); workStart.setHours(sched.h, sched.m, 0, 0);
+                if (now.getTime() > workStart.getTime()) {
+                    lateMinutes = Math.floor((now.getTime() - workStart.getTime()) / 60000);
+                    if (lateMinutes > 0) status = "สาย";
+                }
+            } else {
+                const sched = parseTime(getSmartVal(emp, 'เวลาเลิกงาน', 'endTime', 'end_work_time'));
+                const workEnd = new Date(now); workEnd.setHours(sched.h, sched.m, 0, 0);
+                if (now.getTime() > workEnd.getTime()) {
+                    otHours = parseFloat(((now.getTime() - workEnd.getTime()) / 3600000).toFixed(2));
+                }
+            }
+
+            const fd = new FormData(); fd.append('image', capturedBlob);
+            const imgRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: 'POST', body: fd });
+            const imgData = await imgRes.json();
+            if (!imgData.success) throw new Error("ImgErr");
+
+            const nickname = getSmartVal(emp, 'ชื่อเล่น', 'Nickname') || "-";
+            
+            await fetch(API_URL, { 
+                method: 'POST', mode: 'no-cors', cache: 'no-cache',
+                body: JSON.stringify({ 
+                    action: type, empId: id, nickname: nickname, 
+                    photo: imgData.data.url, status: status,
+                    lateMinutes: lateMinutes, otHours: otHours,
+                    location: (() => { if (!userPos) return "ไม่ทราบพิกัด"; const d = calculateDistance(userPos.latitude, userPos.longitude, SHOP_LAT, SHOP_LON); return d <= RADIUS_IN ? "IN_ZONE" : `OUT_OF_ZONE,${Math.round(d)}m`; })()
+                }) 
+            });
+            
+            document.getElementById('res-name').innerText = nickname;
+            document.getElementById('res-status').innerText = type === 'CHECK_IN' ? 'บันทึกเข้างานสำเร็จ' : 'บันทึกออกงานสำเร็จ';
+            document.getElementById('res-detail').innerText = type === 'CHECK_IN'
+                ? `${status} ${lateMinutes > 0 ? `(${lateMinutes} นาที)` : ""}\nเวลา: ${now.toLocaleTimeString('th-TH')}`
+                : (otHours > 0 ? `OT: ${otHours} ชม.\nเวลา: ${now.toLocaleTimeString('th-TH')}` : `เลิกงานปกติ\nเวลา: ${now.toLocaleTimeString('th-TH')}`);
+            document.getElementById('result-screen').classList.remove('hidden');
+            saveHistory({ type, nickname, time: now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false}), lateMinutes, otHours });
+
+        } catch (e) { 
+            console.error(e);
+            showToast("❌ การเชื่อมต่อล้มเหลว กรุณาลองใหม่", "error"); 
+            btn.disabled = false; btn.innerText = originalText;
+        }
+    }
+
+    async function loginToHub() {
+        const id  = document.getElementById('admin-emp-id').value.trim().toUpperCase();
+        const pin = document.getElementById('admin-pin').value.trim();
+        const btn = document.getElementById('btn-login-hub');
+        if (!id || !pin) return;
+        btn.disabled = true; btn.innerText = "Checking...";
+        try {
+            const res  = await fetch(`${API_URL}?action=GET_EMPLOYEES&t=${Date.now()}`);
+            const emps = await res.json();
+            const user = emps.find(e => String(getSmartVal(e, 'รหัสพนักงาน', 'Employee_ID') || "").toUpperCase() === id && String(getSmartVal(e, 'pin', 'PIN') || "") === pin);
+            if (user) {
+                localStorage.setItem('user_role', String(getSmartVal(user, 'role', 'บทบาท') || "User")); 
+                localStorage.setItem('user_pos',  String(getSmartVal(user, 'ตำแหน่ง', 'position') || "Staff"));
+                localStorage.setItem('user_name', String(getSmartVal(user, 'ชื่อเล่น', 'Nickname') || "Staff"));
+                showToast(`✨ ยินดีต้อนรับคุณ ${localStorage.getItem('user_name')}`);
+                setTimeout(() => window.location.href = 'Owner_Dashboard.html', 1000);
+            } else { showToast("❌ ข้อมูลไม่ถูกต้อง", "error"); btn.disabled = false; btn.innerText = "เข้าสู่ระบบ"; }
+        } catch(e) { showToast("เชื่อมต่อข้อมูลล้มเหลว", "error"); btn.disabled = false; btn.innerText = "เข้าสู่ระบบ"; }
+    }
+
+    // ── ประวัติการบันทึกวันนี้ ─────────────────────────────────────────────────
+    function todayKey() { return 'ci_hist_' + new Date().toLocaleDateString('en-CA'); }
+
+    function saveHistory(entry) {
+        const key = todayKey();
+        const list = JSON.parse(localStorage.getItem(key) || '[]');
+        list.push(entry);
+        localStorage.setItem(key, JSON.stringify(list));
+        renderHistory(list);
+    }
+
+    function renderHistory(list) {
+        const el = document.getElementById('hist-list');
+        if (!list || !list.length) { el.innerHTML = '<div class="hist-empty">ยังไม่มีรายการวันนี้</div>'; return; }
+        el.innerHTML = [...list].reverse().map(h => {
+            const isIn = h.type === 'CHECK_IN';
+            const zoneHtml = isIn ? '<span class="hist-zone ok">✔ ในพื้นที่</span>' : '';
+            const lateHtml = h.lateMinutes > 0 ? `<span class="hist-late">สาย ${h.lateMinutes}น.</span>` : '';
+            const otHtml   = h.otHours   > 0 ? `<span class="hist-late">OT ${h.otHours}ชม.</span>` : '';
+            return `<div class="hist-row">
+                <span class="hist-badge ${isIn?'in':'out'}">${isIn?'เข้างาน':'ออกงาน'}</span>
+                <span class="hist-name">${h.nickname||''}</span>
+                ${zoneHtml}${lateHtml}${otHtml}
+                <span class="hist-time">${h.time}</span>
+            </div>`;
+        }).join('');
+    }
+
+    function loadHistory() { renderHistory(JSON.parse(localStorage.getItem(todayKey()) || '[]')); }
+
+    function showToast(m, t) {
+        const el = document.getElementById('toast');
+        el.innerText = m;
+        el.className = t === 'error' ? 'show error' : 'show';
+        clearTimeout(el._t);
+        el._t = setTimeout(() => el.className = '', 4000);
+    }
+</script>
+</body>
+</html>
