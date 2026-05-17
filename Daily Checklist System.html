@@ -586,9 +586,16 @@ input,textarea,select{font-size:16px!important}
                 const done = Object.values(latestToday).filter(x => normalize(getSmartVal(x, 'Status', 'สถานะ')) === "Completed").length;
                 const fix = Object.values(latestToday).filter(x => normalize(getSmartVal(x, 'Status', 'สถานะ')) === "Fix Required").length;
                 
+                // นับเฉพาะงานที่ตรงกับ position ของ user (เหมือน renderChecklist บรรทัด 515-520)
+                const _userPos  = normalize(userPos).toLowerCase();
+                const _userRole = (localStorage.getItem('user_role') || '').toLowerCase();
                 const activeMasterCount = masterTasks.filter(t => {
                     const taskStatus = normalize(getSmartVal(t, 'Status', 'สถานะ')).toLowerCase();
-                    return taskStatus === "" || taskStatus === "active" || taskStatus === "ใช้งาน";
+                    if (taskStatus !== "" && taskStatus !== "active" && taskStatus !== "ใช้งาน") return false;
+                    // กรอง position — admin/manager เห็นทุกงาน, user เห็นเฉพาะของตัวเอง
+                    const taskPos = normalize(getSmartVal(t, 'Position', 'ตำแหน่ง')).toLowerCase();
+                    return (_userRole === 'admin' || _userRole === 'manager' || _userRole === 'owner') ||
+                           (taskPos === "" || taskPos === "all" || taskPos === "ทั้งหมด" || taskPos.includes(_userPos));
                 }).length;
 
                 const percent = activeMasterCount > 0 ? Math.round((done / activeMasterCount) * 100) : 0;
