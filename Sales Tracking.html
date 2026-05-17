@@ -1,401 +1,646 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TimeHub Pro - Sales Intelligence</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Prompt:wght@300;400;500;600;700;800&display=swap');
-        
-        body { 
-            font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif; 
-            background-color: #f8fafc; 
-            color: #1e293b;
-            -webkit-tap-highlight-color: transparent;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sales Tracking — OnaRoll</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;padding-bottom:74px;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#1a2b5e;--blue:#2979d4;--blue-light:#e8f1fd;--blue-pale:#f0f6ff;
+  --surface:#fff;--surface2:#f7fafd;--bg:#f0f4f8;
+  --text:#1a2332;--muted:#5a7184;--light:#92a8bb;
+  --border:#dde6ef;
+  --success:#00897b;--success-bg:#e0f5f2;
+  --danger:#e53935;--danger-bg:#fdecea;
+  --warn:#f57c00;--warn-bg:#fff3e0;
+  --r:12px;--r-sm:8px;
+  --shadow:0 2px 8px rgba(26,43,94,.08);
+  --shadow-md:0 6px 24px rgba(26,43,94,.13);
+}
+input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
-        .main-card { 
-            background: white; 
-            border-radius: 3rem; 
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
-        }
+/* ══ TOPBAR ══ */
+.topbar{background:#fff;border-bottom:2px solid var(--blue);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:60;box-shadow:var(--shadow)}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:700;color:var(--navy)}
+.topbar-sub{font-size:10px;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.btn-icon{width:36px;height:36px;border:none;background:var(--surface2);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .2s;border:1px solid var(--border)}
+.btn-icon:active{background:var(--blue-light);color:var(--blue);transform:rotate(180deg)}
+.tab-desktop{display:none}
 
-        .input-premium {
-            @apply w-full py-5 px-8 rounded-full border-2 border-slate-100 bg-slate-50/50 outline-none transition-all font-bold text-slate-700 text-center text-lg;
-        }
+/* ══ MAIN ══ */
+.main{max-width:680px;margin:0 auto;padding:16px 14px}
 
-        .input-premium:focus {
-            @apply border-blue-500 bg-white ring-4 ring-blue-50 shadow-xl shadow-blue-900/5;
-        }
+/* ══ SECTION TABS ══ */
+.section{display:none}.section.active{display:block}
 
-        .month-picker-premium {
-            @apply bg-white border-2 border-slate-100 rounded-full px-8 py-3 font-black outline-none text-slate-700 shadow-md shadow-blue-900/5 focus:border-blue-500 transition-all cursor-pointer text-lg appearance-none w-full sm:w-auto;
-        }
+/* ══ SECTION HEADER ══ */
+.section-header{margin-bottom:16px}
+.section-title{font-size:18px;font-weight:700;color:var(--navy)}
+.section-sub{font-size:11px;color:var(--muted);margin-top:2px;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
 
-        .textarea-premium {
-            @apply w-full p-6 rounded-[2.5rem] border-2 border-slate-100 bg-slate-50/50 outline-none transition-all font-medium text-slate-700 text-center text-lg min-h-[140px] resize-none leading-relaxed;
-        }
+/* ══ CARD ══ */
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+.card:last-child{margin-bottom:0}
+.card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px}
+.card-icon{width:26px;height:26px;border-radius:7px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.card-body{padding:16px}
 
-        .textarea-premium:focus {
-            @apply border-blue-500 bg-white ring-4 ring-blue-50 shadow-xl shadow-blue-900/5;
-        }
+/* ══ ENTRY FORM ══ */
+.total-hero{background:linear-gradient(135deg,var(--navy) 0%,#2d4080 100%);border-radius:var(--r);padding:20px;color:#fff;position:relative;overflow:hidden;margin-bottom:14px}
+.total-hero::after{content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.06)}
+.total-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.total-amount{font-size:36px;font-weight:700;color:#fff;line-height:1}
+.total-amount .baht{font-size:20px;font-weight:600;opacity:.8;margin-right:2px}
+.date-input{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:var(--r-sm);padding:8px 12px;font-family:inherit;font-size:14px;color:#fff;outline:none;width:100%;-webkit-appearance:none}
+.date-input:focus{border-color:rgba(255,255,255,.5)}
 
-        .payment-card {
-            @apply relative overflow-hidden p-6 rounded-[2.5rem] bg-white border-2 border-slate-50 flex flex-col items-center gap-2 transition-all duration-300;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-        }
+/* Payment grid */
+.pay-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.pay-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;transition:all .2s}
+.pay-card:focus-within{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(41,121,212,.1)}
+.pay-card.discount:focus-within{border-color:var(--danger);box-shadow:0 0 0 3px rgba(229,57,53,.1)}
+.pay-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.pay-label.danger{color:var(--danger)}
+.pay-input{border:none;background:transparent;font-family:inherit;font-size:22px;font-weight:700;color:var(--text);width:100%;text-align:center;outline:none;padding:0}
+.pay-input.danger{color:var(--danger)}
 
-        .payment-card:focus-within {
-            @apply border-blue-400 shadow-xl shadow-blue-900/5 -translate-y-1;
-        }
+/* Form fields */
+.field-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.field-input{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font-family:inherit;font-size:14px;color:var(--text);background:#fff;width:100%;transition:border-color .2s;-webkit-appearance:none}
+.field-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(41,121,212,.1)}
+.field-input.danger{color:var(--danger)}
+.field-input.danger:focus{border-color:var(--danger);box-shadow:0 0 0 3px rgba(229,57,53,.08)}
+textarea.field-input{min-height:90px;resize:none;line-height:1.6}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
-        .nav-active { @apply text-blue-600 font-extrabold border-b-4 border-blue-600; }
+/* Submit button */
+.btn-submit{width:100%;background:var(--blue);color:#fff;border:none;border-radius:var(--r);padding:15px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(41,121,212,.3);transition:all .2s;margin-top:4px}
+.btn-submit:active{background:#1565c0;transform:scale(.98)}
+.btn-submit:disabled{opacity:.5;pointer-events:none}
 
-        .btn-confirm {
-            @apply w-full py-7 rounded-full font-black text-2xl shadow-2xl shadow-blue-200 flex justify-center items-center gap-3 transition-all active:scale-95 bg-blue-600 text-white hover:bg-blue-700 mt-4;
-        }
+/* ══ DASHBOARD ══ */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.blue::before{background:var(--blue)}
+.kpi.orange::before{background:var(--warn)}
+.kpi.green::before{background:var(--success)}
+.kpi.purple::before{background:#7c3aed}
+.kpi-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.kpi-value{font-size:20px;font-weight:700;color:var(--text)}
+.kpi-value.blue{color:var(--blue)}
+.kpi-value.orange{color:var(--warn)}
+.kpi-value.green{color:var(--success)}
+.kpi-value.purple{color:#7c3aed}
+.kpi-sub{font-size:10px;color:var(--light);margin-top:2px}
 
-        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        .animate-fade { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.month-select{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;font-family:inherit;font-size:13px;font-weight:600;color:var(--text);background:#fff;-webkit-appearance:none;cursor:pointer}
+.month-select:focus{outline:none;border-color:var(--blue)}
 
-        .modal-scroll::-webkit-scrollbar { width: 4px; }
-        .modal-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-    </style>
+.btn-line{width:100%;background:var(--success);color:#fff;border:none;border-radius:var(--r);padding:14px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(0,137,123,.25);transition:all .2s;margin-top:4px}
+.btn-line:active{background:#00695c;transform:scale(.98)}
+
+/* ══ LOGS ══ */
+.log-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.log-item:last-child{border-bottom:none}
+.log-item:active{background:var(--blue-pale)}
+.log-date-box{width:44px;height:44px;background:var(--blue-light);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.log-day{font-size:16px;font-weight:700;color:var(--blue);line-height:1}
+.log-month{font-size:9px;font-weight:600;color:var(--blue);opacity:.7;text-transform:uppercase}
+.log-info{flex:1;min-width:0}
+.log-staff{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log-note{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log-amount{text-align:right;flex-shrink:0}
+.log-total{font-size:15px;font-weight:700;color:var(--blue)}
+.log-arrow{font-size:12px;color:var(--light);margin-left:6px}
+
+/* ══ MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,15,30,.85);backdrop-filter:blur(4px);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:var(--r) var(--r) 0 0;width:100%;max-width:500px;max-height:90vh;display:flex;flex-direction:column;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 0}
+.modal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:14px;font-weight:700;color:var(--navy)}
+.modal-close{width:30px;height:30px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--muted)}
+.modal-body{overflow-y:auto;flex:1;padding:16px}
+.modal-footer{padding:14px 16px;border-top:1px solid var(--border);flex-shrink:0}
+.btn-close{width:100%;background:var(--navy);color:#fff;border:none;border-radius:var(--r-sm);padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+
+/* Modal detail */
+.detail-hero{background:linear-gradient(135deg,var(--navy),#2d4080);border-radius:var(--r);padding:20px;color:#fff;margin-bottom:12px;text-align:center}
+.detail-total-label{font-size:10px;font-weight:600;opacity:.65;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.detail-total{font-size:34px;font-weight:700}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.detail-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;text-align:center}
+.detail-item.red{background:var(--danger-bg);border-color:#ffcdd2}
+.detail-item-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px}
+.detail-item.red .detail-item-label{color:var(--danger)}
+.detail-item-val{font-size:14px;font-weight:700;color:var(--text)}
+.detail-item.red .detail-item-val{color:var(--danger)}
+.detail-meta{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px}
+.detail-meta-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px}
+.detail-meta-row:last-child{border-bottom:none}
+.detail-meta-key{color:var(--muted);font-weight:600}
+.detail-meta-val{font-weight:700;color:var(--text)}
+.detail-note{margin-top:10px;background:var(--blue-pale);border-left:3px solid var(--blue);border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--muted);font-style:italic;line-height:1.6}
+
+/* ══ BOTTOM NAV ══ */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:60px;padding-bottom:env(safe-area-inset-bottom);background:#fff;border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -2px 12px rgba(26,43,94,.08)}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;font-family:inherit;color:var(--light);cursor:pointer;transition:all .15s;padding:5px 2px}
+.bnav-btn.active{color:var(--blue)}
+.bnav-btn:active{transform:scale(.9)}
+.bnav-btn.center-btn{position:relative;top:-12px}
+.center-inner{width:48px;height:48px;background:var(--blue);border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(41,121,212,.4);border:3px solid #f0f4f8}
+.center-inner svg{width:22px;height:22px;stroke:#fff}
+.bi{font-size:20px;line-height:1}
+.bl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;top:66px;left:50%;transform:translateX(-50%);z-index:500;border-radius:var(--r);padding:11px 20px;font-weight:700;font-size:13px;color:#fff;display:flex;align-items:center;gap:7px;box-shadow:var(--shadow-md);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:90vw}
+.toast.show{opacity:1}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+.toast.info{background:var(--navy)}
+
+/* ══ DESKTOP ══ */
+@media(min-width:640px){
+  body{padding-bottom:0}
+  .bottom-nav{display:none}
+  .tab-desktop{display:flex;gap:4px}
+  .tab-desktop .tab-btn{padding:7px 16px;border-radius:var(--r-sm);border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s}
+  .tab-desktop .tab-btn.active{background:var(--blue);color:#fff}
+  .tab-desktop .tab-btn:hover:not(.active){background:var(--blue-light);color:var(--blue)}
+  .main{padding:24px 20px}
+  .modal-box{border-radius:var(--r);margin:auto}
+  .modal-overlay{align-items:center}
+  .pay-grid{grid-template-columns:repeat(3,1fr)}
+  .kpi-grid{grid-template-columns:repeat(4,1fr)}
+}
+</style>
 </head>
-<body class="min-h-screen pb-32 sm:pb-10">
+<body>
 
-    <header class="bg-white/90 backdrop-blur-md border-b border-slate-100 sticky top-0 z-[60] px-6 py-4 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-3">
-            <button onclick="window.location.href='Main_Hub.html'" class="p-3 bg-slate-50 rounded-2xl hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all active:scale-90 shadow-sm">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-            </button>
-            <div class="text-left">
-                <h1 class="text-lg font-black tracking-tighter uppercase italic leading-none text-slate-800">Sales<span class="text-blue-600">Hub</span></h1>
-                <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">Intelligence Analytics</p>
-            </div>
-        </div>
-        
-        <div class="hidden md:flex gap-8">
-            <button onclick="switchTab('entry')" id="d-tab-entry" class="text-sm font-bold nav-active py-2 transition-all">รายงานยอด</button>
-            <button onclick="switchTab('dashboard')" id="d-tab-dashboard" class="text-sm font-bold text-slate-400 py-2 hover:text-blue-600 transition-colors">สรุปผล</button>
-            <button onclick="switchTab('data')" id="d-tab-data" class="text-sm font-bold text-slate-400 py-2 hover:text-blue-600 transition-colors">ประวัติ</button>
-        </div>
+<div class="toast" id="toast"></div>
 
-        <button onclick="fetchData()" class="p-3 bg-slate-50 rounded-2xl text-slate-400 hover:text-blue-600 transition-all active:rotate-180 duration-500 shadow-sm">
-            <svg id="sync-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-        </button>
-    </header>
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-icon">💰</div>
+    <div>
+      <div class="topbar-title">Sales Tracking</div>
+      <div class="topbar-sub">ระบบรายงานยอดขาย</div>
+    </div>
+  </div>
+  <div class="tab-desktop">
+    <button class="tab-btn active" onclick="switchTab('entry',this)">📋 บันทึกยอด</button>
+    <button class="tab-btn" onclick="switchTab('dashboard',this)">📊 สรุปผล</button>
+    <button class="tab-btn" onclick="switchTab('data',this)">🕐 ประวัติ</button>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-icon" onclick="fetchData()" title="ซิงค์ข้อมูล" id="sync-btn">
+      <svg id="sync-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    </button>
+  </div>
+</div>
 
-    <main class="max-w-4xl mx-auto w-full p-4 sm:p-8 text-center">
+<!-- ══ MAIN ══ -->
+<div class="main">
 
-        <!-- 1. ส่วนบันทึกยอดขาย -->
-        <div id="section-entry" class="space-y-8 animate-fade">
-            <div class="text-center">
-                <h2 class="text-3xl font-black text-slate-900 tracking-tight uppercase italic">Daily Sales Entry</h2>
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.4em] mt-1">ระบุข้อมูลรายรับสุทธิที่ได้รับจริง</p>
-            </div>
-
-            <form id="salesForm" onsubmit="handleSubmit(event)" class="space-y-8 text-left">
-                <div class="main-card p-8 sm:p-12 relative overflow-hidden border-t-8 border-blue-600">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
-                    <div class="flex flex-col sm:flex-row justify-between items-center gap-8 relative z-10">
-                        <div class="w-full sm:w-auto text-center sm:text-left space-y-2">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">📅 วันที่รายงาน</span>
-                            <input type="date" id="form-date" required class="w-full p-3 rounded-full bg-slate-50 border-2 border-slate-100 font-bold text-slate-700 outline-none focus:border-blue-400 text-center sm:text-left px-6 shadow-inner">
-                        </div>
-                        <div class="text-center sm:text-right space-y-1">
-                            <span class="text-[11px] font-black text-blue-600 uppercase tracking-[0.2em] block">ยอดขายสุทธิรวมวันนี้</span>
-                            <div class="text-6xl sm:text-8xl font-black tracking-tighter text-slate-900 italic tabular-nums leading-none">
-                                <span class="text-3xl align-top mr-1 font-bold">฿</span><span id="display-total">0.00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-12">
-                        <div class="payment-card"><span class="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">เงินสด</span><input type="number" step="0.01" data-name="cash" oninput="calculateTotal()" placeholder="0.00" class="calc-input bg-transparent text-3xl font-black outline-none w-full text-center text-slate-800"></div>
-                        <div class="payment-card"><span class="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">เงินโอน</span><input type="number" step="0.01" data-name="transfer" oninput="calculateTotal()" placeholder="0.00" class="calc-input bg-transparent text-3xl font-black outline-none w-full text-center text-slate-800"></div>
-                        <div class="payment-card"><span class="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">VISA</span><input type="number" step="0.01" data-name="visa" oninput="calculateTotal()" placeholder="0.00" class="calc-input bg-transparent text-3xl font-black outline-none w-full text-center text-slate-800"></div>
-                        <div class="payment-card"><span class="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">Master</span><input type="number" step="0.01" data-name="master" oninput="calculateTotal()" placeholder="0.00" class="calc-input bg-transparent text-3xl font-black outline-none w-full text-center text-slate-800"></div>
-                        <div class="payment-card"><span class="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">อื่นๆ</span><input type="number" step="0.01" data-name="others" oninput="calculateTotal()" placeholder="0.00" class="calc-input bg-transparent text-3xl font-black outline-none w-full text-center text-slate-800"></div>
-                        <div class="payment-card bg-rose-50 border-rose-100/50"><span class="text-[9px] font-black uppercase text-rose-500 tracking-widest text-center">ส่วนลด (Memo)</span><input type="number" step="0.01" data-name="discount" placeholder="0.00" class="calc-input bg-transparent text-3xl font-black outline-none w-full text-center text-rose-600"></div>
-                    </div>
-                </div>
-                <div class="main-card p-8 sm:p-14 space-y-12">
-                    <div class="flex items-center gap-3 border-b border-slate-100 pb-8"><div class="w-2.5 h-10 bg-blue-600 rounded-full shadow-lg shadow-blue-200"></div><h3 class="text-base font-black text-slate-400 uppercase tracking-[0.4em] italic text-left">Administrative Information</h3></div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-12 text-left">
-                        <div class="space-y-5"><label class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 flex items-center gap-3">พนักงานผู้บันทึก</label><input type="text" id="form-staff" required placeholder="ระบุชื่อจริง-ชื่อเล่น" class="input-premium py-6 shadow-sm"></div>
-                        <div class="space-y-5"><label class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 flex items-center gap-3 text-rose-500">ยอดเงินออกหน้าเครื่อง</label><input type="number" step="0.01" id="form-cash-out" placeholder="0.00" class="input-premium py-6 text-rose-600 shadow-sm font-black"></div>
-                    </div>
-                    <div class="space-y-5 text-left"><label class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 flex items-center gap-3">บันทึก/หมายเหตุ (NOTES)</label><textarea id="form-note" placeholder="รายละเอียดอื่นๆ..." class="textarea-premium shadow-sm"></textarea></div>
-                </div>
-                <button type="submit" id="submit-btn" class="btn-confirm uppercase tracking-[0.3em] shadow-blue-500/30 shadow-lg">ยืนยันและส่งรายงาน</button>
-            </form>
-        </div>
-
-        <!-- 2. ส่วนสรุปผล (Dashboard) -->
-        <div id="section-dashboard" class="hidden space-y-8 animate-fade">
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h2 class="text-2xl font-black text-slate-900 uppercase italic text-center sm:text-left">Monthly Insights</h2>
-                <input type="month" id="month-filter" onchange="updateDashboard()" class="month-picker-premium">
-            </div>
-            
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                <div class="main-card p-4 sm:p-6 border-l-[8px] sm:border-l-[12px] border-blue-600 overflow-hidden flex flex-col justify-center min-h-[110px] sm:min-h-[140px] text-left">
-                    <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">ยอดสุทธิรวม</span>
-                    <p class="text-base sm:text-2xl font-black text-slate-800 tabular-nums break-words leading-tight" id="stat-total-month">฿0</p>
-                </div>
-                <div class="main-card p-4 sm:p-6 border-l-[8px] sm:border-l-[12px] border-orange-500 overflow-hidden flex flex-col justify-center min-h-[110px] sm:min-h-[140px] text-left">
-                    <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">เงินสดรวม</span>
-                    <p class="text-base sm:text-2xl font-black text-orange-600 tabular-nums break-words leading-tight" id="stat-cash-month">฿0</p>
-                </div>
-                <div class="main-card p-4 sm:p-6 border-l-[8px] sm:border-l-[12px] border-emerald-500 overflow-hidden flex flex-col justify-center min-h-[110px] sm:min-h-[140px] text-left">
-                    <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1 text-emerald-600">วันขายดี</span>
-                    <p class="text-sm sm:text-xl font-black text-slate-800 italic uppercase leading-none" id="stat-peak-day">-</p>
-                </div>
-                <div class="main-card p-4 sm:p-6 border-l-[8px] sm:border-l-[12px] border-indigo-500 overflow-hidden flex flex-col justify-center min-h-[110px] sm:min-h-[140px] text-left">
-                    <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">เฉลี่ยต่อวัน</span>
-                    <p class="text-base sm:text-2xl font-black text-slate-800 tabular-nums break-words leading-tight" id="stat-avg-month">฿0</p>
-                </div>
-            </div>
-
-            <div class="main-card p-6 sm:p-8 min-h-[350px] shadow-sm border-slate-100">
-                <h3 class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 border-b pb-3 text-center sm:text-left">Performance Analytics Curve</h3>
-                <div class="h-[250px] sm:h-[300px]"><canvas id="salesChart"></canvas></div>
-            </div>
-
-            <button onclick="copyDailyReport()" class="w-full py-5 bg-emerald-600 text-white rounded-full font-black flex justify-center items-center gap-3 shadow-xl shadow-emerald-100 active:scale-95 transition-all border-b-[6px] border-emerald-900">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" stroke-width="3"></path></svg>
-                คัดลอกรายงานสรุป (LINE)
-            </button>
-        </div>
-
-        <!-- 3. ส่วนประวัติ (Logs) -->
-        <div id="section-data" class="hidden space-y-6 animate-fade text-left">
-            <h2 class="text-xl font-black text-slate-900 uppercase italic tracking-widest ml-4">Audit Logs</h2>
-            <div class="main-card overflow-hidden">
-                <div class="overflow-x-auto text-left"><table class="w-full text-left border-collapse"><thead class="bg-slate-50 border-b-2"><tr><th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Personnel / Date</th><th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Net Collection</th><th class="px-6 py-5"></th></tr></thead><tbody id="logs-body" class="divide-y divide-slate-100"></tbody></table></div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Modal Detail View -->
-    <div id="modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[150] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl border flex flex-col max-h-[90vh] animate-fade">
-            <div class="p-6 border-b flex justify-between items-center bg-slate-50 flex-shrink-0">
-                <h3 class="font-black text-slate-900 uppercase italic tracking-widest text-sm">Receipt Data Details</h3>
-                <button onclick="closeModal()" class="p-2 bg-white border rounded-xl text-slate-400">✕</button>
-            </div>
-            <div id="modal-content" class="p-6 sm:p-8 overflow-y-auto modal-scroll space-y-6 flex-grow"></div>
-            <div class="p-6 bg-slate-50 border-t flex-shrink-0">
-                <button onclick="closeModal()" class="w-full py-4 bg-slate-900 text-white rounded-full font-black active:scale-95 transition-all uppercase tracking-widest text-sm shadow-xl">CLOSE PREVIEW</button>
-            </div>
-        </div>
+  <!-- ─── ENTRY SECTION ─── -->
+  <div class="section active" id="section-entry">
+    <div class="section-header">
+      <div class="section-title">บันทึกยอดขายประจำวัน</div>
+      <div class="section-sub">Daily Sales Entry</div>
     </div>
 
-    <!-- Mobile Nav Bar -->
-    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 h-24 flex items-center justify-around px-8 z-[100] shadow-2xl rounded-t-[4rem]">
-        <button onclick="switchTab('dashboard')" class="flex flex-col items-center gap-1.5 transition-all text-slate-400" id="m-tab-dashboard"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-width="2.5"></path></svg><span class="text-[9px] font-black uppercase tracking-widest">Insight</span></button>
-        <button onclick="switchTab('entry')" class="flex flex-col items-center gap-1 -translate-y-10 transition-all" id="m-tab-entry"><div class="bg-blue-600 text-white p-5 rounded-[2.2rem] shadow-2xl border-[10px] border-[#f8fafc] active:scale-90 shadow-blue-200"><svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="4"></path></svg></div><span class="text-[11px] font-black uppercase text-slate-900 -mt-8 text-center font-black">REPORT</span></button>
-        <button onclick="switchTab('data')" class="flex flex-col items-center gap-1.5 transition-all text-slate-400" id="m-tab-data"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2.5"></path></svg><span class="text-[9px] font-black uppercase tracking-widest">Audit</span></button>
-    </nav>
+    <form id="salesForm" onsubmit="handleSubmit(event)">
 
-    <div id="toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-[500] px-10 py-6 rounded-[3rem] shadow-2xl transition-all duration-500 opacity-0 pointer-events-none bg-slate-900 text-white font-black text-lg uppercase italic text-center"></div>
+      <!-- Total Hero -->
+      <div class="total-hero">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px">
+          <div style="flex:1">
+            <div class="total-label">📅 วันที่รายงาน</div>
+            <input type="date" id="form-date" required class="date-input">
+          </div>
+          <div style="text-align:right">
+            <div class="total-label">ยอดขายสุทธิรวม</div>
+            <div class="total-amount"><span class="baht">฿</span><span id="display-total">0.00</span></div>
+          </div>
+        </div>
+      </div>
 
-    <script>
-        const SHEET_ID = '1aTkdKkfMXkKutMuVJBew4k5PfPoIkQsr6pmtUAQtPlE';
-        const WRITE_URL = 'https://script.google.com/macros/s/AKfycbz31YJnsULoFDpqYCMHBnxtMPgaxQGCCAhAWJbNBDdW3PEQUv_BQ1LH6WMUC3uPoP7G4A/exec';
-        const READ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Daily_sales`;
+      <!-- Payment Methods -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-icon">💳</div>ช่องทางรับเงิน</div>
+        </div>
+        <div class="card-body">
+          <div class="pay-grid">
+            <div class="pay-card">
+              <div class="pay-label">เงินสด</div>
+              <input type="number" step="0.01" data-name="cash" oninput="calculateTotal()" placeholder="0.00" class="pay-input">
+            </div>
+            <div class="pay-card">
+              <div class="pay-label">เงินโอน</div>
+              <input type="number" step="0.01" data-name="transfer" oninput="calculateTotal()" placeholder="0.00" class="pay-input">
+            </div>
+            <div class="pay-card">
+              <div class="pay-label">VISA</div>
+              <input type="number" step="0.01" data-name="visa" oninput="calculateTotal()" placeholder="0.00" class="pay-input">
+            </div>
+            <div class="pay-card">
+              <div class="pay-label">Master</div>
+              <input type="number" step="0.01" data-name="master" oninput="calculateTotal()" placeholder="0.00" class="pay-input">
+            </div>
+            <div class="pay-card">
+              <div class="pay-label">อื่นๆ</div>
+              <input type="number" step="0.01" data-name="others" oninput="calculateTotal()" placeholder="0.00" class="pay-input">
+            </div>
+            <div class="pay-card discount">
+              <div class="pay-label danger">ส่วนลด</div>
+              <input type="number" step="0.01" data-name="discount" placeholder="0.00" class="pay-input danger">
+            </div>
+          </div>
+        </div>
+      </div>
 
-        let salesData = [];
-        let salesChart = null;
-        let lastActionDate = new Date().toLocaleDateString('en-CA'); // 🚀 ตัวแปรเก็บวันที่ล่าสุด
+      <!-- Admin Info -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-icon">📝</div>ข้อมูลเพิ่มเติม</div>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="field-group">
+              <label class="field-label">👤 พนักงานผู้บันทึก</label>
+              <input type="text" id="form-staff" required placeholder="ชื่อ-ชื่อเล่น" class="field-input">
+            </div>
+            <div class="field-group">
+              <label class="field-label" style="color:var(--danger)">📉 เงินออกหน้าเครื่อง</label>
+              <input type="number" step="0.01" id="form-cash-out" placeholder="0.00" class="field-input danger">
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">🗒️ บันทึก / หมายเหตุ</label>
+            <textarea id="form-note" placeholder="รายละเอียดเพิ่มเติม..." class="field-input"></textarea>
+          </div>
+        </div>
+      </div>
 
-        window.onload = () => {
-            const today = new Date().toLocaleDateString('en-CA');
-            document.getElementById('form-date').value = today;
-            document.getElementById('month-filter').value = new Date().toISOString().substring(0, 7);
-            fetchData();
-        };
+      <button type="submit" id="submit-btn" class="btn-submit">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        ยืนยันและส่งรายงาน
+      </button>
+    </form>
+  </div>
 
-        function parseCSVLine(l) { const res = []; let c = '', q = false; for(let char of l) { if(char === '"') q = !q; else if(char === ',' && !q) { res.push(c.trim()); c = ''; } else c += char; } res.push(c.trim()); return res; }
+  <!-- ─── DASHBOARD SECTION ─── -->
+  <div class="section" id="section-dashboard">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px">
+      <div class="section-header" style="margin-bottom:0">
+        <div class="section-title">สรุปผลประจำเดือน</div>
+        <div class="section-sub">Monthly Insights</div>
+      </div>
+      <input type="month" id="month-filter" onchange="updateDashboard()" class="month-select">
+    </div>
 
-        async function fetchData() {
-            const syncIcon = document.getElementById('sync-icon');
-            if(syncIcon) syncIcon.classList.add('animate-spin');
-            try {
-                const res = await fetch(READ_URL + '&cb=' + Date.now());
-                const text = await res.text();
-                const rows = text.split(/\r?\n/);
-                if (rows.length < 1) return;
+    <!-- KPI -->
+    <div class="kpi-grid">
+      <div class="kpi blue">
+        <div class="kpi-label">ยอดสุทธิรวม</div>
+        <div class="kpi-value blue" id="stat-total-month">฿0</div>
+      </div>
+      <div class="kpi orange">
+        <div class="kpi-label">เงินสดรวม</div>
+        <div class="kpi-value orange" id="stat-cash-month">฿0</div>
+      </div>
+      <div class="kpi green">
+        <div class="kpi-label">วันขายดี</div>
+        <div class="kpi-value green" id="stat-peak-day" style="font-size:14px">—</div>
+      </div>
+      <div class="kpi purple">
+        <div class="kpi-label">เฉลี่ย/วัน</div>
+        <div class="kpi-value purple" id="stat-avg-month">฿0</div>
+      </div>
+    </div>
 
-                const rawHeaders = parseCSVLine(rows[0]);
-                const getCol = (names) => rawHeaders.findIndex(h => names.some(n => h.trim().toLowerCase().includes(n.toLowerCase())));
+    <!-- Chart -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon">📈</div>กราฟยอดขายรายวัน</div>
+      </div>
+      <div class="card-body" style="padding-top:8px">
+        <div style="height:220px"><canvas id="salesChart"></canvas></div>
+      </div>
+    </div>
 
-                const idx = {
-                    date: getCol(["วันที่"]), total: getCol(["ยอดขายรวม"]), cash: getCol(["เงินสด"]),
-                    trans: getCol(["โอน"]), visa: getCol(["visa"]), master: getCol(["master"]),
-                    others: getCol(["อื่นๆ"]), disc: getCol(["ส่วนลด"]), cash_out: getCol(["หน้าเครื่อง"]),
-                    staff: getCol(["ผู้รับผิดชอบ"]), note: getCol(["หมายเหตุ"])
-                };
+    <!-- LINE Report button -->
+    <button onclick="copyDailyReport()" class="btn-line">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+      📤 คัดลอกรายงานส่ง LINE
+    </button>
+  </div>
 
-                salesData = rows.slice(1).map((row, i) => {
-                    const c = parseCSVLine(row);
-                    if(c.length < 5 || c[idx.date] === "วันที่") return null;
-                    let dRaw = c[idx.date], fDate = dRaw;
-                    if(dRaw && dRaw.includes('/')) {
-                        const p = dRaw.split('/');
-                        const y = p[2]?.length === 2 ? '20'+p[2] : p[2];
-                        fDate = `${y}-${p[1]?.padStart(2,'0')}-${p[0]?.padStart(2,'0')}`;
-                    }
-                    return {
-                        id: i, date: fDate, 
-                        total: parseFloat(String(c[idx.total] || 0).replace(/,/g, '')) || 0, 
-                        cash: parseFloat(String(c[idx.cash] || 0).replace(/,/g, '')) || 0,
-                        trans: parseFloat(String(c[idx.trans] || 0).replace(/,/g, '')) || 0, 
-                        visa: parseFloat(String(c[idx.visa] || 0).replace(/,/g, '')) || 0, 
-                        master: parseFloat(String(c[idx.master] || 0).replace(/,/g, '')) || 0,
-                        others: parseFloat(String(c[idx.others] || 0).replace(/,/g, '')) || 0, 
-                        disc: parseFloat(String(c[idx.disc] || 0).replace(/,/g, '')) || 0, 
-                        cash_out: parseFloat(String(c[idx.cash_out] || 0).replace(/,/g, '')) || 0,
-                        staff: c[idx.staff] || '-', note: c[idx.note] || '-'
-                    };
-                }).filter(Boolean);
-                
-                updateDashboard(); renderLogs();
-                if(syncIcon) syncIcon.classList.remove('animate-spin');
-            } catch(e) { if(syncIcon) syncIcon.classList.remove('animate-spin'); }
-        }
+  <!-- ─── DATA / LOGS SECTION ─── -->
+  <div class="section" id="section-data">
+    <div class="section-header">
+      <div class="section-title">ประวัติการบันทึก</div>
+      <div class="section-sub">Audit Logs</div>
+    </div>
+    <div class="card" style="padding:0">
+      <div id="logs-body"></div>
+    </div>
+  </div>
 
-        function updateDashboard() {
-            const filter = document.getElementById('month-filter').value;
-            const filtered = salesData.filter(d => d.date.startsWith(filter));
-            const total = filtered.reduce((s, d) => s + d.total, 0), cash = filtered.reduce((s, d) => s + d.cash, 0);
-            const avg = filtered.length ? total / filtered.length : 0;
-            const dayFreq = {};
-            filtered.forEach(d => {
-                const dayName = new Date(d.date).toLocaleDateString('th-TH', { weekday: 'long' });
-                dayFreq[dayName] = (dayFreq[dayName] || 0) + d.total;
-            });
-            const peakDay = Object.keys(dayFreq).length ? Object.keys(dayFreq).reduce((a, b) => dayFreq[a] > dayFreq[b] ? a : b) : "-";
+</div><!-- end main -->
 
-            document.getElementById('stat-total-month').innerText = `฿${total.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
-            document.getElementById('stat-cash-month').innerText = `฿${cash.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
-            document.getElementById('stat-avg-month').innerText = `฿${avg.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
-            document.getElementById('stat-peak-day').innerText = peakDay;
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="bottom-nav">
+  <button class="bnav-btn" id="m-tab-dashboard" onclick="switchTab('dashboard',this)">
+    <div class="bi">📊</div><div class="bl">สรุปผล</div>
+  </button>
+  <button class="bnav-btn center-btn active" id="m-tab-entry" onclick="switchTab('entry',this)">
+    <div class="center-inner">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M12 4v16m8-8H4" stroke="currentColor" stroke-linecap="round"/></svg>
+    </div>
+    <div class="bl" style="margin-top:4px">บันทึก</div>
+  </button>
+  <button class="bnav-btn" id="m-tab-data" onclick="switchTab('data',this)">
+    <div class="bi">🕐</div><div class="bl">ประวัติ</div>
+  </button>
+</nav>
 
-            const daily = {}; filtered.forEach(d => daily[d.date] = (daily[d.date] || 0) + d.total);
-            const labels = Object.keys(daily).sort();
-            if(salesChart) salesChart.destroy();
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            salesChart = new Chart(ctx, { type: 'line', data: { labels: labels.map(k => k.split('-')[2]), datasets: [{ data: labels.map(k => daily[k]), borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.05)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#fff', pointBorderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
-        }
+<!-- ══ MODAL ══ -->
+<div class="modal-overlay" id="modal" onclick="closeModalCheck(event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">รายละเอียดยอดขาย</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-content"></div>
+    <div class="modal-footer">
+      <button class="btn-close" onclick="closeModal()">ปิด</button>
+    </div>
+  </div>
+</div>
 
-        function renderLogs() {
-            document.getElementById('logs-body').innerHTML = [...salesData].sort((a,b) => b.date.localeCompare(a.date)).map(d => `
-                <tr class="hover:bg-slate-50 cursor-pointer group transition-colors" onclick="viewDetail(${d.id})">
-                    <td class="px-6 py-6 text-left">
-                        <div class="font-black text-slate-800 text-base tracking-tight">${d.date.split('-').reverse().join('/')}</div>
-                        <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">${d.staff}</div>
-                    </td>
-                    <td class="px-6 py-6 text-right">
-                        <div class="text-blue-600 font-black text-lg italic tracking-tighter">฿${d.total.toLocaleString(undefined, {minimumFractionDigits: 0})}</div>
-                    </td>
-                    <td class="px-4 py-6 text-right text-slate-300">➔</td>
-                </tr>
-            `).join('');
-        }
+<script>
+const SHEET_ID = '1aTkdKkfMXkKutMuVJBew4k5PfPoIkQsr6pmtUAQtPlE';
+const WRITE_URL = 'https://script.google.com/macros/s/AKfycbz31YJnsULoFDpqYCMHBnxtMPgaxQGCCAhAWJbNBDdW3PEQUv_BQ1LH6WMUC3uPoP7G4A/exec';
+const READ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Daily_sales`;
 
-        function viewDetail(id) {
-            const d = salesData.find(x => x.id === id); if(!d) return;
-            lastActionDate = d.date; // 🚀 อัปเดตวันที่เมื่อกดดูรายละเอียด
-            document.getElementById('modal-content').innerHTML = `
-                <div class="p-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[3rem] text-white shadow-2xl relative overflow-hidden flex-shrink-0">
-                    <span class="text-[9px] font-black uppercase opacity-60 tracking-[0.2em]">Total Collection</span>
-                    <p class="text-4xl sm:text-5xl font-black mt-2 tracking-tighter italic text-center">฿${d.total.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
-                </div>
-                <div class="grid grid-cols-2 gap-3 text-left">
-                    <div class="p-4 bg-slate-50 rounded-3xl border shadow-inner"><span class="text-[8px] font-bold text-slate-400 uppercase">เงินสด</span><p class="font-black text-lg text-orange-500">฿${d.cash.toLocaleString()}</p></div>
-                    <div class="p-4 bg-slate-50 rounded-3xl border shadow-inner"><span class="text-[8px] font-bold text-slate-400 uppercase">เงินโอน</span><p class="font-black text-lg text-emerald-500">฿${d.trans.toLocaleString()}</p></div>
-                    <div class="p-4 bg-slate-50 rounded-3xl border shadow-inner"><span class="text-[8px] font-bold text-slate-400 uppercase">VISA</span><p class="font-black text-lg text-blue-600">฿${d.visa.toLocaleString()}</p></div>
-                    <div class="p-4 bg-slate-50 rounded-3xl border shadow-inner"><span class="text-[8px] font-bold text-slate-400 uppercase">Master</span><p class="font-black text-lg text-blue-600">฿${d.master.toLocaleString()}</p></div>
-                    <div class="p-4 bg-slate-50 rounded-3xl border shadow-inner"><span class="text-[8px] font-bold text-slate-400 uppercase">อื่นๆ</span><p class="font-black text-lg text-slate-600">฿${d.others.toLocaleString()}</p></div>
-                    <div class="p-4 bg-rose-50 rounded-3xl border border-rose-100 shadow-inner"><span class="text-[8px] font-bold text-rose-400 uppercase">ส่วนลด</span><p class="font-black text-lg text-rose-600">฿${d.disc.toLocaleString()}</p></div>
-                </div>
-                <div class="p-6 bg-slate-50 rounded-[2rem] border text-left space-y-3">
-                    <div class="flex justify-between items-center text-xs font-black uppercase"><span class="text-slate-400 tracking-widest">พนักงาน:</span><span>${d.staff}</span></div>
-                    <div class="flex justify-between items-center text-xs font-black uppercase"><span class="text-slate-400 tracking-widest">เงินออก:</span><span class="text-rose-600 font-black">฿${d.cash_out.toLocaleString()}</span></div>
-                    <div class="pt-3 border-t border-slate-200 mt-1 italic font-bold text-slate-500 text-xs leading-relaxed">"${d.note}"</div>
-                </div>
-            `;
-            document.getElementById('modal').classList.remove('hidden');
-        }
+let salesData = [];
+let salesChart = null;
+let lastActionDate = new Date().toLocaleDateString('en-CA');
+let currentTab = 'entry';
 
-        function calculateTotal() {
-            const getVal = (n) => parseFloat(document.querySelector(`[data-name="${n}"]`).value) || 0;
-            const sum = (getVal('cash') + getVal('transfer') + getVal('visa') + getVal('master') + getVal('others'));
-            document.getElementById('display-total').innerText = sum.toLocaleString(undefined, {minimumFractionDigits: 2});
-        }
+window.onload = () => {
+  const today = new Date().toLocaleDateString('en-CA');
+  document.getElementById('form-date').value = today;
+  document.getElementById('month-filter').value = new Date().toISOString().substring(0, 7);
+  fetchData();
+};
 
-        async function handleSubmit(e) {
-            e.preventDefault();
-            const btn = document.getElementById('submit-btn'); btn.disabled = true; btn.innerText = "กำลังบันทึก...";
-            
-            // 🚀 เก็บวันที่ไว้ก่อน reset ฟอร์ม
-            const selectedDate = document.getElementById('form-date').value;
-            lastActionDate = selectedDate; 
+function parseCSVLine(l) {
+  const res = []; let c = '', q = false;
+  for(let char of l) {
+    if(char === '"') q = !q;
+    else if(char === ',' && !q) { res.push(c.trim()); c = ''; }
+    else c += char;
+  }
+  res.push(c.trim()); return res;
+}
 
-            const payload = { action: 'SAVE_SALES', date: selectedDate, cash: parseFloat(document.querySelector('[data-name="cash"]').value) || 0, transfer: parseFloat(document.querySelector('[data-name="transfer"]').value) || 0, visa: parseFloat(document.querySelector('[data-name="visa"]').value) || 0, master: parseFloat(document.querySelector('[data-name="master"]').value) || 0, others: parseFloat(document.querySelector('[data-name="others"]').value) || 0, discount: parseFloat(document.querySelector('[data-name="discount"]').value) || 0, total: parseFloat(document.getElementById('display-total').innerText.replace(/,/g, '')), cash_out: parseFloat(document.getElementById('form-cash-out').value) || 0, staff: document.getElementById('form-staff').value, note: document.getElementById('form-note').value };
-            try {
-                await fetch(WRITE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                showToast("✨ บันทึกยอดขายเรียบร้อย!", "success");
-                setTimeout(async () => { 
-                    await fetchData(); 
-                    switchTab('dashboard'); 
-                    document.getElementById('salesForm').reset(); 
-                    // 🚀 คืนค่าวันที่เดิมให้ฟอร์ม (เพื่อไม่ให้ Copy report พัง)
-                    document.getElementById('form-date').value = selectedDate;
-                    calculateTotal(); 
-                    btn.disabled = false; 
-                    btn.innerText = "ยืนยันและส่งรายงาน"; 
-                }, 1500);
-            } catch(e) { showToast("❌ ขัดข้อง", "error"); btn.disabled = false; }
-        }
+async function fetchData() {
+  const syncIcon = document.getElementById('sync-icon');
+  if(syncIcon) syncIcon.style.animation = 'spin .6s linear infinite';
+  try {
+    const res = await fetch(READ_URL + '&cb=' + Date.now());
+    const text = await res.text();
+    const rows = text.split(/\r?\n/);
+    if (rows.length < 1) return;
+    const rawHeaders = parseCSVLine(rows[0]);
+    const getCol = (names) => rawHeaders.findIndex(h => names.some(n => h.trim().toLowerCase().includes(n.toLowerCase())));
+    const idx = {
+      date: getCol(["วันที่"]), total: getCol(["ยอดขายรวม"]), cash: getCol(["เงินสด"]),
+      trans: getCol(["โอน"]), visa: getCol(["visa"]), master: getCol(["master"]),
+      others: getCol(["อื่นๆ"]), disc: getCol(["ส่วนลด"]), cash_out: getCol(["หน้าเครื่อง"]),
+      staff: getCol(["ผู้รับผิดชอบ"]), note: getCol(["หมายเหตุ"])
+    };
+    salesData = rows.slice(1).map((row, i) => {
+      const c = parseCSVLine(row);
+      if(c.length < 5 || c[idx.date] === "วันที่") return null;
+      let dRaw = c[idx.date], fDate = dRaw;
+      if(dRaw && dRaw.includes('/')) {
+        const p = dRaw.split('/');
+        const y = p[2]?.length === 2 ? '20'+p[2] : p[2];
+        fDate = `${y}-${p[1]?.padStart(2,'0')}-${p[0]?.padStart(2,'0')}`;
+      }
+      return {
+        id: i, date: fDate,
+        total: parseFloat(String(c[idx.total]||0).replace(/,/g,''))||0,
+        cash: parseFloat(String(c[idx.cash]||0).replace(/,/g,''))||0,
+        trans: parseFloat(String(c[idx.trans]||0).replace(/,/g,''))||0,
+        visa: parseFloat(String(c[idx.visa]||0).replace(/,/g,''))||0,
+        master: parseFloat(String(c[idx.master]||0).replace(/,/g,''))||0,
+        others: parseFloat(String(c[idx.others]||0).replace(/,/g,''))||0,
+        disc: parseFloat(String(c[idx.disc]||0).replace(/,/g,''))||0,
+        cash_out: parseFloat(String(c[idx.cash_out]||0).replace(/,/g,''))||0,
+        staff: c[idx.staff]||'-', note: c[idx.note]||'-'
+      };
+    }).filter(Boolean);
+    updateDashboard(); renderLogs();
+    showToast('ซิงค์ข้อมูลสำเร็จ', 'success');
+  } catch(e) { showToast('ไม่สามารถโหลดข้อมูลได้', 'error'); }
+  if(syncIcon) syncIcon.style.animation = '';
+}
 
-        function showToast(m, t) {
-            const el = document.getElementById('toast'); el.innerText = m;
-            el.className = `fixed top-14 left-1/2 -translate-x-1/2 z-[500] px-10 py-6 rounded-[3rem] shadow-2xl transition-all duration-500 opacity-100 ${t==='error'?'bg-red-600 text-white':'bg-slate-900 text-white'} font-black text-lg uppercase italic text-center`;
-            setTimeout(() => { if(el) el.style.opacity = "0"; }, 4000);
-        }
+function updateDashboard() {
+  const filter = document.getElementById('month-filter').value;
+  const filtered = salesData.filter(d => d.date.startsWith(filter));
+  const total = filtered.reduce((s,d)=>s+d.total,0);
+  const cash = filtered.reduce((s,d)=>s+d.cash,0);
+  const avg = filtered.length ? total/filtered.length : 0;
+  const dayFreq = {};
+  filtered.forEach(d => {
+    const dayName = new Date(d.date).toLocaleDateString('th-TH',{weekday:'long'});
+    dayFreq[dayName] = (dayFreq[dayName]||0)+d.total;
+  });
+  const peakDay = Object.keys(dayFreq).length ? Object.keys(dayFreq).reduce((a,b)=>dayFreq[a]>dayFreq[b]?a:b) : '—';
+  document.getElementById('stat-total-month').innerText = '฿'+total.toLocaleString(undefined,{maximumFractionDigits:0});
+  document.getElementById('stat-cash-month').innerText = '฿'+cash.toLocaleString(undefined,{maximumFractionDigits:0});
+  document.getElementById('stat-avg-month').innerText = '฿'+avg.toLocaleString(undefined,{maximumFractionDigits:0});
+  document.getElementById('stat-peak-day').innerText = peakDay;
 
-        function switchTab(id) {
-            ['entry', 'dashboard', 'data'].forEach(t => { document.getElementById('section-'+t).classList.add('hidden'); document.getElementById('m-tab-'+t)?.classList.remove('text-blue-600'); document.getElementById('d-tab-'+t)?.classList.remove('nav-active'); });
-            document.getElementById('section-'+id).classList.remove('hidden');
-            document.getElementById('m-tab-'+id)?.classList.add('text-blue-600');
-            document.getElementById('d-tab-'+id)?.classList.add('nav-active');
-            window.scrollTo(0,0);
-        }
+  const daily = {}; filtered.forEach(d => daily[d.date]=(daily[d.date]||0)+d.total);
+  const labels = Object.keys(daily).sort();
+  if(salesChart) salesChart.destroy();
+  const ctx = document.getElementById('salesChart').getContext('2d');
+  salesChart = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: labels.map(k=>k.split('-')[2]),
+      datasets:[{
+        data: labels.map(k=>daily[k]),
+        borderColor:'#2979d4',backgroundColor:'rgba(41,121,212,.07)',
+        fill:true,tension:.4,pointRadius:3,
+        pointBackgroundColor:'#fff',pointBorderColor:'#2979d4',pointBorderWidth:2
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11},color:'#92a8bb'}},
+        y:{grid:{color:'rgba(221,230,239,.5)'},ticks:{callback:v=>'฿'+v.toLocaleString(),font:{size:10},color:'#92a8bb'}}
+      }
+    }
+  });
+}
 
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+function renderLogs() {
+  const sorted = [...salesData].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('logs-body').innerHTML = sorted.length === 0
+    ? '<div style="padding:32px;text-align:center;color:#92a8bb;font-size:13px">ไม่มีข้อมูล</div>'
+    : sorted.map(d => {
+      const parts = d.date.split('-');
+      const day = parts[2]||'—';
+      const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+      const mon = months[parseInt(parts[1])||0]||'';
+      return `<div class="log-item" onclick="viewDetail(${d.id})">
+        <div class="log-date-box"><div class="log-day">${day}</div><div class="log-month">${mon}</div></div>
+        <div class="log-info">
+          <div class="log-staff">${d.staff}</div>
+          <div class="log-note">${d.note !== '-' ? d.note : 'ไม่มีหมายเหตุ'}</div>
+        </div>
+        <div class="log-amount">
+          <div class="log-total">฿${d.total.toLocaleString(undefined,{minimumFractionDigits:0})}</div>
+        </div>
+        <div class="log-arrow">›</div>
+      </div>`;
+    }).join('');
+}
 
-        function copyDailyReport() {
-            // 🚀 ตรวจสอบวันที่จากตัวแปร lastActionDate เพื่อความแม่นยำ
-            const target = lastActionDate;
-            const records = salesData.filter(d => d.date === target);
-            if (!records.length) { 
-                showToast("⚠️ ไม่พบยอดของวันที่ " + target.split('-').reverse().join('/'), "error"); 
-                return; 
-            }
-            const sum = records.reduce((a, b) => ({ total: a.total + b.total, cash: a.cash + b.cash, trans: a.trans + b.trans, visa: a.visa + b.visa, master: a.master + b.master, others: a.others + b.others, disc: a.disc + b.disc, out: a.out + b.cash_out, staffs: a.staffs.concat(b.staff) }), { total: 0, cash: 0, trans: 0, visa: 0, master: 0, others: 0, disc: 0, out: 0, staffs: [] });
-            const staffList = [...new Set(sum.staffs)].filter(s => s && s !== '-').join(', ') || '-';
-            const report = `📊 *สรุปยอดขายประจำวัน*\n📅 วันที่: ${target.split('-').reverse().join('/')}\n----------------------------------\n💰 *ยอดขายสุทธิ: ${sum.total.toLocaleString(undefined, {minimumFractionDigits: 0})} บาท*\n----------------------------------\n💵 เงินสด: ${sum.cash.toLocaleString()}\n📱 โอน: ${sum.trans.toLocaleString()}\n💳 VISA/Master: ${(sum.visa + sum.master).toLocaleString()}\n➕ อื่นๆ: ${sum.others.toLocaleString()}\n\n🧧 ส่วนลด: ${sum.disc.toLocaleString()}\n----------------------------------\n📉 *เงินออกหน้าเครื่อง: ${sum.out.toLocaleString()} บาท*\n----------------------------------\n👤 พนักงาน: ${staffList}\n\n✅ ตรวจสอบยอดเรียบร้อย\n[TimeHub Pro Intelligence System]`;
-            const el = document.createElement('textarea'); el.value = report; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
-            showToast("🚀 คัดลอกรายงานสรุปเรียบร้อย!");
-        }
-    </script>
+function viewDetail(id) {
+  const d = salesData.find(x=>x.id===id); if(!d) return;
+  lastActionDate = d.date;
+  const fmt = n => '฿'+n.toLocaleString(undefined,{minimumFractionDigits:2});
+  document.getElementById('modal-content').innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-total-label">ยอดขายสุทธิรวม — ${d.date.split('-').reverse().join('/')}</div>
+      <div class="detail-total">${fmt(d.total)}</div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-item-label">เงินสด</div><div class="detail-item-val" style="color:var(--warn)">${fmt(d.cash)}</div></div>
+      <div class="detail-item"><div class="detail-item-label">เงินโอน</div><div class="detail-item-val" style="color:var(--success)">${fmt(d.trans)}</div></div>
+      <div class="detail-item"><div class="detail-item-label">VISA</div><div class="detail-item-val" style="color:var(--blue)">${fmt(d.visa)}</div></div>
+      <div class="detail-item"><div class="detail-item-label">Master</div><div class="detail-item-val" style="color:var(--blue)">${fmt(d.master)}</div></div>
+      <div class="detail-item"><div class="detail-item-label">อื่นๆ</div><div class="detail-item-val">${fmt(d.others)}</div></div>
+      <div class="detail-item red"><div class="detail-item-label">ส่วนลด</div><div class="detail-item-val">${fmt(d.disc)}</div></div>
+    </div>
+    <div class="detail-meta">
+      <div class="detail-meta-row"><span class="detail-meta-key">พนักงาน</span><span class="detail-meta-val">${d.staff}</span></div>
+      <div class="detail-meta-row"><span class="detail-meta-key">เงินออกหน้าเครื่อง</span><span class="detail-meta-val" style="color:var(--danger)">${fmt(d.cash_out)}</span></div>
+    </div>
+    ${d.note && d.note !== '-' ? `<div class="detail-note">"${d.note}"</div>` : ''}
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+function calculateTotal() {
+  const getVal = n => parseFloat(document.querySelector(`[data-name="${n}"]`).value)||0;
+  const sum = getVal('cash')+getVal('transfer')+getVal('visa')+getVal('master')+getVal('others');
+  document.getElementById('display-total').innerText = sum.toLocaleString(undefined,{minimumFractionDigits:2});
+}
+
+async function handleSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.innerText = 'กำลังบันทึก...';
+  const selectedDate = document.getElementById('form-date').value;
+  lastActionDate = selectedDate;
+  const payload = {
+    action:'SAVE_SALES', date:selectedDate,
+    cash: parseFloat(document.querySelector('[data-name="cash"]').value)||0,
+    transfer: parseFloat(document.querySelector('[data-name="transfer"]').value)||0,
+    visa: parseFloat(document.querySelector('[data-name="visa"]').value)||0,
+    master: parseFloat(document.querySelector('[data-name="master"]').value)||0,
+    others: parseFloat(document.querySelector('[data-name="others"]').value)||0,
+    discount: parseFloat(document.querySelector('[data-name="discount"]').value)||0,
+    total: parseFloat(document.getElementById('display-total').innerText.replace(/,/g,'')),
+    cash_out: parseFloat(document.getElementById('form-cash-out').value)||0,
+    staff: document.getElementById('form-staff').value,
+    note: document.getElementById('form-note').value
+  };
+  try {
+    await fetch(WRITE_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
+    showToast('✅ บันทึกยอดขายเรียบร้อย!','success');
+    setTimeout(async()=>{
+      await fetchData();
+      switchTab('dashboard');
+      document.getElementById('salesForm').reset();
+      document.getElementById('form-date').value = selectedDate;
+      calculateTotal();
+      btn.disabled = false;
+      btn.innerText = 'ยืนยันและส่งรายงาน';
+    },1500);
+  } catch(e) {
+    showToast('❌ เกิดข้อผิดพลาด','error');
+    btn.disabled = false;
+    btn.innerText = 'ยืนยันและส่งรายงาน';
+  }
+}
+
+function copyDailyReport() {
+  const target = lastActionDate;
+  const records = salesData.filter(d=>d.date===target);
+  if(!records.length) { showToast('⚠️ ไม่พบยอดของวันที่ '+target.split('-').reverse().join('/'),'error'); return; }
+  const sum = records.reduce((a,b)=>({
+    total:a.total+b.total, cash:a.cash+b.cash, trans:a.trans+b.trans,
+    visa:a.visa+b.visa, master:a.master+b.master, others:a.others+b.others,
+    disc:a.disc+b.disc, out:a.out+b.cash_out, staffs:a.staffs.concat(b.staff)
+  }),{total:0,cash:0,trans:0,visa:0,master:0,others:0,disc:0,out:0,staffs:[]});
+  const staffList = [...new Set(sum.staffs)].filter(s=>s&&s!=='-').join(', ')||'-';
+  const report = `📊 *สรุปยอดขายประจำวัน*\n📅 วันที่: ${target.split('-').reverse().join('/')}\n----------------------------------\n💰 *ยอดขายสุทธิ: ${sum.total.toLocaleString(undefined,{minimumFractionDigits:0})} บาท*\n----------------------------------\n💵 เงินสด: ${sum.cash.toLocaleString()}\n📱 โอน: ${sum.trans.toLocaleString()}\n💳 VISA/Master: ${(sum.visa+sum.master).toLocaleString()}\n➕ อื่นๆ: ${sum.others.toLocaleString()}\n\n🧧 ส่วนลด: ${sum.disc.toLocaleString()}\n----------------------------------\n📉 *เงินออกหน้าเครื่อง: ${sum.out.toLocaleString()} บาท*\n----------------------------------\n👤 พนักงาน: ${staffList}\n\n✅ ตรวจสอบยอดเรียบร้อย\n[OnaRoll Sales System]`;
+  const el = document.createElement('textarea');
+  el.value = report; document.body.appendChild(el); el.select();
+  document.execCommand('copy'); document.body.removeChild(el);
+  showToast('🚀 คัดลอกรายงานสำเร็จ!','success');
+}
+
+function switchTab(id, btn) {
+  ['entry','dashboard','data'].forEach(t=>{
+    document.getElementById('section-'+t)?.classList.remove('active');
+    document.getElementById('m-tab-'+t)?.classList.remove('active');
+  });
+  document.getElementById('section-'+id)?.classList.add('active');
+  document.getElementById('m-tab-'+id)?.classList.add('active');
+  // desktop tabs
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  currentTab = id;
+  window.scrollTo(0,0);
+  if(id==='dashboard') updateDashboard();
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModalCheck(e) { if(e.target.id==='modal') closeModal(); }
+
+function showToast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
+</script>
 </body>
 </html>
