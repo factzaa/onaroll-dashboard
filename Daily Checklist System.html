@@ -716,6 +716,20 @@ input,textarea,select{font-size:16px!important}
             } catch(err) { console.error("Chart Render Failed"); }
         }
 
+        function _setEl(id, show) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (show) {
+                el.classList.remove('hidden');
+                el.classList.remove('or-hidden');
+                el.style.removeProperty('display');
+            } else {
+                el.classList.add('hidden');
+                el.classList.add('or-hidden');
+                el.style.display = 'none';
+            }
+        }
+
         async function openActionModal(taskId) {
             currentTaskId = taskId;
             const safeId = getSafeId(taskId);
@@ -724,34 +738,50 @@ input,textarea,select{font-size:16px!important}
                 const tb = new Date(getSmartVal(b, 'Timestamp', 'เวลา') || 0);
                 return tb - ta;
             })[0];
-            
+
             if(!r) { showToast("⚠️ ไม่พบข้อมูลงานชิ้นนี้", "error"); return; }
-            
+
             document.getElementById('modal-task-title').innerText = getSmartVal(r, 'Task_Name', 'รายการงาน') || "-";
             document.getElementById('modal-staff-name').innerText = getSmartVal(r, 'Staff_Name', 'พนักงาน') || "-";
             const status = normalize(getSmartVal(r, 'Status', 'สถานะ'));
             const isFix = status === "Fix Required";
-            
-            document.getElementById('fix-banner').classList.toggle('or-hidden', !isFix);
-            document.getElementById('revision-note-box').classList.toggle('or-hidden', !isFix);
-            document.getElementById('staff-fix-zone').classList.toggle('or-hidden', !isFix);
-            document.getElementById('btn-submit-fix').classList.toggle('or-hidden', !isFix);
-            document.getElementById('manager-input-zone').classList.toggle('or-hidden', isFix);
-            document.getElementById('manager-actions').classList.toggle('or-hidden', isFix);
-            
-            if(isFix) {
-                document.getElementById('prev-comment').innerText = `"${getSmartVal(r, 'Manager_Comment', 'คอมเมนต์จากผู้จัดการ') || "แก้ไขตามจุดที่ระบุ"}"`;
+
+            _setEl('fix-banner',         isFix);
+            _setEl('revision-note-box',  isFix);
+            _setEl('staff-fix-zone',     isFix);
+            _setEl('btn-submit-fix',     isFix);
+            _setEl('manager-input-zone', !isFix);
+            _setEl('manager-actions',    !isFix);
+
+            if (isFix) {
+                document.getElementById('prev-comment').innerText = '"' + (getSmartVal(r, 'Manager_Comment', 'คอมเมนต์จากผู้จัดการ') || "แก้ไขตามจุดที่ระบุ") + '"';
                 document.getElementById('modal-header-text').innerText = "Revision Hub";
             } else {
                 document.getElementById('modal-header-text').innerText = "Task Information";
+                document.getElementById('manager-input').value = '';
+                document.getElementById('manager-rating').value = '5';
             }
 
+            // lazy-load รูป — แสดง placeholder ก่อน โหลดจริงทีละรูป
             const photoUrls = (getSmartVal(r, 'Photo_URL', 'รูปภาพ') || "").split(',').filter(u => u.startsWith('http'));
-            document.getElementById('modal-gallery').innerHTML = photoUrls.map(u => `<div class="gallery-item"><img src="${u}"></div>`).join('');
-            document.getElementById('pagination-dots').innerHTML = photoUrls.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
-            
-            document.getElementById('action-modal').classList.remove('hidden');
-            document.getElementById('action-modal').classList.remove('or-hidden');
+            const gallery = document.getElementById('modal-gallery');
+            gallery.innerHTML = photoUrls.length === 0
+                ? '<p style="color:#94a3b8;font-size:12px;text-align:center;padding:20px 0">ไม่มีรูปภาพ</p>'
+                : photoUrls.map((u, i) => '<div class="gallery-item" style="position:relative;background:#f1f5f9;display:flex;align-items:center;justify-content:center;min-height:180px">'
+                    + '<span id="img-ph-' + i + '" style="font-size:11px;color:#94a3b8;position:absolute">กำลังโหลด...</span>'
+                    + '<img data-src="' + u + '" style="opacity:0;transition:opacity .3s;width:100%;height:100%;object-fit:cover"'
+                    + ' onload="this.style.opacity=1;var ph=document.getElementById(\'img-ph-' + i + '\');if(ph)ph.remove()"'
+                    + ' onerror="this.parentElement.innerHTML=\'<span style=\\\"font-size:11px;color:#e74c3c\\\">โหลดรูปไม่สำเร็จ</span>\'">'
+                    + '</div>').join('');
+            document.getElementById('pagination-dots').innerHTML = photoUrls.map((_, i) => '<div class="dot ' + (i===0?'active':'') + '"></div>').join('');
+
+            // stagger load — ไม่โหลดพร้อมกันทุกรูป
+            gallery.querySelectorAll('img[data-src]').forEach(function(img, i) {
+                setTimeout(function() { img.src = img.dataset.src; }, i * 120);
+            });
+
+            _setEl('action-modal', true);
+            document.getElementById('action-modal').style.display = 'flex';
         }
 
         async function saveManagerReview(status) {
@@ -824,12 +854,9 @@ input,textarea,select{font-size:16px!important}
         }
 
         function openCamera(id) { currentTaskId = id; document.getElementById('camera-input').click(); }
-        function closeModal() { 
-            const m = document.getElementById('action-modal');
-            m.classList.add('or-hidden');
-            m.classList.add('hidden');
-            m.style.display = 'none';
-            fixPhotos = []; 
+        function closeModal() {
+            _setEl('action-modal', false);
+            fixPhotos = [];
         }
         function showToast(m, t) { const el = document.getElementById('toast'); el.innerText = m; el.className = `fixed top-10 left-1/2 -translate-x-1/2 z-[1000] px-10 py-6 rounded-full shadow-2xl text-white font-black text-center min-w-[300px] border-b-4 opacity-100 ${t==='error'?'bg-rose-600 border-rose-900':'bg-slate-900 border-blue-600'} font-black font-black`; setTimeout(() => el.classList.replace('opacity-100', 'opacity-0'), 3500); }
         
@@ -850,14 +877,10 @@ input,textarea,select{font-size:16px!important}
 
 // ── Extra patches (after original JS) ──
 
-// Fix: action-modal needs flex when visible
+// Fix: action-modal override — ใช้ _setEl ที่สร้างไว้แล้ว
 const _origOpenModal = openActionModal;
 window.openActionModal = async function(taskId) {
     await _origOpenModal(taskId);
-    const m = document.getElementById('action-modal');
-    m.classList.remove('hidden');
-    m.classList.remove('or-hidden');
-    m.style.display = 'flex';
 };
 const _origCloseModal = closeModal;
 window.closeModal = function() {
