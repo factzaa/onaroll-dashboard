@@ -1,437 +1,620 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Enterprise Expenses Pro - Premium UI</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap');
-        
-        :root {
-            --primary: #ef4444;
-            --slate-900: #0f172a;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Expenses — OnaRoll</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;padding-bottom:74px;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#1a2b5e;--blue:#2979d4;--blue-light:#e8f1fd;--blue-pale:#f0f6ff;
+  --surface:#fff;--surface2:#f7fafd;--bg:#f0f4f8;
+  --text:#1a2332;--muted:#5a7184;--light:#92a8bb;
+  --border:#dde6ef;
+  --success:#00897b;--success-bg:#e0f5f2;
+  --danger:#e53935;--danger-bg:#fdecea;
+  --warn:#f57c00;--warn-bg:#fff3e0;
+  --purple:#7c3aed;--purple-bg:#f5f3ff;
+  --r:12px;--r-sm:8px;
+  --shadow:0 2px 8px rgba(26,43,94,.08);
+  --shadow-md:0 6px 24px rgba(26,43,94,.13);
+}
+input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
-        body { 
-            font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif; 
-            background-color: #f8fafc; 
-            color: #334155;
-            -webkit-tap-highlight-color: transparent;
-        }
+/* ══ TOPBAR ══ */
+.topbar{background:#fff;border-bottom:2px solid var(--blue);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:60;box-shadow:var(--shadow)}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--navy),var(--danger));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:700;color:var(--navy)}
+.topbar-sub{font-size:10px;color:var(--muted)}
+.tab-desktop{display:none}
+.btn-icon{width:36px;height:36px;border:1px solid var(--border);background:var(--surface2);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .2s}
+.btn-icon:active{background:var(--blue-light);color:var(--blue);transform:rotate(180deg)}
 
-        .glass-header {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-        }
+/* ══ MAIN ══ */
+.main{max-width:700px;margin:0 auto;padding:16px 14px}
 
-        .premium-card {
-            background: white;
-            border-radius: 1.5rem;
-            border: 1px solid rgba(226, 232, 240, 1);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+/* ══ SECTIONS ══ */
+.section{display:none}.section.active{display:block}
+.section-header{margin-bottom:14px}
+.section-title{font-size:18px;font-weight:700;color:var(--navy)}
+.section-sub{font-size:11px;color:var(--muted);margin-top:2px;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
 
-        .input-master {
-            @apply w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 outline-none transition-all font-semibold text-slate-700 focus:ring-4 focus:ring-red-50 focus:bg-white;
-        }
+/* ══ CARD ══ */
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+.card:last-child{margin-bottom:0}
+.card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px}
+.card-icon{width:26px;height:26px;border-radius:7px;background:var(--danger-bg);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.card-body{padding:16px}
 
-        .label-master {
-            @apply text-[11px] font-extrabold text-slate-400 uppercase tracking-widest ml-1;
-        }
+/* ══ FORM FIELDS ══ */
+.field-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field-group:last-child{margin-bottom:0}
+.field-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.field-label.red{color:var(--danger)}
+.field-input{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font-family:inherit;font-size:14px;color:var(--text);background:#fff;width:100%;transition:border-color .2s;-webkit-appearance:none;outline:none}
+.field-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(41,121,212,.1)}
+.field-input.red{color:var(--danger);font-size:18px;font-weight:700}
+.field-input.red:focus{border-color:var(--danger);box-shadow:0 0 0 3px rgba(229,57,53,.08)}
+.field-input[type="number"].red::placeholder{color:#ffcdd2;font-size:18px}
+select.field-input{cursor:pointer}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
-        .btn-tab {
-            @apply px-6 py-2 rounded-full text-sm font-bold transition-all duration-300;
-        }
+/* ══ AMOUNT HERO ══ */
+.amount-hero{background:linear-gradient(135deg,#b71c1c,var(--danger));border-radius:var(--r);padding:18px 20px;color:#fff;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ah-label{font-size:10px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.ah-amount{font-size:32px;font-weight:700;line-height:1}
+.ah-amount .sym{font-size:18px;opacity:.8;margin-right:2px}
+.ah-date input{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--r-sm);padding:8px 12px;font-family:inherit;font-size:14px;color:#fff;outline:none;-webkit-appearance:none}
+.ah-date input::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.7}
 
-        .btn-tab.active {
-            @apply bg-slate-900 text-white shadow-lg scale-105;
-        }
+/* ══ NEW CATEGORY BOX ══ */
+.new-cat-box{background:var(--danger-bg);border:1px solid #ffcdd2;border-radius:var(--r-sm);padding:12px;display:none;margin-top:8px}
+.new-cat-box.open{display:flex;align-items:center;gap:8px}
+.new-cat-input{flex:1;border:1.5px solid #ef9a9a;border-radius:var(--r-sm);padding:9px 12px;font-family:inherit;font-size:13px;color:var(--text);background:#fff;outline:none}
+.new-cat-input:focus{border-color:var(--danger)}
+.btn-add-cat{background:var(--danger);color:#fff;border:none;border-radius:var(--r-sm);padding:9px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
 
-        .btn-submit {
-            @apply w-full py-6 rounded-2xl font-black text-lg bg-slate-900 text-white transition-all active:scale-[0.98] border-b-4 border-slate-950 shadow-xl flex items-center justify-center gap-3;
-        }
+/* ══ IMAGE UPLOAD ══ */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--r-sm);padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:all .2s;background:var(--surface2);min-height:110px}
+.upload-zone:active{border-color:var(--blue);background:var(--blue-light)}
+.upload-zone .uz-icon{font-size:28px}
+.upload-zone .uz-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.img-preview{width:100%;border-radius:var(--r-sm);object-fit:contain;display:none;border:2px solid var(--border);max-height:200px}
+.img-preview.show{display:block}
 
-        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* ══ SUBMIT ══ */
+.btn-submit{width:100%;background:var(--danger);color:#fff;border:none;border-radius:var(--r);padding:14px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(229,57,53,.3);transition:all .2s;margin-top:4px}
+.btn-submit:active{background:#c62828;transform:scale(.98)}
+.btn-submit:disabled{opacity:.5;pointer-events:none}
 
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        
-        /* 📱 Mobile Grid Adjustment */
-        .stat-grid { @apply grid grid-cols-2 lg:grid-cols-4 gap-4; }
-    </style>
+/* ══ DASHBOARD ══ */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.red::before{background:var(--danger)}
+.kpi.blue::before{background:var(--blue)}
+.kpi.green::before{background:var(--success)}
+.kpi.purple::before{background:var(--purple)}
+.kpi-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.kpi-value{font-size:20px;font-weight:700}
+.kpi-value.red{color:var(--danger)}
+.kpi-value.blue{color:var(--blue)}
+.kpi-value.green{color:var(--success)}
+.kpi-value.purple{color:var(--purple)}
+.month-select{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;font-family:inherit;font-size:13px;font-weight:600;color:var(--text);background:#fff;-webkit-appearance:none;cursor:pointer;outline:none}
+.month-select:focus{border-color:var(--blue)}
+
+/* ══ CHART CARDS ══ */
+.charts-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px}
+.chart-box{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
+.chart-box-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.chart-wrap{height:200px;position:relative}
+
+/* ══ LOGS ══ */
+.log-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.log-item:last-child{border-bottom:none}
+.log-item:active{background:var(--danger-bg)}
+.log-cat-badge{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;background:#eef2f7;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.log-date-box{width:44px;height:44px;background:var(--danger-bg);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.log-day{font-size:16px;font-weight:700;color:var(--danger);line-height:1}
+.log-mon{font-size:9px;font-weight:600;color:var(--danger);opacity:.7;text-transform:uppercase}
+.log-info{flex:1;min-width:0}
+.log-item-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log-cat{font-size:11px;color:var(--muted);margin-top:2px}
+.log-amount{font-size:15px;font-weight:700;color:var(--danger);flex-shrink:0;text-align:right}
+.log-arrow{font-size:12px;color:var(--light);margin-left:4px}
+
+/* ══ MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,15,30,.85);backdrop-filter:blur(4px);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:var(--r) var(--r) 0 0;width:100%;max-width:520px;max-height:92vh;display:flex;flex-direction:column;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 0}
+.modal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:14px;font-weight:700;color:var(--navy)}
+.modal-close{width:30px;height:30px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.modal-body{overflow-y:auto;flex:1;padding:16px}
+.modal-footer{padding:14px 16px;border-top:1px solid var(--border);flex-shrink:0}
+.btn-modal-close{width:100%;background:var(--navy);color:#fff;border:none;border-radius:var(--r-sm);padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+
+/* Modal detail */
+.detail-hero{background:linear-gradient(135deg,#b71c1c,var(--danger));border-radius:var(--r);padding:20px;color:#fff;margin-bottom:12px;text-align:center}
+.detail-amount{font-size:36px;font-weight:700}
+.detail-date{font-size:12px;opacity:.7;margin-top:4px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.detail-cell{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px}
+.detail-cell-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px}
+.detail-cell-val{font-size:13px;font-weight:700;color:var(--text)}
+.detail-item-box{background:var(--danger-bg);border-left:3px solid var(--danger);border-radius:var(--r-sm);padding:12px;margin-bottom:10px;font-size:13px;color:var(--text);font-style:italic;line-height:1.5}
+.detail-img{width:100%;border-radius:var(--r-sm);border:2px solid var(--border);object-fit:contain;max-height:250px;margin-top:8px}
+
+/* ══ BOTTOM NAV ══ */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:60px;padding-bottom:env(safe-area-inset-bottom);background:#fff;border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -2px 12px rgba(26,43,94,.08)}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;font-family:inherit;color:var(--light);cursor:pointer;transition:all .15s;padding:5px 2px}
+.bnav-btn.active{color:var(--danger)}
+.bnav-btn:active{transform:scale(.9)}
+.bnav-btn.center-btn{position:relative;top:-12px}
+.center-inner{width:48px;height:48px;background:var(--danger);border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(229,57,53,.4);border:3px solid #f0f4f8}
+.bi{font-size:20px;line-height:1}
+.bl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;top:66px;left:50%;transform:translateX(-50%);z-index:500;border-radius:var(--r);padding:11px 20px;font-weight:700;font-size:13px;color:#fff;display:flex;align-items:center;gap:7px;box-shadow:var(--shadow-md);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:90vw}
+.toast.show{opacity:1}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+.toast.info{background:var(--navy)}
+
+/* ══ DESKTOP ══ */
+@media(min-width:640px){
+  body{padding-bottom:0}
+  .bottom-nav{display:none}
+  .tab-desktop{display:flex;gap:4px}
+  .tab-desktop .tab-btn{padding:7px 16px;border-radius:var(--r-sm);border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s}
+  .tab-desktop .tab-btn.active{background:var(--danger);color:#fff}
+  .tab-desktop .tab-btn:hover:not(.active){background:var(--danger-bg);color:var(--danger)}
+  .main{padding:24px 20px}
+  .modal-box{border-radius:var(--r);margin:auto}
+  .modal-overlay{align-items:center}
+  .charts-grid{grid-template-columns:1fr 1fr}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
 </head>
-<body class="min-h-screen pb-24 lg:pb-10">
+<body>
 
-    <!-- Global Header -->
-    <header class="glass-header sticky top-0 z-[100] px-6 py-4">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <button onclick="window.location.href='Main_Hub.html'" class="p-3 bg-slate-50 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all shadow-sm">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                </button>
-                <div class="hidden sm:block text-left">
-                    <h1 class="text-xl font-black tracking-tight text-slate-800 leading-none uppercase">Expense <span class="text-red-500">Pro</span></h1>
-                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1 italic">Intelligence System</p>
-                </div>
-            </div>
+<div class="toast" id="toast"></div>
 
-            <nav class="hidden md:flex bg-slate-100/50 p-1.5 rounded-full">
-                <button onclick="switchTab('entry')" id="d-tab-entry" class="btn-tab active">บันทึกรายจ่าย</button>
-                <button onclick="switchTab('dashboard')" id="d-tab-dashboard" class="btn-tab inactive ml-2">สรุปผล</button>
-                <button onclick="switchTab('data')" id="d-tab-data" class="btn-tab inactive ml-2">ประวัติ</button>
-            </nav>
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-icon">🧾</div>
+    <div>
+      <div class="topbar-title">Expenses</div>
+      <div class="topbar-sub">บันทึกรายจ่าย</div>
+    </div>
+  </div>
+  <div class="tab-desktop">
+    <button class="tab-btn active" onclick="switchTab('entry',this)">📋 บันทึก</button>
+    <button class="tab-btn" onclick="switchTab('dashboard',this)">📊 สรุป</button>
+    <button class="tab-btn" onclick="switchTab('data',this)">🕐 ประวัติ</button>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn-icon" onclick="fetchData()" title="ซิงค์">
+      <svg id="sync-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    </button>
+  </div>
+</div>
 
-            <button onclick="fetchData()" class="p-3 bg-white border border-slate-100 rounded-xl text-slate-400 active:rotate-180 transition-all duration-500 shadow-sm">
-                <svg id="sync-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-            </button>
-        </div>
-    </header>
+<!-- ══ MAIN ══ -->
+<div class="main">
 
-    <main class="max-w-4xl mx-auto px-4 py-8">
-        
-        <section id="section-entry" class="space-y-8 animate-fade-in">
-            <div class="text-center md:text-left space-y-1">
-                <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight italic uppercase">Daily Expense</h2>
-                <p class="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em]">ระบุข้อมูลรายจ่ายและแนบหลักฐาน</p>
-            </div>
-
-            <form id="expenseForm" onsubmit="handleSubmit(event)" class="grid grid-cols-1 md:grid-cols-12 gap-6">
-                <div class="md:col-span-8 space-y-6">
-                    <div class="premium-card p-8 space-y-8">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
-                            <div class="flex flex-col space-y-2">
-                                <label class="label-master">📅 วันที่จ่าย</label>
-                                <input type="date" id="form-date" required class="input-master">
-                            </div>
-                            <div class="flex flex-col space-y-2">
-                                <label class="label-master text-red-500">💰 จำนวนเงิน</label>
-                                <input type="number" step="0.01" id="form-amount" required placeholder="0.00" class="input-master text-2xl font-black text-red-600 bg-red-50/30">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
-                            <div class="flex flex-col space-y-2">
-                                <label class="label-master">🏷️ หมวดหมู่</label>
-                                <select id="form-category" required onchange="handleCategoryChange(this)" class="input-master appearance-none cursor-pointer"></select>
-                            </div>
-                            <div class="flex flex-col space-y-2">
-                                <label class="label-master">📝 รายการที่จ่าย</label>
-                                <input type="text" id="form-item" required placeholder="เช่น ค่าแก๊ส, ซ่อมเครื่อง" class="input-master">
-                            </div>
-                        </div>
-
-                        <div id="new-category-container" class="hidden animate-fade-in p-6 rounded-2xl bg-red-50 border border-red-100 flex items-center gap-3">
-                            <input type="text" id="new-category-input" placeholder="พิมพ์หมวดหมู่ใหม่..." class="flex-1 px-4 py-3 rounded-xl outline-none font-bold text-slate-700 shadow-inner">
-                            <button type="button" onclick="addNewCategory()" class="bg-red-500 text-white px-6 py-3 rounded-xl font-bold">เพิ่ม</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="md:col-span-4 space-y-6">
-                    <div class="premium-card p-6 space-y-6">
-                        <div class="flex flex-col space-y-2 text-left">
-                            <label class="label-master">👤 ผู้บันทึก</label>
-                            <input type="text" id="form-staff" required placeholder="ระบุชื่อพนักงาน" class="input-master text-center">
-                        </div>
-
-                        <div class="space-y-3 text-left">
-                            <label class="label-master">📸 สแกนใบเสร็จ</label>
-                            <div class="relative group" onclick="document.getElementById('form-image').click()">
-                                <div id="upload-placeholder" class="border-2 border-dashed border-slate-200 rounded-3xl p-8 bg-slate-50 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all">
-                                    <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2"></path></svg>
-                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">ถ่ายรูปหลักฐาน</span>
-                                </div>
-                                <img id="img-preview" class="hidden w-full aspect-square object-cover rounded-3xl shadow-xl">
-                                <input type="file" id="form-image" accept="image/*" capture="environment" class="hidden" onchange="handleImage(this)">
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" id="submit-btn" class="btn-submit">ยืนยันบันทึกข้อมูล</button>
-                </div>
-            </form>
-        </section>
-
-        <section id="section-dashboard" class="hidden space-y-8 animate-fade-in">
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight italic uppercase">Insights Dashboard</h2>
-                <input type="month" id="month-filter" onchange="updateDashboard()" class="px-6 py-3 rounded-full border bg-white font-black text-slate-700 shadow-sm outline-none w-full sm:w-auto">
-            </div>
-
-            <div class="stat-grid">
-                <div class="premium-card p-6 border-l-[10px] border-red-500 overflow-hidden min-h-[120px] flex flex-col justify-center text-left">
-                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">ยอดรวมเดือนนี้</span>
-                    <p class="text-xl sm:text-2xl font-black text-slate-800 tabular-nums" id="stat-total-month">฿0</p>
-                </div>
-                <div class="premium-card p-6 border-l-[10px] border-blue-500 overflow-hidden min-h-[120px] flex flex-col justify-center text-left">
-                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">เฉลี่ยต่อรายการ</span>
-                    <p class="text-xl sm:text-2xl font-black text-slate-800 tabular-nums" id="stat-avg-month">฿0</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="premium-card p-6 h-[350px]">
-                    <h3 class="text-[10px] font-black uppercase text-slate-400 mb-4 border-b pb-2 text-left">Category Ratio</h3>
-                    <div class="h-[250px]"><canvas id="categoryChart"></canvas></div>
-                </div>
-                <div class="premium-card p-6 h-[350px]">
-                    <h3 class="text-[10px] font-black uppercase text-slate-400 mb-4 border-b pb-2 text-left">Spending Trend</h3>
-                    <div class="h-[250px]"><canvas id="trendChart"></canvas></div>
-                </div>
-            </div>
-        </section>
-
-        <section id="section-data" class="hidden space-y-6 animate-fade-in">
-            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight italic ml-4 text-left">AUDIT LOGS</h2>
-            <div class="premium-card overflow-hidden">
-                <div class="overflow-x-auto text-left">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-slate-50 border-b">
-                            <tr>
-                                <th class="px-8 py-6 text-[10px] font-black uppercase text-slate-400">Date / Item</th>
-                                <th class="px-8 py-6 text-[10px] font-black uppercase text-right text-slate-400">Amount</th>
-                                <th class="px-8"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="logs-body" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <div id="modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[150] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-lg rounded-[3.5rem] overflow-hidden shadow-2xl border flex flex-col max-h-[90vh] animate-fade-in">
-            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                <h3 class="font-black text-slate-900 uppercase tracking-widest text-sm italic">Receipt Record Detail</h3>
-                <button onclick="closeModal()" class="p-2 border rounded-xl text-slate-400">✕</button>
-            </div>
-            <div id="modal-content" class="p-8 overflow-y-auto scrollbar-hide space-y-6 flex-grow text-center"></div>
-            <div class="p-6 bg-slate-50 border-t">
-                <button onclick="closeModal()" class="w-full py-5 bg-slate-900 text-white rounded-full font-black uppercase text-sm tracking-widest shadow-xl">CLOSE PREVIEW</button>
-            </div>
-        </div>
+  <!-- ─── ENTRY ─── -->
+  <div class="section active" id="section-entry">
+    <div class="section-header">
+      <div class="section-title">บันทึกรายจ่าย</div>
+      <div class="section-sub">Daily Expense Entry</div>
     </div>
 
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-header px-6 h-20 flex items-center justify-around z-[100] rounded-t-[2.5rem] shadow-2xl border-t">
-        <button onclick="switchTab('dashboard')" class="flex flex-col items-center gap-1 text-slate-400" id="m-tab-dashboard">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" stroke-width="2"></path><path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" stroke-width="2"></path></svg>
-            <span class="text-[9px] font-bold uppercase">Summary</span>
-        </button>
-        <button onclick="switchTab('entry')" class="flex flex-col items-center gap-2 -translate-y-10" id="m-tab-entry">
-            <div class="w-16 h-16 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl border-8 border-white active:scale-90 transition-all">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="3"></path></svg>
+    <form id="expenseForm" onsubmit="handleSubmit(event)">
+
+      <!-- Amount Hero -->
+      <div class="amount-hero">
+        <div>
+          <div class="ah-label">💰 จำนวนเงิน (บาท)</div>
+          <div class="ah-amount">
+            <span class="sym">฿</span>
+            <input type="number" step="0.01" id="form-amount" required placeholder="0.00"
+              style="background:transparent;border:none;font-family:inherit;font-size:28px;font-weight:700;color:#fff;width:160px;outline:none;-webkit-appearance:none"
+              oninput="updateAmountDisplay()">
+          </div>
+        </div>
+        <div class="ah-date">
+          <div class="ah-label">📅 วันที่</div>
+          <input type="date" id="form-date" required>
+        </div>
+      </div>
+
+      <!-- Main Form -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-icon">📝</div>รายละเอียดรายจ่าย</div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="field-group">
+              <label class="field-label">🏷️ หมวดหมู่</label>
+              <select id="form-category" required onchange="handleCategoryChange(this)" class="field-input"></select>
             </div>
-            <span class="text-[10px] font-black uppercase text-slate-900 -mt-6 tracking-widest">Entry</span>
-        </button>
-        <button onclick="switchTab('data')" class="flex flex-col items-center gap-1 text-slate-400" id="m-tab-data">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-width="2"></path></svg>
-            <span class="text-[9px] font-bold uppercase">Logs</span>
-        </button>
-    </nav>
+            <div class="field-group">
+              <label class="field-label">📝 รายการที่จ่าย</label>
+              <input type="text" id="form-item" required placeholder="เช่น ค่าแก๊ส, ซ่อมเครื่อง" class="field-input">
+            </div>
+          </div>
 
-    <div id="toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-[500] px-10 py-6 rounded-[3rem] shadow-2xl transition-all duration-500 opacity-0 pointer-events-none bg-slate-900 text-white font-black text-lg uppercase italic text-center"></div>
+          <!-- New Category Box -->
+          <div class="new-cat-box" id="new-category-container">
+            <input type="text" id="new-category-input" placeholder="พิมพ์หมวดหมู่ใหม่..." class="new-cat-input">
+            <button type="button" onclick="addNewCategory()" class="btn-add-cat">➕ เพิ่ม</button>
+          </div>
 
-    <script>
-        const IMGBB_API_KEY = '412005bc434fd396c0f0163133dfa205'; 
-        const WRITE_URL = 'https://script.google.com/macros/s/AKfycbz31YJnsULoFDpqYCMHBnxtMPgaxQGCCAhAWJbNBDdW3PEQUv_BQ1LH6WMUC3uPoP7G4A/exec'; 
-        const SHEET_ID = '1aTkdKkfMXkKutMuVJBew4k5PfPoIkQsr6pmtUAQtPlE';
-        const READ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Expenses`;
+          <div class="field-group" style="margin-top:12px">
+            <label class="field-label">👤 ผู้บันทึก</label>
+            <input type="text" id="form-staff" required placeholder="ระบุชื่อพนักงาน" class="field-input">
+          </div>
+        </div>
+      </div>
 
-        let expenseData = [], trendChart = null, categoryChart = null, rawImageFile = null;
-        let userCats = JSON.parse(localStorage.getItem('exp_premium_cats_v2')) || ["ค่าวัตถุดิบ", "ค่าเช่าที่", "ค่าน้ำไฟ", "ค่าแรง", "อื่นๆ"];
+      <!-- Image Upload -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-icon">📸</div>สแกนใบเสร็จ (ไม่บังคับ)</div>
+        </div>
+        <div class="card-body">
+          <div onclick="document.getElementById('form-image').click()">
+            <div class="upload-zone" id="upload-placeholder">
+              <div class="uz-icon">📷</div>
+              <div class="uz-label">แตะเพื่อถ่ายรูป / อัพโหลด</div>
+            </div>
+            <img id="img-preview" class="img-preview">
+            <input type="file" id="form-image" accept="image/*" capture="environment" class=""
+              style="display:none" onchange="handleImage(this)">
+          </div>
+        </div>
+      </div>
 
-        window.onload = () => {
-            document.getElementById('form-date').value = new Date().toLocaleDateString('en-CA');
-            document.getElementById('month-filter').value = new Date().toISOString().substring(0, 7);
-            renderCategoryDropdown(); 
-            fetchData();
-        };
+      <button type="submit" id="submit-btn" class="btn-submit">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        ยืนยันบันทึกรายจ่าย
+      </button>
+    </form>
+  </div>
 
-        function renderCategoryDropdown() {
-            const s = document.getElementById('form-category');
-            let h = '<option value="">เลือกหมวดหมู่</option>';
-            userCats.forEach(c => h += `<option value="${c}">${c}</option>`);
-            h += '<option value="ADD_NEW">+ เพิ่มหมวดหมู่ใหม่...</option>';
-            s.innerHTML = h;
-        }
+  <!-- ─── DASHBOARD ─── -->
+  <div class="section" id="section-dashboard">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap">
+      <div class="section-header" style="margin-bottom:0">
+        <div class="section-title">สรุปรายจ่าย</div>
+        <div class="section-sub">Monthly Insights</div>
+      </div>
+      <input type="month" id="month-filter" onchange="updateDashboard()" class="month-select">
+    </div>
 
-        function handleCategoryChange(s) {
-            document.getElementById('new-category-container').classList.toggle('hidden', s.value !== 'ADD_NEW');
-        }
+    <div class="kpi-grid">
+      <div class="kpi red">
+        <div class="kpi-label">ยอดรวมเดือนนี้</div>
+        <div class="kpi-value red" id="stat-total-month">฿0</div>
+      </div>
+      <div class="kpi blue">
+        <div class="kpi-label">เฉลี่ยต่อรายการ</div>
+        <div class="kpi-value blue" id="stat-avg-month">฿0</div>
+      </div>
+    </div>
 
-        function addNewCategory() {
-            const n = document.getElementById('new-category-input').value.trim();
-            if(!n || userCats.includes(n)) return;
-            userCats.push(n); localStorage.setItem('exp_premium_cats_v2', JSON.stringify(userCats));
-            renderCategoryDropdown(); document.getElementById('form-category').value = n;
-            document.getElementById('new-category-container').classList.add('hidden');
-        }
+    <div class="charts-grid">
+      <div class="chart-box">
+        <div class="chart-box-title">🍩 สัดส่วนตามหมวดหมู่</div>
+        <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-box-title">📈 แนวโน้มรายจ่าย</div>
+        <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+      </div>
+    </div>
+  </div>
 
-        function handleImage(input) {
-            if (input.files && input.files[0]) {
-                rawImageFile = input.files[0];
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('img-preview').src = e.target.result;
-                    document.getElementById('img-preview').classList.remove('hidden');
-                    document.getElementById('upload-placeholder').classList.add('hidden');
-                    showToast("📸 สแกนใบเสร็จสำเร็จ");
-                }; 
-                reader.readAsDataURL(rawImageFile);
-            }
-        }
+  <!-- ─── DATA / LOGS ─── -->
+  <div class="section" id="section-data">
+    <div class="section-header">
+      <div class="section-title">ประวัติรายจ่าย</div>
+      <div class="section-sub">Audit Logs</div>
+    </div>
+    <div class="card" style="padding:0">
+      <div id="logs-body"></div>
+    </div>
+  </div>
 
-        async function fetchData() {
-            const icon = document.getElementById('sync-icon');
-            if(icon) icon.classList.add('animate-spin');
-            try {
-                const res = await fetch(`${READ_URL}&t=${Date.now()}`);
-                const text = await res.text();
-                const rows = text.split(/\r?\n/).slice(1);
-                
-                expenseData = rows.map((row, idx) => {
-                    const c = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(v => v.replace(/^"|"$/g, '')) || [];
-                    if(c.length < 4) return null;
-                    return { 
-                        id: idx, 
-                        date: c[0],     // A: วันที่
-                        item: c[1],     // B: รายการ
-                        category: c[2], // C: หมวดหมู่
-                        amount: parseFloat(String(c[3]).replace(/,/g, '')) || 0, // D: จำนวนเงิน
-                        staff: c[4],    // E: ผู้บันทึก
-                        img: c[5]       // F: ลิงก์รูปภาพ
-                    };
-                }).filter(Boolean);
-                updateDashboard(); renderLogs();
-                if(icon) icon.classList.remove('animate-spin');
-            } catch(e) { if(icon) icon.classList.remove('animate-spin'); }
-        }
+</div><!-- end main -->
 
-        function switchTab(id) {
-            ['entry', 'dashboard', 'data'].forEach(t => {
-                document.getElementById('section-'+t).classList.add('hidden');
-                document.getElementById('d-tab-'+t)?.classList.replace('active', 'inactive');
-                document.getElementById('m-tab-'+t)?.classList.replace('text-slate-900', 'text-slate-400');
-            });
-            document.getElementById('section-'+id).classList.remove('hidden');
-            document.getElementById('d-tab-'+id)?.classList.replace('inactive', 'active');
-            document.getElementById('m-tab-'+id)?.classList.replace('text-slate-400', 'text-slate-900');
-            window.scrollTo(0,0);
-        }
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="bottom-nav">
+  <button class="bnav-btn" id="m-tab-dashboard" onclick="switchTab('dashboard',this)">
+    <div class="bi">📊</div><div class="bl">สรุป</div>
+  </button>
+  <button class="bnav-btn center-btn active" id="m-tab-entry" onclick="switchTab('entry',this)">
+    <div class="center-inner">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="bl" style="margin-top:4px">บันทึก</div>
+  </button>
+  <button class="bnav-btn" id="m-tab-data" onclick="switchTab('data',this)">
+    <div class="bi">🕐</div><div class="bl">ประวัติ</div>
+  </button>
+</nav>
 
-        function updateDashboard() {
-            const filter = document.getElementById('month-filter').value;
-            const filtered = expenseData.filter(d => d.date.startsWith(filter));
-            const total = filtered.reduce((s, d) => s + d.amount, 0);
-            document.getElementById('stat-total-month').innerText = `฿${total.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
-            document.getElementById('stat-avg-month').innerText = `฿${(total/Math.max(1, filtered.length)).toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+<!-- ══ MODAL ══ -->
+<div class="modal-overlay" id="modal" onclick="closeModalCheck(event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">รายละเอียดรายจ่าย</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-content"></div>
+    <div class="modal-footer">
+      <button class="btn-modal-close" onclick="closeModal()">ปิด</button>
+    </div>
+  </div>
+</div>
 
-            const cats = {}; filtered.forEach(d => cats[d.category] = (cats[d.category] || 0) + d.amount);
-            if(categoryChart) categoryChart.destroy();
-            categoryChart = new Chart(document.getElementById('categoryChart'), { 
-                type: 'doughnut', 
-                data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#ef4444', '#6366f1', '#10b981', '#f59e0b', '#0f172a'], borderWidth: 4, borderRadius: 10 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 10, weight: 'bold' } } } }, cutout: '75%' }
-            });
+<script>
+const IMGBB_API_KEY = '412005bc434fd396c0f0163133dfa205';
+const WRITE_URL = 'https://script.google.com/macros/s/AKfycbz31YJnsULoFDpqYCMHBnxtMPgaxQGCCAhAWJbNBDdW3PEQUv_BQ1LH6WMUC3uPoP7G4A/exec';
+const SHEET_ID = '1aTkdKkfMXkKutMuVJBew4k5PfPoIkQsr6pmtUAQtPlE';
+const READ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Expenses`;
 
-            const daily = {}; filtered.forEach(d => daily[d.date] = (daily[d.date] || 0) + d.amount);
-            const labels = Object.keys(daily).sort();
-            if(trendChart) trendChart.destroy();
-            trendChart = new Chart(document.getElementById('trendChart'), { 
-                type: 'bar', 
-                data: { labels: labels.map(l => l.split('-')[2]), datasets: [{ data: labels.map(l => daily[l]), backgroundColor: '#ef4444', borderRadius: 4 }] }, 
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, display: false }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } } 
-            });
-        }
+let expenseData = [], trendChart = null, categoryChart = null, rawImageFile = null;
+let userCats = JSON.parse(localStorage.getItem('exp_premium_cats_v2')) || ["ค่าวัตถุดิบ","ค่าเช่าที่","ค่าน้ำไฟ","ค่าแรง","อื่นๆ"];
 
-        function renderLogs() {
-            const body = document.getElementById('logs-body'); body.innerHTML = '';
-            [...expenseData].sort((a,b) => b.date.localeCompare(a.date)).forEach(d => {
-                const row = document.createElement('tr'); row.className = "hover:bg-slate-50 cursor-pointer transition-all";
-                row.onclick = () => viewDetail(d);
-                row.innerHTML = `
-                    <td class="px-8 py-6">
-                        <div class="text-[10px] font-black text-slate-300 uppercase tracking-widest">${d.date.split('-').reverse().join('/')}</div>
-                        <div class="text-base font-black text-slate-800 italic">${d.item}</div>
-                        <span class="text-[9px] font-bold bg-slate-100 px-2 py-0.5 rounded-full text-slate-500 uppercase mt-1 inline-block">${d.category}</span>
-                    </td>
-                    <td class="px-8 py-6 text-right">
-                        <div class="text-xl font-black text-red-600 tracking-tighter">฿${d.amount.toLocaleString()}</div>
-                    </td>
-                    <td class="px-6 text-right text-slate-300">➔</td>
-                `;
-                body.appendChild(row);
-            });
-        }
+const CAT_COLORS = ['#e53935','#2979d4','#00897b','#f57c00','#7c3aed','#0288d1','#558b2f','#ad1457','#5d4037','#37474f'];
 
-        function viewDetail(d) {
-            document.getElementById('modal-content').innerHTML = `
-                <div class="p-8 bg-slate-900 rounded-[2.5rem] text-white shadow-xl flex flex-col justify-center">
-                    <span class="text-[10px] font-black uppercase opacity-40 tracking-[0.2em]">Expense Amount</span>
-                    <div class="text-5xl font-black italic tracking-tighter leading-tight">฿${d.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
-                </div>
-                <div class="grid grid-cols-2 gap-3 text-left">
-                    <div class="p-4 rounded-2xl bg-slate-50 border"><span class="label-master block mb-1">วันที่จ่าย</span><p class="font-bold text-slate-700">${d.date}</p></div>
-                    <div class="p-4 rounded-2xl bg-slate-50 border"><span class="label-master block mb-1">พนักงาน</span><p class="font-bold text-slate-700">${d.staff}</p></div>
-                </div>
-                <div class="p-6 rounded-3xl bg-slate-50 border text-left">
-                    <span class="label-master block mb-1">รายละเอียดรายการ</span>
-                    <p class="font-bold text-slate-800 italic text-lg leading-tight">"${d.item}"</p>
-                </div>
-                ${d.img && d.img !== '-' ? `<div class="mt-2"><span class="label-master block mb-3 text-left">หลักฐานใบเสร็จ</span><img src="${d.img}" class="w-full rounded-3xl shadow-xl border-4 border-white object-contain"></div>` : ''}
-            `;
-            document.getElementById('modal').classList.remove('hidden');
-        }
+window.onload = () => {
+  document.getElementById('form-date').value = new Date().toLocaleDateString('en-CA');
+  document.getElementById('month-filter').value = new Date().toISOString().substring(0,7);
+  renderCategoryDropdown();
+  fetchData();
+};
 
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+function updateAmountDisplay() {} // placeholder for future use
 
-        async function handleSubmit(e) {
-            e.preventDefault(); 
-            const btn = document.getElementById('submit-btn'); 
-            btn.disabled = true; btn.innerText = "กำลังจัดส่งข้อมูล...";
-            
-            let finalUrl = "-";
-            if (rawImageFile) {
-                const formData = new FormData(); formData.append('image', rawImageFile);
-                try {
-                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
-                    const data = await res.json(); if(data.success) finalUrl = data.data.url;
-                } catch(e) { console.error("Upload Error"); }
-            }
+function renderCategoryDropdown() {
+  const s = document.getElementById('form-category');
+  let h = '<option value="">เลือกหมวดหมู่</option>';
+  userCats.forEach(c => h += `<option value="${c}">${c}</option>`);
+  h += '<option value="ADD_NEW">➕ เพิ่มหมวดหมู่ใหม่...</option>';
+  s.innerHTML = h;
+}
 
-            const payload = { 
-                action: 'SAVE_EXPENSE',
-                date: document.getElementById('form-date').value, 
-                item: document.getElementById('form-item').value, 
-                category: document.getElementById('form-category').value, 
-                amount: parseFloat(document.getElementById('form-amount').value), 
-                staff: document.getElementById('form-staff').value, 
-                image: finalUrl 
-            };
+function handleCategoryChange(s) {
+  const box = document.getElementById('new-category-container');
+  if (s.value === 'ADD_NEW') box.classList.add('open');
+  else box.classList.remove('open');
+}
 
-            try {
-                await fetch(WRITE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                showToast("✨ บันทึกรายจ่ายสำเร็จ!"); 
-                document.getElementById('expenseForm').reset();
-                rawImageFile = null; 
-                document.getElementById('img-preview').classList.add('hidden'); 
-                document.getElementById('upload-placeholder').classList.remove('hidden');
-                setTimeout(() => { fetchData(); switchTab('dashboard'); btn.disabled = false; btn.innerText = "ยืนยันบันทึกข้อมูล"; }, 1500);
-            } catch(e) { showToast("❌ ขัดข้อง", "error"); btn.disabled = false; }
-        }
+function addNewCategory() {
+  const n = document.getElementById('new-category-input').value.trim();
+  if (!n || userCats.includes(n)) return;
+  userCats.push(n);
+  localStorage.setItem('exp_premium_cats_v2', JSON.stringify(userCats));
+  renderCategoryDropdown();
+  document.getElementById('form-category').value = n;
+  document.getElementById('new-category-container').classList.remove('open');
+  document.getElementById('new-category-input').value = '';
+  showToast('เพิ่มหมวดหมู่ "'+n+'" แล้ว', 'success');
+}
 
-        function showToast(m, t) {
-            const el = document.getElementById('toast'); 
-            el.innerText = m;
-            el.className = `fixed top-14 left-1/2 -translate-x-1/2 z-[500] px-10 py-6 rounded-[3rem] shadow-2xl transition-all duration-500 opacity-100 ${t==='error'?'bg-red-600':'bg-slate-900'} text-white font-black text-lg uppercase italic text-center`;
-            setTimeout(() => el.style.opacity = "0", 4000);
-        }
-    </script>
+function handleImage(input) {
+  if (input.files && input.files[0]) {
+    rawImageFile = input.files[0];
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('img-preview');
+      preview.src = e.target.result;
+      preview.classList.add('show');
+      document.getElementById('upload-placeholder').style.display = 'none';
+      showToast('📸 อัพโหลดรูปสำเร็จ', 'success');
+    };
+    reader.readAsDataURL(rawImageFile);
+  }
+}
+
+async function fetchData() {
+  const icon = document.getElementById('sync-icon');
+  if (icon) icon.style.animation = 'spin .6s linear infinite';
+  try {
+    const res = await fetch(`${READ_URL}&t=${Date.now()}`);
+    const text = await res.text();
+    const rows = text.split(/\r?\n/).slice(1);
+    expenseData = rows.map((row, idx) => {
+      const c = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(v=>v.replace(/^"|"$/g,'')) || [];
+      if (c.length < 4) return null;
+      return {
+        id: idx,
+        date: c[0], item: c[1], category: c[2],
+        amount: parseFloat(String(c[3]).replace(/,/g,'')) || 0,
+        staff: c[4] || '-', img: c[5] || '-'
+      };
+    }).filter(Boolean);
+    updateDashboard(); renderLogs();
+    showToast('ซิงค์ข้อมูลสำเร็จ', 'success');
+  } catch(e) { showToast('ไม่สามารถโหลดข้อมูล', 'error'); }
+  if (icon) icon.style.animation = '';
+}
+
+function updateDashboard() {
+  const filter = document.getElementById('month-filter').value;
+  const filtered = expenseData.filter(d => d.date.startsWith(filter));
+  const total = filtered.reduce((s,d)=>s+d.amount, 0);
+  const avg = filtered.length ? total/filtered.length : 0;
+  document.getElementById('stat-total-month').innerText = '฿'+total.toLocaleString(undefined,{maximumFractionDigits:0});
+  document.getElementById('stat-avg-month').innerText = '฿'+avg.toLocaleString(undefined,{maximumFractionDigits:0});
+
+  // Category chart (doughnut)
+  const cats = {};
+  filtered.forEach(d => cats[d.category] = (cats[d.category]||0) + d.amount);
+  if (categoryChart) categoryChart.destroy();
+  categoryChart = new Chart(document.getElementById('categoryChart'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(cats),
+      datasets: [{ data: Object.values(cats), backgroundColor: CAT_COLORS, borderWidth: 3, borderRadius: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position:'bottom', labels:{ boxWidth:8, font:{size:10,weight:'bold'}, color:'#5a7184' } } },
+      cutout: '72%'
+    }
+  });
+
+  // Trend chart (bar)
+  const daily = {};
+  filtered.forEach(d => daily[d.date] = (daily[d.date]||0) + d.amount);
+  const labels = Object.keys(daily).sort();
+  if (trendChart) trendChart.destroy();
+  trendChart = new Chart(document.getElementById('trendChart'), {
+    type: 'bar',
+    data: {
+      labels: labels.map(l => l.split('-')[2]),
+      datasets: [{ data: labels.map(l=>daily[l]), backgroundColor: 'rgba(229,57,53,.75)', borderRadius: 5, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero:true, grid:{color:'rgba(221,230,239,.5)'}, ticks:{callback:v=>'฿'+v.toLocaleString(),font:{size:9},color:'#92a8bb'} },
+        x: { grid:{display:false}, ticks:{font:{size:10},color:'#92a8bb'} }
+      },
+      plugins: { legend:{display:false} }
+    }
+  });
+}
+
+function renderLogs() {
+  const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const sorted = [...expenseData].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('logs-body').innerHTML = sorted.length === 0
+    ? '<div style="padding:32px;text-align:center;color:#92a8bb;font-size:13px">ยังไม่มีข้อมูล</div>'
+    : sorted.map(d => {
+      const parts = d.date.split('-');
+      const day = parts[2] || '—';
+      const mon = months[parseInt(parts[1])||0] || '';
+      return `<div class="log-item" onclick="viewDetail(${d.id})">
+        <div class="log-date-box"><div class="log-day">${day}</div><div class="log-mon">${mon}</div></div>
+        <div class="log-info">
+          <div class="log-item-name">${d.item}</div>
+          <div class="log-cat">${d.category} · ${d.staff}</div>
+        </div>
+        <div class="log-amount">฿${d.amount.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+        <div class="log-arrow">›</div>
+      </div>`;
+    }).join('');
+}
+
+function viewDetail(id) {
+  const d = expenseData.find(x=>x.id===id); if (!d) return;
+  const fmt = n => '฿'+n.toLocaleString(undefined,{minimumFractionDigits:2});
+  document.getElementById('modal-content').innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-amount">${fmt(d.amount)}</div>
+      <div class="detail-date">📅 ${d.date.split('-').reverse().join('/')}</div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-cell">
+        <div class="detail-cell-label">หมวดหมู่</div>
+        <div class="detail-cell-val">${d.category}</div>
+      </div>
+      <div class="detail-cell">
+        <div class="detail-cell-label">ผู้บันทึก</div>
+        <div class="detail-cell-val">${d.staff}</div>
+      </div>
+    </div>
+    <div class="detail-item-box">"${d.item}"</div>
+    ${d.img && d.img !== '-' ? `
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">📸 หลักฐานใบเสร็จ</div>
+        <img src="${d.img}" class="detail-img">
+      </div>` : ''}
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+function switchTab(id, btn) {
+  ['entry','dashboard','data'].forEach(t => {
+    document.getElementById('section-'+t)?.classList.remove('active');
+    document.getElementById('m-tab-'+t)?.classList.remove('active');
+  });
+  document.getElementById('section-'+id)?.classList.add('active');
+  document.getElementById('m-tab-'+id)?.classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  window.scrollTo(0,0);
+  if (id === 'dashboard') updateDashboard();
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModalCheck(e) { if (e.target.id==='modal') closeModal(); }
+
+async function handleSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+
+  let finalUrl = '-';
+  if (rawImageFile) {
+    const fd = new FormData(); fd.append('image', rawImageFile);
+    try {
+      const r = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,{method:'POST',body:fd});
+      const j = await r.json(); if (j.success) finalUrl = j.data.url;
+    } catch(err) { console.error('Upload error', err); }
+  }
+
+  const payload = {
+    action: 'SAVE_EXPENSE',
+    date:     document.getElementById('form-date').value,
+    item:     document.getElementById('form-item').value,
+    category: document.getElementById('form-category').value,
+    amount:   parseFloat(document.getElementById('form-amount').value),
+    staff:    document.getElementById('form-staff').value,
+    image:    finalUrl
+  };
+
+  try {
+    await fetch(WRITE_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)});
+    showToast('✅ บันทึกรายจ่ายสำเร็จ!', 'success');
+    document.getElementById('expenseForm').reset();
+    rawImageFile = null;
+    document.getElementById('img-preview').classList.remove('show');
+    document.getElementById('upload-placeholder').style.display = '';
+    document.getElementById('form-date').value = new Date().toLocaleDateString('en-CA');
+    renderCategoryDropdown();
+    setTimeout(()=>{ fetchData(); switchTab('dashboard'); btn.disabled=false; btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ยืนยันบันทึกรายจ่าย'; }, 1500);
+  } catch(err) {
+    showToast('❌ เกิดข้อผิดพลาด', 'error');
+    btn.disabled = false;
+    btn.textContent = 'ยืนยันบันทึกรายจ่าย';
+  }
+}
+
+function showToast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  setTimeout(()=>el.classList.remove('show'), 3500);
+}
+</script>
 </body>
 </html>
