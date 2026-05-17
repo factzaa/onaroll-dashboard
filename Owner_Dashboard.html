@@ -195,14 +195,7 @@ html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:
         <div class="kpi-mini g"><div class="km-label">เวลา</div><div class="km-value" id="kpi-time" style="font-size:13px">—</div></div>
         <div class="kpi-mini o"><div class="km-label">ระบบ</div><div class="km-value">10</div><div class="km-sub">ระบบ</div></div>
       </div>
-      <div class="quick-grid">
-        <div class="quick-card" onclick="loadPageByKey('OR_Dashboard_Live.html','แดชบอร์ดหลัก')"><div class="qc-icon">📊</div><div><div class="qc-label">แดชบอร์ด</div><div class="qc-sub">Analytics</div></div></div>
-        <div class="quick-card" onclick="loadPageByKey('OR_Payroll_System.html','เงินเดือน')"><div class="qc-icon">💵</div><div><div class="qc-label">เงินเดือน</div><div class="qc-sub">Payroll</div></div></div>
-        <div class="quick-card" onclick="loadPageByKey('Manager_Console.html','Manager Console')"><div class="qc-icon">🛡️</div><div><div class="qc-label">Manager</div><div class="qc-sub">Console</div></div></div>
-        <div class="quick-card" onclick="loadPageByKey('Sales Tracking.html','ยอดขาย')"><div class="qc-icon">💰</div><div><div class="qc-label">ยอดขาย</div><div class="qc-sub">Sales</div></div></div>
-        <div class="quick-card" onclick="loadPageByKey('HR Management.html','จัดการพนักงาน')"><div class="qc-icon">👥</div><div><div class="qc-label">HR</div><div class="qc-sub">จัดการพนักงาน</div></div></div>
-        <div class="quick-card" onclick="loadPageByKey('Weekly Scheduler.html','จัด Job')"><div class="qc-icon">📅</div><div><div class="qc-label">จัด Job</div><div class="qc-sub">Scheduler</div></div></div>
-      </div>
+      <div class="quick-grid" id="quickGrid"></div>
     </div>
     <!-- IFRAME -->
     <div style="position:absolute;inset:0;display:none;flex-direction:column" id="iframeWrapper">
@@ -227,14 +220,7 @@ html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:
 <!-- MORE MENU -->
 <div class="more-menu" id="moreMenu">
   <div class="mm-header">ระบบเพิ่มเติม</div>
-  <div class="mm-grid">
-    <button class="mm-item" onclick="moreClick('Sales Tracking.html','ยอดขาย')"><div class="mm-i">💰</div><div class="mm-l">ยอดขาย</div></button>
-    <button class="mm-item" onclick="moreClick('Expenses.html','รายจ่าย')"><div class="mm-i">🧾</div><div class="mm-l">รายจ่าย</div></button>
-    <button class="mm-item" onclick="moreClick('HR Management.html','จัดการพนักงาน')"><div class="mm-i">👥</div><div class="mm-l">HR</div></button>
-    <button class="mm-item" onclick="moreClick('Weekly Scheduler.html','จัด Job')"><div class="mm-i">📅</div><div class="mm-l">จัด Job</div></button>
-    <button class="mm-item" onclick="moreClick('SOP Master and Training.html','SOP Master')"><div class="mm-i">📖</div><div class="mm-l">SOP</div></button>
-    <button class="mm-item" onclick="moreClick('Daily Checklist System.html','Checklist')"><div class="mm-i">✅</div><div class="mm-l">Checklist</div></button>
-  </div>
+  <div class="mm-grid" id="moreGrid"></div>
 </div>
 
 <script>
@@ -262,7 +248,7 @@ var NAV_ALL = [
   ]},
   {s:'จัดการพนักงาน', items:[
     {src:'OR_Payroll_System.html',title:'เงินเดือน',icon:'💵',sub:'Payroll', roles:['owner','admin']},
-    {src:'HR Management.html',title:'จัดการพนักงาน',icon:'👥',sub:'HR', roles:['owner','admin']},
+    {src:'HR Management.html',title:'จัดการพนักงาน',icon:'👥',sub:'HR', roles:['owner','admin','manager']},
     {src:'Weekly Scheduler.html',title:'จัด Job',icon:'📅',sub:'Scheduler', roles:['owner','admin','manager']},
   ]},
   {s:'มาตรฐาน & คู่มือ', items:[
@@ -304,6 +290,57 @@ function buildNav(id) {
 }
 buildNav('drawerNav'); buildNav('desktopNav');
 document.querySelectorAll('[data-src="index_dashboard"]').forEach(function(b){b.classList.add('active')});
+
+// ── Quick cards (กรอง role) ──
+var QUICK_ALL = [
+  {src:'OR_Dashboard_Live.html',   icon:'📊', label:'แดชบอร์ด',        sub:'Analytics',      roles:['owner','admin','manager']},
+  {src:'OR_Payroll_System.html',   icon:'💵', label:'เงินเดือน',        sub:'Payroll',         roles:['owner','admin']},
+  {src:'Manager_Console.html',     icon:'🛡️', label:'Manager',          sub:'Console',         roles:['owner','admin','manager']},
+  {src:'Sales Tracking.html',      icon:'💰', label:'ยอดขาย',           sub:'Sales',           roles:['owner','admin','manager']},
+  {src:'HR Management.html',       icon:'👥', label:'HR',               sub:'จัดการพนักงาน',   roles:['owner','admin','manager']},
+  {src:'Weekly Scheduler.html',    icon:'📅', label:'จัด Job',          sub:'Scheduler',       roles:['owner','admin','manager']},
+  {src:'Daily Checklist System.html',icon:'✅',label:'Checklist',       sub:'Daily Tasks',     roles:['owner','admin','manager','user']},
+  {src:'SOP Master and Training.html',icon:'📖',label:'SOP Master',     sub:'Standards',       roles:['owner','admin','manager','user']},
+  {src:'Employee Portal.html',     icon:'👤', label:'ข้อมูลพนักงาน',   sub:'My Portal',       roles:['owner','admin','manager','user']},
+];
+
+function buildQuickGrid(){
+  var filtered = QUICK_ALL.filter(function(q){ return q.roles.indexOf(_role) !== -1; });
+  var h = filtered.map(function(q){
+    return '<div class="quick-card" onclick="loadPageByKey(\''+q.src+'\',\''+q.label+'\')">'+
+      '<div class="qc-icon">'+q.icon+'</div>'+
+      '<div><div class="qc-label">'+q.label+'</div><div class="qc-sub">'+q.sub+'</div></div>'+
+      '</div>';
+  }).join('');
+  var el = document.getElementById('quickGrid');
+  if(el) el.innerHTML = h;
+}
+buildQuickGrid();
+
+// ── More menu (กรอง role) ──
+var MORE_ALL = [
+  {src:'Sales Tracking.html',        icon:'💰', label:'ยอดขาย',         roles:['owner','admin','manager']},
+  {src:'Expenses.html',              icon:'🧾', label:'รายจ่าย',        roles:['owner','admin','manager']},
+  {src:'HR Management.html',         icon:'👥', label:'HR',              roles:['owner','admin','manager']},
+  {src:'Weekly Scheduler.html',      icon:'📅', label:'จัด Job',        roles:['owner','admin','manager']},
+  {src:'OR_Payroll_System.html',     icon:'💵', label:'เงินเดือน',      roles:['owner','admin']},
+  {src:'SOP Master and Training.html',icon:'📖',label:'SOP',            roles:['owner','admin','manager','user']},
+  {src:'Daily Checklist System.html',icon:'✅', label:'Checklist',      roles:['owner','admin','manager','user']},
+  {src:'Employee Portal.html',       icon:'👤', label:'My Portal',      roles:['owner','admin','manager','user']},
+];
+
+function buildMoreMenu(){
+  var filtered = MORE_ALL.filter(function(m){ return m.roles.indexOf(_role) !== -1; });
+  var h = filtered.map(function(m){
+    return '<button class="mm-item" onclick="moreClick(\''+m.src+'\',\''+m.label+'\')">'+
+      '<div class="mm-i">'+m.icon+'</div>'+
+      '<div class="mm-l">'+m.label+'</div>'+
+      '</button>';
+  }).join('');
+  var el = document.getElementById('moreGrid');
+  if(el) el.innerHTML = h;
+}
+buildMoreMenu();
 
 // ── อัปเดต user card ใน sidebar ──
 function updateUserCard(){
