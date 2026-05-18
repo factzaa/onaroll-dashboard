@@ -375,49 +375,61 @@ async function resolveIdByName(name) {
     try {
         const res  = await fetch(`${API_URL}?action=GET_EMPLOYEES&t=${Date.now()}`);
         const emps = await res.json();
-        const match = emps.find(e => (e['ชื่อเล่น']||e['Nickname']||e['ชื่อ-นามสกุล']||'').trim() === name.trim());
+        console.log('[Portal] resolveIdByName — looking for:', name, '| employees count:', emps.length);
+        if (emps.length > 0) console.log('[Portal] sample employee keys:', Object.keys(emps[0]));
+
+        const norm = s => String(s||'').trim().normalize('NFC').toLowerCase();
+        const target = norm(name);
+
+        const match = emps.find(e => {
+            const nick = norm(e['ชื่อเล่น'] || e['Nickname'] || e['nickname'] || '');
+            const full = norm(e['ชื่อ-นามสกุล'] || e['Full_Name'] || e['fullname'] || '');
+            const id   = norm(e['รหัสพนักงาน'] || e['Employee_ID'] || '');
+            return nick === target || full === target || id === target;
+        });
+
         if (match) {
-            const foundId = match['รหัสพนักงาน'] || match['Employee_ID'];
+            const foundId = (match['รหัสพนักงาน'] || match['Employee_ID'] || '').toString().trim().toUpperCase();
+            console.log('[Portal] resolved empId:', foundId);
             localStorage.setItem('user_id', foundId);
             resolvedEmpId = foundId;
             document.getElementById('hero-id').textContent = foundId;
             return foundId;
         }
+        console.warn('[Portal] No match found for name:', name);
+        // แสดงรายชื่อทั้งหมดให้ดู
+        console.log('[Portal] Available names:', emps.map(e=>e['ชื่อเล่น']||e['Nickname']||e['รหัสพนักงาน']||'?').join(', '));
         return null;
-    } catch(e) { return null; }
+    } catch(e) { console.error('[Portal] resolveIdByName error:', e); return null; }
 }
 
 async function fetchAllData(id) {
     showLoading();
+    console.log('[Portal] fetching for empId:', id, '| localStorage user_id:', localStorage.getItem('user_id'), '| user_name:', localStorage.getItem('user_name'));
     try {
         const [resAtt, resPet] = await Promise.all([
-            fetch(`${API_URL}?action=GET_MY_HISTORY&empId=${id}&t=${Date.now()}`).then(r=>r.json()),
-            fetch(`${API_URL}?action=GET_MY_PETITIONS&empId=${id}&t=${Date.now()}`).then(r=>r.json())
+            fetch(`${API_URL}?action=GET_MY_HISTORY&empId=${encodeURIComponent(id)}&t=${Date.now()}`).then(r=>r.json()),
+            fetch(`${API_URL}?action=GET_MY_PETITIONS&empId=${encodeURIComponent(id)}&t=${Date.now()}`).then(r=>r.json())
         ]);
 
-        // debug — log ดูว่า API ส่งอะไรกลับมา
         console.log('[Portal] GET_MY_HISTORY response:', resAtt);
         console.log('[Portal] GET_MY_PETITIONS response:', resPet);
 
-        // รองรับทั้ง array โดยตรง, {data:[...]}, {records:[...]}, {attendance:[...]}
         attendance = Array.isArray(resAtt)
             ? resAtt
             : (resAtt?.data || resAtt?.records || resAtt?.attendance || []);
-
         petitions  = Array.isArray(resPet)
             ? resPet
             : (resPet?.data || resPet?.records || resPet?.petitions || []);
 
-        console.log('[Portal] attendance count:', attendance.length);
-        console.log('[Portal] petitions count:', petitions.length);
+        console.log('[Portal] attendance count:', attendance.length, '| petitions count:', petitions.length);
 
-        // ถ้า attendance ว่างแต่มีข้อมูลใน response ให้ลองดึง keys ดู
-        if (!attendance.length && resAtt && typeof resAtt === 'object' && !Array.isArray(resAtt)) {
-            const keys = Object.keys(resAtt);
-            console.log('[Portal] Response keys:', keys);
-            // ลอง key แรกที่เป็น array
-            const arrKey = keys.find(k => Array.isArray(resAtt[k]));
-            if (arrKey) attendance = resAtt[arrKey];
+        // ถ้า attendance ว่าง — แสดง debug info ให้ผู้ใช้เห็น
+        if (!attendance.length) {
+            const debugInfo = Array.isArray(resAtt)
+                ? `API ตอบกลับ array ว่าง (0 records) สำหรับ empId="${id}"`
+                : `API ตอบกลับ: ${JSON.stringify(resAtt).slice(0,120)}`;
+            console.warn('[Portal] No attendance data. Debug:', debugInfo);
         }
 
         updateStats();
