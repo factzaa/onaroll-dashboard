@@ -350,14 +350,12 @@ async function fetchDashboard() {
     if (!start||!end) { alert('กรุณาเลือกช่วงวันที่'); return; }
     gload(true,'กำลังโหลดข้อมูล...');
     try {
-        // ดึง Summary_Records ผ่าน action GET_MANAGER_DASHBOARD ซึ่งรวม summary
-        // หรือใช้ GET_CALC_SUMMARY แล้วกรองรอบที่ตรงกัน
-        // ** ใช้ action GET_EMPLOYEES เพื่อ list empId แล้ว query Summary_Records โดยตรง
-        // Backend ไม่มี action ดึง Summary_Records โดยตรง → ใช้ GET_MANAGER_DASHBOARD ที่มี summary
         var r = await fetch(API+'?action=GET_MANAGER_DASHBOARD&start='+start+'&end='+end+'&t='+Date.now());
         var d = await r.json();
         console.log('[Inner] GET_MANAGER_DASHBOARD:', d);
-        renderDashboard(d, start, end);
+        // Backend ส่ง {dashboard:[{empId,name,nickname,workDays,lateCount,ot}], pendingPetitions:[]}
+        var items = d.dashboard || d.summaryRecords || d.records || (Array.isArray(d)?d:[]);
+        renderDashboard(items, start, end);
     } catch(e) {
         alert('โหลดข้อมูลไม่สำเร็จ: '+e.message);
         console.error(e);
@@ -365,25 +363,18 @@ async function fetchDashboard() {
     gload(false);
 }
 
-function renderDashboard(data, start, end) {
+function renderDashboard(items, start, end) {
     var board = document.getElementById('dash-board');
     var strip = document.getElementById('dash-summary');
 
-    // ลอง parse summary records
-    var records = data.summaryRecords || data.summary || data.records || [];
-    var emps    = data.employees || data.empList || [];
-
-    if (!records.length && !emps.length) {
-        board.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>ไม่พบข้อมูลที่บันทึกในช่วงนี้<br><small>ลองกด Sync ใน Audit & บันทึก แล้วบันทึกก่อน</small></div>';
+    if (!items || !items.length) {
+        board.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>ไม่พบข้อมูลในช่วงนี้<br><small>ลองกด Sync ใน Audit & บันทึก แล้วบันทึกก่อน</small></div>';
         strip.style.display = 'none';
         return;
     }
 
-    // ถ้าได้ empList มาให้แสดงแบบ summary
-    var items = emps.length ? emps : records;
-    var totalLate = items.reduce(function(s,e){ return s+(parseInt(e.lateCount||e.late_count||e.Late_Count||0)||0); },0);
-    var totalOT   = items.reduce(function(s,e){ return s+(parseFloat(e.ot||e.otHours||e.Total_OT||0)||0); },0);
-
+    var totalLate = items.reduce(function(s,e){ return s+(parseInt(e.lateCount)||0); },0);
+    var totalOT   = items.reduce(function(s,e){ return s+(parseFloat(e.ot)||0); },0);
     strip.style.display='grid';
     document.getElementById('ds-cycles').textContent = 1;
     document.getElementById('ds-emps').textContent   = items.length;
@@ -391,36 +382,40 @@ function renderDashboard(data, start, end) {
     document.getElementById('ds-ot').textContent     = totalOT.toFixed(1)+' ชม.';
 
     board.innerHTML = '<div class="dash-grid">'+items.map(function(emp) {
-        var id   = emp.empId||emp.Employee_ID||emp.id||'—';
-        var name = emp.name||emp.Name||emp.nickname||'—';
-        var days = emp.workDays||emp.Work_Days||emp.daysWorked||0;
-        var late = emp.lateCount||emp.Late_Count||emp.lateCount||0;
-        var ot   = parseFloat(emp.ot||emp.Total_OT||emp.otHours||0)||0;
-        var shortNote    = emp.Short_Note   ||emp.auditShort   ||emp.shortNote   ||'—';
-        var withdrawNote = emp.Withdraw_Note||emp.withdrawAmount||emp.withdraw    ||'—';
-        var otherNote    = emp.Other_Note   ||emp.otherNote    ||emp.counterShort||'—';
-        var cycle  = emp.Cycle||emp.cycle||start+' ถึง '+end;
-        var initials = name.charAt(0);
+        var id       = emp.empId   ||'—';
+        // nickname มีแน่นอนจาก GET_MANAGER_DASHBOARD (emp['ชื่อเล่น'])
+        var nickname = emp.nickname||emp.name||'—';
+        var fullname = emp.name    ||nickname;
+        var days = parseInt(emp.workDays)||0;
+        var late = parseInt(emp.lateCount)||0;
+        var ot   = parseFloat(emp.ot)||0;
+        // ข้อมูลจาก Summary_Records ที่บันทึกแล้ว (ถ้ามี)
+        var shortNote    = emp.otherEarnNote||emp.Short_Note   ||'—';
+        var withdrawNote = emp.advancePay>0 ? emp.advancePay  : (emp.Withdraw_Note||'—');
+        var otherNote    = emp.otherDedNote ||emp.Other_Note   ||'—';
+        var cycle        = emp.cycle||emp.Cycle||(start+' ถึง '+end);
+        var init = nickname.charAt(0);
         return '<div class="rec-card">'
             +'<div class="rec-header">'
-            +'<div class="rec-av">'+initials+'</div>'
-            +'<div style="flex:1"><div class="rec-name">'+name+'</div><div class="rec-id">'+id+'</div></div>'
+            +'<div class="rec-av">'+init+'</div>'
+            +'<div style="flex:1"><div class="rec-name">'+nickname+'</div>'
+            +'<div class="rec-id">'+id+' · '+fullname+'</div></div>'
             +'<div class="rec-pills">'
             +'<span class="rp rp-day">มา '+days+' วัน</span>'
-            +(parseInt(late)>0?'<span class="rp rp-late">สาย '+late+'</span>':'')
+            +(late>0?'<span class="rp rp-late">สาย '+late+' ครั้ง</span>':'')
             +(ot>0?'<span class="rp rp-ot">OT '+ot.toFixed(1)+'</span>':'')
             +'</div></div>'
             +'<div class="rec-notes">'
-            +'<div class="rn-box"><span class="rn-lbl">Short Note</span><span class="rn-val'+(shortNote==='—'?' none':'')+'">'+(shortNote||'—')+'</span></div>'
-            +'<div class="rn-box"><span class="rn-lbl">เงินเบิก</span><span class="rn-val'+(withdrawNote==='—'?' none':'')+'">'+(withdrawNote||'—')+'</span></div>'
-            +'<div class="rn-box"><span class="rn-lbl">หมายเหตุอื่น</span><span class="rn-val'+(otherNote==='—'?' none':'')+'">'+(otherNote||'—')+'</span></div>'
+            +'<div class="rn-box"><span class="rn-lbl">Short Note</span><span class="rn-val'+(shortNote==='—'?' none':'')+'">'+(shortNote)+'</span></div>'
+            +'<div class="rn-box"><span class="rn-lbl">เงินเบิก</span><span class="rn-val'+(String(withdrawNote)==='—'?' none':'')+'">'+(withdrawNote)+'</span></div>'
+            +'<div class="rn-box"><span class="rn-lbl">หมายเหตุ</span><span class="rn-val'+(otherNote==='—'?' none':'')+'">'+(otherNote)+'</span></div>'
             +'</div>'
-            +'<div class="rec-cycle">📅 รอบ: '+cycle+'</div>'
+            +'<div class="rec-cycle">📅 รอบ: '+start+' – '+end+'</div>'
             +'</div>';
     }).join('')+'</div>';
 }
 
-// ══ AUDIT SYNC ══
+// ══ AUDIT SYNC — ใช้ GET_MANAGER_DASHBOARD เพื่อได้ nickname จริง ══
 async function syncData() {
     var start = document.getElementById('a-start').value;
     var end   = document.getElementById('a-end').value;
@@ -428,10 +423,12 @@ async function syncData() {
     gload(true,'กำลัง Sync ข้อมูล...');
     document.getElementById('btn-sync').classList.add('loading');
     try {
-        var r = await fetch(API+'?action=GET_CALC_SUMMARY&start='+start+'&end='+end+'&t='+Date.now());
+        // GET_MANAGER_DASHBOARD ส่ง {dashboard:[{empId,name,nickname,workDays,lateCount,ot}]}
+        var r = await fetch(API+'?action=GET_MANAGER_DASHBOARD&start='+start+'&end='+end+'&t='+Date.now());
         var d = await r.json();
-        console.log('[Inner] GET_CALC_SUMMARY:', d);
-        renderAudit(Array.isArray(d)?d:[]);
+        console.log('[Inner] GET_MANAGER_DASHBOARD (audit):', d);
+        var items = d.dashboard || d.summaryRecords || (Array.isArray(d)?d:[]);
+        renderAudit(items);
     } catch(e) { alert('เชื่อมต่อไม่สำเร็จ: '+e.message); }
     gload(false);
     document.getElementById('btn-sync').classList.remove('loading');
@@ -440,7 +437,7 @@ async function syncData() {
 function renderAudit(items) {
     var board = document.getElementById('audit-board');
     var strip = document.getElementById('audit-summary');
-    if (!items.length) {
+    if (!items || !items.length) {
         board.innerHTML='<div class="empty"><div class="empty-icon">🔍</div>ไม่พบข้อมูลในรอบนี้</div>';
         document.getElementById('save-area').style.display='none';
         strip.style.display='none';
@@ -455,20 +452,30 @@ function renderAudit(items) {
     document.getElementById('s-ot').textContent   = to.toFixed(1);
 
     board.innerHTML = items.map(function(emp) {
-        var init = (emp.name||emp.empId||'?').charAt(0);
+        // nickname มาจาก GET_MANAGER_DASHBOARD แน่นอน
+        var nick = emp.nickname || emp.name || '?';
+        var fullname = emp.name || nick;
         var lateN = parseInt(emp.lateCount)||0;
-        return '<div class="emp-card" data-id="'+emp.empId+'" data-name="'+emp.name+'" data-nick="'+(emp.nickname||emp.name)+'" data-days="'+emp.workDays+'" data-late="'+emp.lateCount+'" data-ot="'+emp.ot+'">'
+        return '<div class="emp-card"'
+            +' data-id="'+emp.empId+'"'
+            +' data-name="'+fullname+'"'
+            +' data-nick="'+nick+'"'
+            +' data-days="'+(emp.workDays||0)+'"'
+            +' data-late="'+(emp.lateCount||0)+'"'
+            +' data-ot="'+(emp.ot||0)+'">'
             +'<div class="emp-header">'
-            +'<div class="emp-av">'+init+'</div>'
-            +'<div style="flex:1"><div class="emp-name">'+(emp.name||'—')+'</div><div class="emp-id">'+(emp.empId||'—')+'</div></div>'
+            +'<div class="emp-av">'+nick.charAt(0)+'</div>'
+            +'<div style="flex:1">'
+            +'<div class="emp-name">'+nick+'</div>'
+            +'<div class="emp-id">'+emp.empId+' · '+fullname+'</div>'
+            +'</div>'
             +'<div style="text-align:right">'
             +'<div style="display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap">'
-            +'<span style="padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:var(--blue-l);color:var(--blue)">มา '+emp.workDays+' วัน</span>'
+            +'<span style="padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:var(--blue-l);color:var(--blue)">มา '+(emp.workDays||0)+' วัน</span>'
             +(lateN>0?'<span style="padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:var(--red-l);color:var(--red)">สาย '+lateN+' ครั้ง</span>':'')
             +'</div>'
-            +'<div style="font-size:10px;color:var(--purple);font-weight:700;margin-top:3px;text-align:right">OT '+(parseFloat(emp.ot)||0).toFixed(1)+' ชม.</div>'
-            +'</div>'
-            +'</div>'
+            +'<div style="font-size:10px;color:var(--purple);font-weight:700;margin-top:3px">OT '+(parseFloat(emp.ot)||0).toFixed(1)+' ชม.</div>'
+            +'</div></div>'
             +'<div class="inp-grid">'
             +'<div><label class="inp-lbl">Audit Short Note</label><input type="text" class="inp-field inp-short" placeholder="หมายเหตุสั้น"></div>'
             +'<div><label class="inp-lbl">เงินเบิก (บาท)</label><input type="number" class="inp-field inp-withdraw" placeholder="0" min="0"></div>'
