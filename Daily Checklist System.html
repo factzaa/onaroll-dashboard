@@ -174,10 +174,20 @@ input,textarea,select{font-size:16px!important}
 .photo-add-btn:active{background:var(--blue-light);border-color:var(--blue)}
 
 /* Confirm button */
-.confirm-btn{width:48px;height:48px;border-radius:50%;border:4px solid;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;cursor:pointer;background:transparent}
+.confirm-btn{width:48px;height:48px;border-radius:50%;border:4px solid;display:flex;align-items:center;justify-content:center;transition:all .25s;flex-shrink:0;cursor:pointer;background:transparent}
+/* 🎨 3 states ของปุ่ม */
+/* 1) PENDING (เทา): ยังไม่ได้กด — รอ user กดเพื่อบันทึก */
+.btn-pending{border-color:#cbd5e1;background:#fff;color:#94a3b8}
+.btn-pending:active{transform:scale(.88);background:#f1f5f9}
+.btn-pending:hover{border-color:#64748b;color:#475569;background:#f8fafc}
+/* 2) NOT-READY (เทาทึบ): ยังกดไม่ได้ — ต้องแนบรูปก่อน */
+.btn-not-ready{border-color:var(--border);color:var(--border);cursor:not-allowed;opacity:.45;background:#f1f5f9}
+/* 3) DONE (น้ำเงิน + ติ๊ก): กดเสร็จแล้ว */
+.btn-done{border-color:var(--blue);background:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(41,121,212,.35);animation:btnPop .35s ease-out}
+@keyframes btnPop{0%{transform:scale(.7)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+/* รักษา btn-ready ไว้ใช้กับ flow อื่นที่อาจยังใช้ */
 .btn-ready{border-color:var(--blue);background:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(41,121,212,.35)}
 .btn-ready:active{transform:scale(.88)}
-.btn-not-ready{border-color:var(--border);color:var(--border);cursor:not-allowed;opacity:.5}
 
 /* Tags on checklist tasks */
 .task-tag{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;display:inline-block}
@@ -584,6 +594,7 @@ input,textarea,select{font-size:16px!important}
                 const isForMe = (userRole === 'admin' || userRole === 'manager') || 
                                (taskPos === "" || taskPos === "all" || taskPos === "ทั้งหมด" || taskPos.includes(userPosLower));
 
+                // ซ่อนงานที่ Completed แล้ว — แสดงเฉพาะที่รอทำหรือต้องแก้
                 return belongsToTab && isForMe && (!latest || latest.status === "Fix Required");
             });
 
@@ -604,9 +615,15 @@ input,textarea,select{font-size:16px!important}
             const reqVal = normalize(getSmartVal(t, 'Require_Photo', 'ต้องแนบรูป') || "NO").toUpperCase();
             const isPhotoRequired = (reqVal === "YES");
             const isReady = !isPhotoRequired || photos.length > 0;
+            
+            // 🎨 ปุ่ม default = เทา (รอกด) → กดแล้วจะเป็นน้ำเงิน 0.5 วิ แล้วการ์ดหาย
+            //   isReady ✓  = btn-pending (เทา, กดได้)
+            //   isReady ✕  = btn-not-ready (เทาทึบ, กดไม่ได้)
+            const btnClass = isReady ? 'btn-pending' : 'btn-not-ready';
+            const btnTitle = isReady ? 'กดเพื่อบันทึกว่าเสร็จแล้ว' : 'ต้องแนบรูปก่อน';
 
             return `
-                <div class="task-capsule ${borderClass} font-black mb-3">
+                <div class="task-capsule ${borderClass} font-black mb-3" id="card-${safeId}">
                     <div class="flex-1 pr-2 font-black">
                         <div class="flex items-center gap-2 mb-1">
                             ${isPhotoRequired ? `<span class="bg-rose-500 text-white text-[7px] px-2 py-0.5 rounded-full uppercase">📷 ต้องแนบรูป</span>` : `<span class="bg-slate-100 text-slate-400 text-[7px] px-2 py-0.5 rounded-full uppercase font-black">Standard</span>`}
@@ -621,7 +638,7 @@ input,textarea,select{font-size:16px!important}
                         </div>
                     </div>
                     <button onclick="${isReady ? `submitNormalTask('${rawId}', '${t.task_name || t.รายการงาน}', '${t.time_block || t.Group}', '${t.zone || t.โซน}')` : `showToast('🚨 งานนี้จำเป็นต้องแนบรูปก่อน', 'error')`}" 
-                        class="confirm-btn ${isReady ? 'btn-ready' : 'btn-not-ready'} font-black" title="${isReady ? 'กดเพื่อบันทึกว่าเสร็จแล้ว' : 'ต้องแนบรูปก่อน'}">
+                        class="confirm-btn ${btnClass} font-black" title="${btnTitle}">
                         <svg class="w-7 h-7 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="4"/></svg>
                     </button>
                 </div>`;
@@ -630,8 +647,16 @@ input,textarea,select{font-size:16px!important}
         async function submitNormalTask(id, name, block, zone) {
             const safeId = getSafeId(id);
             const photos = pendingPhotos[safeId] || [];
-            const submitBtn = event?.currentTarget;
-            if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.5'; }
+
+            // 🎬 ANIMATION: เปลี่ยนปุ่มเป็นน้ำเงินทันที (user เห็น feedback) แล้วการ์ดค่อย fade out
+            const cardEl = document.getElementById('card-' + safeId);
+            const btnEl = cardEl?.querySelector('.confirm-btn');
+            if (btnEl) {
+                btnEl.classList.remove('btn-pending', 'btn-not-ready');
+                btnEl.classList.add('btn-done');
+                btnEl.disabled = true;
+                btnEl.style.pointerEvents = 'none';
+            }
             showToast("⏳ บันทึกงาน...");
 
             const payload = { action: 'SUBMIT_CHECKLIST', staffName: userName, position: userPos, items: [{ id, taskName: name, timeBlock: block, zone, status: 'Completed', photoUrl: photos.join(','), staffNote: "-" }] };
@@ -639,11 +664,11 @@ input,textarea,select{font-size:16px!important}
                 await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
             } catch(e) { console.warn('submit error (no-cors):', e.message); }
 
-            // ── Optimistic update: เพิ่มแถว done เข้า fullHistory ทันที (ไม่รอ backend) ──
+            // ── Optimistic update ──
             const now = new Date();
             const tz = -now.getTimezoneOffset();
             const localISO = new Date(now.getTime() + tz*60000).toISOString().slice(0,19).replace('T',' ');
-            const todayDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+            const todayDate = new Date().toLocaleDateString('en-CA');
             const newRecord = {
                 'Date': todayDate, 'วันที่': todayDate,
                 'Timestamp': localISO, 'เวลา': localISO,
@@ -658,27 +683,35 @@ input,textarea,select{font-size:16px!important}
                 'staffNote': '-', 'หมายเหตุ': '-'
             };
             fullHistory.push(newRecord);
-
-            // 🔥 KEY FIX: อัปเดต todayRecordsMap ด้วย (renderChecklist filter ใช้ตัวนี้)
             todayRecordsMap[safeId] = {
-                status: 'Completed',
-                Status: 'Completed',
-                สถานะ: 'Completed',
-                Timestamp: localISO,
-                photoUrl: photos.join(',')
+                status: 'Completed', Status: 'Completed', สถานะ: 'Completed',
+                Timestamp: localISO, photoUrl: photos.join(',')
             };
-
-            // ลบ pending photo ของ task นี้
             delete pendingPhotos[safeId];
 
-            // re-render ทันที (ไม่รอ backend) — user เห็นผลทันที
-            if (activeTab === 'Dashboard') renderDashboard();
-            else if (activeTab === 'Urgent') renderUrgent();
-            else renderChecklist();
+            // 🎬 รอ 600ms ให้ user เห็นปุ่มเปลี่ยนเป็นน้ำเงิน + ติ๊ก แล้วการ์ด fade out
+            if (cardEl) {
+                cardEl.style.transition = 'all .4s ease';
+                setTimeout(() => {
+                    cardEl.style.opacity = '0';
+                    cardEl.style.transform = 'translateX(40px) scale(0.95)';
+                    cardEl.style.maxHeight = cardEl.offsetHeight + 'px';
+                }, 600);
+                // หลัง animation จบ → re-render ทั้ง list (เอาการ์ดออก + อัปเดตอื่น)
+                setTimeout(() => {
+                    if (activeTab === 'Dashboard') renderDashboard();
+                    else if (activeTab === 'Urgent') renderUrgent();
+                    else renderChecklist();
+                }, 1050);
+            } else {
+                // fallback: ถ้าไม่มี cardEl ก็ render ทันที
+                if (activeTab === 'Dashboard') renderDashboard();
+                else if (activeTab === 'Urgent') renderUrgent();
+                else renderChecklist();
+            }
 
             showToast("✅ บันทึกสำเร็จ!");
-
-            // sync จาก backend หลัง 2.5 วินาที (เผื่อ Apps Script เขียนชีทเสร็จ)
+            // sync จาก backend หลัง 2.5 วินาที
             setTimeout(() => fetchData(), 2500);
         }
 
