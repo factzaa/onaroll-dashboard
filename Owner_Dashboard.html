@@ -209,13 +209,7 @@ html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:
 </div>
 
 <!-- BOTTOM NAV -->
-<nav class="bottom-nav">
-  <button class="bnav-item active" id="bn-home" onclick="bnavClick('home',this,'ภาพรวม')"><div class="bi">🏠</div><div class="bl">หน้าแรก</div></button>
-  <button class="bnav-item" id="bn-dash" onclick="bnavClick('OR_Dashboard_Live.html',this,'แดชบอร์ดหลัก')"><div class="bi">📊</div><div class="bl">แดชบอร์ด</div></button>
-  <button class="bnav-item" id="bn-pay" onclick="bnavClick('OR_Payroll_System.html',this,'เงินเดือน')"><div class="bi">💵</div><div class="bl">เงินเดือน</div></button>
-  <button class="bnav-item" id="bn-mgr" onclick="bnavClick('Manager_Console.html',this,'Manager Console')"><div class="bi">🛡️</div><div class="bl">Manager</div></button>
-  <button class="bnav-item" id="bn-more" onclick="toggleMore()"><div class="bi">⋯</div><div class="bl">เพิ่มเติม</div></button>
-</nav>
+<nav class="bottom-nav" id="bottomNav"></nav>
 
 <!-- MORE MENU -->
 <div class="more-menu" id="moreMenu">
@@ -341,6 +335,36 @@ function buildMoreMenu(){
   if(el) el.innerHTML = h;
 }
 buildMoreMenu();
+
+// ── Bottom Nav (กรอง role) ──
+var BNAV_ALL = [
+  {key:'home',                          icon:'🏠', label:'หน้าแรก',   roles:['owner','admin','manager','user'], title:'ภาพรวม'},
+  {key:'OR_Dashboard_Live.html',        icon:'📊', label:'แดชบอร์ด', roles:['owner','admin','manager'],        title:'แดชบอร์ดหลัก'},
+  {key:'Manager_Console.html',          icon:'🛡️', label:'Manager',   roles:['owner','admin','manager'],        title:'Manager Console'},
+  {key:'Daily Checklist System.html',   icon:'✅', label:'Checklist', roles:['owner','admin','manager','user'], title:'Checklist'},
+  {key:'OR_Payroll_System.html',        icon:'💵', label:'เงินเดือน', roles:['owner','admin'],                  title:'เงินเดือน'},
+  {key:'more',                          icon:'⋯',  label:'เพิ่มเติม', roles:['owner','admin','manager','user'], title:'เพิ่มเติม'},
+];
+
+function buildBottomNav(){
+  var filtered = BNAV_ALL.filter(function(b){ return b.roles.indexOf(_role) !== -1; });
+  // จำกัดสูงสุด 5 ปุ่ม (รวม more) เพื่อ mobile UX
+  var max = 5;
+  var items = filtered.length > max ? filtered.slice(0, max-1).concat(filtered[filtered.length-1]) : filtered;
+  var h = items.map(function(b, i){
+    var isHome = b.key === 'home';
+    var onclick = b.key === 'more'
+      ? 'toggleMore()'
+      : "bnavClick('"+b.key+"',this,'"+b.title+"')";
+    return '<button class="bnav-item'+(isHome?' active':'')+'" onclick="'+onclick+'">'+
+      '<div class="bi">'+b.icon+'</div>'+
+      '<div class="bl">'+b.label+'</div>'+
+      '</button>';
+  }).join('');
+  var el = document.getElementById('bottomNav');
+  if(el) el.innerHTML = h;
+}
+buildBottomNav();
 
 // ── อัปเดต user card ใน sidebar ──
 function updateUserCard(){
