@@ -256,6 +256,58 @@ html,body{min-height:100%;background:#f0f4f8;font-family:'Kanit',sans-serif;colo
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbxvProkNuSUhJSGgO2M94x_ybX_S-9ZtRx75RsBKIMQgmuSw23P_-7z8XPAflKMq6XR9g/exec';
+const SHEET_ID = '1aTkdKkfMXkKutMuVJBew4k5PfPoIkQsr6pmtUAQtPlE';
+
+// 🔗 อ่านชีทตรง ๆ ผ่าน gviz/tq (สำหรับ Summary_Records snapshot)
+async function fetchSheet(tab) {
+    try {
+        var res = await fetch('https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?tqx=out:json&sheet='+encodeURIComponent(tab)+'&t='+Date.now());
+        var txt = await res.text();
+        var m = txt.match(/\{.*\}/);
+        return JSON.parse(m[0]).table;
+    } catch(e) { console.error('fetchSheet '+tab+' fail:', e); return null; }
+}
+
+// 🔗 ดึง Summary_Records ของรอบที่กำหนด → คืน array of object พร้อม key ที่ frontend ใช้
+async function fetchSummaryRecordsForCycle(start, end) {
+    var t = await fetchSheet('Summary_Records');
+    if (!t || !t.rows) return [];
+    var cycleStr = start + ' ถึง ' + end;
+    var cell = function(r,i){ return (r.c && r.c[i]) ? (r.c[i].v !== undefined && r.c[i].v !== null ? r.c[i].v : (r.c[i].f || '')) : ''; };
+    var num  = function(v){ var n = parseFloat(v); return isNaN(n) ? 0 : n; };
+    // filter เฉพาะแถวที่ "ช่วงวันที่" ตรงกับรอบที่ขอ
+    var rows = t.rows.filter(function(r){
+        var id  = String(cell(r,2)||'').trim().toUpperCase();
+        var cyc = String(cell(r,1)||'').trim();
+        return id && id !== 'รหัสพนักงาน' && cyc === cycleStr;
+    });
+    // dedupe ตาม empId → เก็บแถวล่าสุด
+    var map = {};
+    rows.forEach(function(r){
+        var id = String(cell(r,2)).trim().toUpperCase();
+        map[id] = {
+            empId:         id,
+            month:         cell(r,0),
+            cycle:         cell(r,1),
+            name:          cell(r,3),
+            nickname:      cell(r,4) || cell(r,3),
+            salaryType:    cell(r,5),
+            baseRate:      num(cell(r,6)),
+            workDays:      num(cell(r,7)),  // H = จำนวนวันทำงาน
+            otRate:        num(cell(r,8)),
+            ot:            num(cell(r,9)),  // J = จำนวนชม. OT
+            lateCount:     num(cell(r,10)), // K = จำนวนครั้งที่สาย ← ค่าที่ user ต้องการ
+            lateDeduction: num(cell(r,11)),
+            advancePay:    num(cell(r,12)), // M = ยอดเงินเบิก
+            otherEarn:     num(cell(r,13)),
+            otherEarnNote: cell(r,14),
+            otherDed:      num(cell(r,15)),
+            otherDedNote:  cell(r,16),
+            total:         num(cell(r,17))
+        };
+    });
+    return Object.values(map);
+}
 
 // ══ LOCAL DATE FORMAT (ป้องกัน UTC offset ขยับวัน) ══
 function localFmt(d) {
@@ -342,19 +394,21 @@ function switchTab(t) {
     if (t==='petitions') fetchPetitions();
 }
 
-// ══ DASHBOARD — ดึงข้อมูลจาก Summary_Records ══
-// Summary_Records columns: A=Record_ID, B=Cycle, C=Employee_ID, D=Name, E=Work_Days, F=Late_Count, G=Total_OT, H=Short_Note, I=Withdraw_Note, J=Other_Note, K=Timestamp
+// ══ DASHBOARD — ดึง snapshot ที่บันทึกแล้วจาก Summary_Records โดยตรง (ผ่าน gviz) ══
+// Summary_Records ในชีท (ภาษาไทย):
+// A=เดือน, B=ช่วงวันที่, C=รหัสพนักงาน, D=ชื่อ-นามสกุล, E=ชื่อเล่น,
+// F=ประเภทการจ้าง, G=ค่าจ้างพื้นฐาน, H=จำนวนวันทำงาน, I=เรท OT ต่อชม.,
+// J=จำนวนชม. OT, K=จำนวนครั้งที่สาย, L=ยอดหักสาย/ขาด, M=ยอดเงินเบิก,
+// N=เงินพิเศษ/โบนัส, O=หมายเหตุเงินพิเศษ, P=ยอดอื่นๆ, Q=หมายเหตุเงินหัก, R=ยอดจ่าย
 async function fetchDashboard() {
     var start = document.getElementById('d-start').value;
     var end   = document.getElementById('d-end').value;
     if (!start||!end) { alert('กรุณาเลือกช่วงวันที่'); return; }
     gload(true,'กำลังโหลดข้อมูล...');
     try {
-        var r = await fetch(API+'?action=GET_MANAGER_DASHBOARD&start='+start+'&end='+end+'&t='+Date.now());
-        var d = await r.json();
-        console.log('[Inner] GET_MANAGER_DASHBOARD:', d);
-        // Backend ส่ง {dashboard:[{empId,name,nickname,workDays,lateCount,ot}], pendingPetitions:[]}
-        var items = d.dashboard || d.summaryRecords || d.records || (Array.isArray(d)?d:[]);
+        // อ่านจาก Summary_Records ตรง ๆ — เป็น snapshot ที่บันทึกแล้วจริง
+        var items = await fetchSummaryRecordsForCycle(start, end);
+        console.log('[Inner] Summary_Records (รอบนี้):', items);
         renderDashboard(items, start, end);
     } catch(e) {
         alert('โหลดข้อมูลไม่สำเร็จ: '+e.message);
@@ -383,17 +437,18 @@ function renderDashboard(items, start, end) {
 
     board.innerHTML = '<div class="dash-grid">'+items.map(function(emp) {
         var id       = emp.empId   ||'—';
-        // nickname มีแน่นอนจาก GET_MANAGER_DASHBOARD (emp['ชื่อเล่น'])
         var nickname = emp.nickname||emp.name||'—';
         var fullname = emp.name    ||nickname;
         var days = parseInt(emp.workDays)||0;
         var late = parseInt(emp.lateCount)||0;
         var ot   = parseFloat(emp.ot)||0;
-        // ข้อมูลจาก Summary_Records ที่บันทึกแล้ว (ถ้ามี)
-        var shortNote    = emp.otherEarnNote||emp.Short_Note   ||'—';
-        var withdrawNote = emp.advancePay>0 ? emp.advancePay  : (emp.Withdraw_Note||'—');
-        var otherNote    = emp.otherDedNote ||emp.Other_Note   ||'—';
-        var cycle        = emp.cycle||emp.Cycle||(start+' ถึง '+end);
+        // ── อ่านจาก Summary_Records (ผ่าน gviz parser ที่ map key ภาษาไทย → English) ──
+        var shortRaw     = emp.otherEarnNote || '';
+        var shortNote    = (shortRaw && String(shortRaw).trim() !== '-' && String(shortRaw).trim() !== '0') ? shortRaw : '—';
+        var advance      = parseFloat(emp.advancePay) || 0;
+        var withdrawNote = advance > 0 ? (advance.toLocaleString()+' ฿') : '—';
+        var otherRaw     = emp.otherDedNote || '';
+        var otherNote    = (otherRaw && String(otherRaw).trim() !== '-' && String(otherRaw).trim() !== '0') ? otherRaw : '—';
         var init = nickname.charAt(0);
         return '<div class="rec-card">'
             +'<div class="rec-header">'
@@ -407,7 +462,7 @@ function renderDashboard(items, start, end) {
             +'</div></div>'
             +'<div class="rec-notes">'
             +'<div class="rn-box"><span class="rn-lbl">Short Note</span><span class="rn-val'+(shortNote==='—'?' none':'')+'">'+(shortNote)+'</span></div>'
-            +'<div class="rn-box"><span class="rn-lbl">เงินเบิก</span><span class="rn-val'+(String(withdrawNote)==='—'?' none':'')+'">'+(withdrawNote)+'</span></div>'
+            +'<div class="rn-box"><span class="rn-lbl">เงินเบิก</span><span class="rn-val'+(withdrawNote==='—'?' none':'')+'">'+(withdrawNote)+'</span></div>'
             +'<div class="rn-box"><span class="rn-lbl">หมายเหตุ</span><span class="rn-val'+(otherNote==='—'?' none':'')+'">'+(otherNote)+'</span></div>'
             +'</div>'
             +'<div class="rec-cycle">📅 รอบ: '+start+' – '+end+'</div>'
