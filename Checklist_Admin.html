@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>จัดการ Checklist — OnaRoll</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;padding-bottom:40px;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#1a2b5e;--navy-d:#0f1d44;--blue:#2979d4;--blue-light:#e8f1fd;
+  --surface:#fff;--surface2:#f7fafd;--bg:#f0f4f8;
+  --text:#1a2332;--muted:#5a7184;--light:#92a8bb;--border:#dde6ef;
+  --success:#00897b;--success-bg:#e0f5f2;
+  --danger:#e53935;--danger-bg:#fdecea;
+  --warn:#f57c00;--warn-bg:#fff3e0;
+  --gold:#d4a017;--gold-bg:#fef7e0;
+  --r:14px;--r-sm:10px;
+  --shadow:0 2px 8px rgba(26,43,94,.08);
+  --shadow-md:0 6px 24px rgba(26,43,94,.13);
+}
+input,textarea,select{font-size:16px!important;font-family:inherit}
+.hidden{display:none!important}
+
+/* HEADER */
+.app-header{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-d) 100%);
+  border-radius:0 0 24px 24px;
+  padding:16px 16px 14px;color:#fff;
+  box-shadow:0 8px 24px rgba(26,43,94,.28);
+  position:sticky;top:0;z-index:60;
+}
+.hdr-top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.hdr-back{width:32px;height:32px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;flex-shrink:0;text-decoration:none}
+.hdr-brand{flex:1}
+.hdr-title{font-size:16px;font-weight:700;color:#fff;line-height:1.2}
+.hdr-sub{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
+.hdr-user{font-size:10px;color:rgba(255,255,255,.55);text-align:right}
+.hdr-user b{display:block;color:#fff;font-size:12px;font-weight:600}
+
+/* TABS */
+.tab-pills{display:flex;background:rgba(255,255,255,.1);border-radius:24px;padding:3px;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tab-pills::-webkit-scrollbar{display:none}
+.tab-btn{flex:1;min-width:fit-content;padding:8px 12px;border-radius:21px;border:none;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.55);background:transparent;white-space:nowrap;text-transform:uppercase;letter-spacing:.3px}
+.tab-btn.tab-active{background:#fff;color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.tab-btn:active{transform:scale(.96)}
+.tab-btn .ic{font-size:13px;margin-right:3px;vertical-align:-1px}
+
+/* MAIN */
+.main{max-width:720px;margin:0 auto;padding:14px}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue)}
+.stat-card.s-success::before{background:var(--success)}
+.stat-card.s-warn::before{background:var(--warn)}
+.stat-card.s-danger::before{background:var(--danger)}
+.stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;font-weight:600;margin-bottom:6px}
+.stat-val{font-size:28px;font-weight:700;color:var(--text);line-height:1}
+.stat-sub{font-size:11px;color:var(--light);margin-top:4px}
+
+/* SECTION HEADER */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px}
+.sec-title{font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.4px}
+.btn-add{background:var(--navy);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s}
+.btn-add:active{transform:scale(.95)}
+.btn-add.btn-urgent{background:linear-gradient(135deg,#e53935,#c62828)}
+
+/* TABLE / CARD LIST */
+.card-list{display:flex;flex-direction:column;gap:8px}
+.task-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;box-shadow:var(--shadow);position:relative;transition:all .15s}
+.task-card:active{transform:scale(.99)}
+.task-card.inactive{opacity:.55;background:var(--surface2)}
+.task-row1{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.task-id{font-size:10px;font-weight:700;color:var(--blue);background:var(--blue-light);padding:2px 7px;border-radius:6px;flex-shrink:0;font-family:monospace}
+.task-name{font-size:14px;font-weight:600;color:var(--text);flex:1;line-height:1.35}
+.task-meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.task-tag{font-size:10px;padding:2px 7px;border-radius:5px;font-weight:600;color:var(--muted);background:var(--surface2);border:1px solid var(--border)}
+.task-tag.tg-open{background:#dcfce7;color:#166534;border-color:#bbf7d0}
+.task-tag.tg-close{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+.task-tag.tg-shift{background:#dbeafe;color:#1e40af;border-color:#bfdbfe}
+.task-tag.tg-photo{background:#fef3c7;color:#92400e;border-color:#fde68a}
+.task-tag.tg-zone{background:#e0e7ff;color:#3730a3;border-color:#c7d2fe}
+.task-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)}
+.btn-action{flex:1;padding:7px;border:1px solid var(--border);background:#fff;border-radius:8px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;color:var(--text);transition:all .15s}
+.btn-action:active{transform:scale(.97)}
+.btn-action.b-edit{color:var(--blue);border-color:#bfdbfe;background:var(--blue-light)}
+.btn-action.b-toggle{color:var(--warn);border-color:#fde68a;background:var(--warn-bg)}
+.btn-action.b-toggle.is-on{color:var(--success);border-color:#bbf7d0;background:var(--success-bg)}
+.btn-action.b-delete{color:var(--danger);border-color:#fecaca;background:var(--danger-bg)}
+
+/* URGENT CARD */
+.urgent-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.urgent-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+.urgent-card.p-HIGH::before{background:var(--danger);animation:pulseRed 2s infinite}
+.urgent-card.p-NORMAL::before{background:var(--warn)}
+.urgent-card.p-LOW::before{background:var(--success)}
+.urgent-card.st-DONE{opacity:.65}
+.urgent-card.st-DONE::before{background:var(--success)}
+.urgent-card.st-OVERDUE{background:#fef2f2}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(229,57,53,.4)}50%{box-shadow:0 0 0 4px rgba(229,57,53,0)}}
+.u-row1{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.u-priority{font-size:9px;font-weight:700;padding:3px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:.5px}
+.u-priority.p-HIGH{background:var(--danger);color:#fff}
+.u-priority.p-NORMAL{background:var(--warn);color:#fff}
+.u-priority.p-LOW{background:var(--success);color:#fff}
+.u-status{font-size:9px;font-weight:700;padding:3px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:.5px;border:1px solid currentColor;margin-left:auto}
+.u-status.st-PENDING{color:var(--warn);background:var(--warn-bg)}
+.u-status.st-IN_PROGRESS{color:var(--blue);background:var(--blue-light)}
+.u-status.st-DONE{color:var(--success);background:var(--success-bg)}
+.u-status.st-OVERDUE{color:var(--danger);background:var(--danger-bg)}
+.u-status.st-CANCELLED{color:var(--muted);background:var(--surface2)}
+.u-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.35}
+.u-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px}
+.u-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;font-size:11px}
+.u-meta-item{background:var(--surface2);padding:6px 9px;border-radius:7px;border:1px solid var(--border)}
+.u-meta-lbl{font-size:9px;color:var(--light);text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+.u-meta-val{color:var(--text);font-weight:500;margin-top:2px}
+.u-meta-val.due-soon{color:var(--warn);font-weight:700}
+.u-meta-val.due-over{color:var(--danger);font-weight:700}
+.u-actions{display:flex;gap:6px;margin-top:8px}
+.btn-u{flex:1;padding:9px;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-u:active{transform:scale(.97)}
+.btn-u-done{background:var(--success);color:#fff}
+.btn-u-cancel{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.btn-u-edit{background:var(--blue-light);color:var(--blue)}
+
+/* SEARCH/FILTER BAR */
+.filter-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.filter-bar input,.filter-bar select{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);font-size:13px!important}
+.filter-bar input:focus,.filter-bar select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(41,121,212,.15)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(15,29,68,.55);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@media(min-width:640px){.modal-bg{align-items:center}}
+.modal{background:#fff;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:18px;animation:slideUp .25s cubic-bezier(.2,.9,.3,1.2)}
+@media(min-width:640px){.modal{border-radius:20px}}
+@keyframes slideUp{from{transform:translateY(40px);opacity:.6}to{transform:translateY(0);opacity:1}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.modal-title{font-size:16px;font-weight:700;color:var(--navy)}
+.modal-close{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:none;font-size:18px;cursor:pointer;color:var(--muted);line-height:1}
+.form-grp{margin-bottom:12px}
+.form-lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px}
+.form-lbl .req{color:var(--danger)}
+.form-inp,.form-sel,.form-txt{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);font-family:inherit;font-size:14px}
+.form-inp:focus,.form-sel:focus,.form-txt:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(41,121,212,.15)}
+.form-txt{resize:vertical;min-height:60px}
+.form-hint{font-size:10px;color:var(--light);margin-top:4px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.chip{padding:6px 10px;border:1px solid var(--border);background:#fff;border-radius:7px;font-size:11px;font-weight:500;cursor:pointer;color:var(--muted);user-select:none;transition:all .15s;font-family:inherit}
+.chip.is-on{background:var(--navy);border-color:var(--navy);color:#fff}
+.chip:active{transform:scale(.95)}
+.toggle-row{display:flex;gap:8px;background:var(--surface2);padding:4px;border-radius:10px;margin-bottom:10px}
+.toggle-opt{flex:1;padding:8px;border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border-radius:7px;transition:all .15s}
+.toggle-opt.is-on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+/* MULTI-SELECT EMP LIST */
+.emp-list{max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;background:var(--surface2);padding:6px}
+.emp-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;cursor:pointer;transition:all .12s}
+.emp-row:hover{background:#fff}
+.emp-row.is-on{background:var(--blue-light)}
+.emp-row input{margin:0;flex-shrink:0;width:16px;height:16px;cursor:pointer}
+.emp-row label{flex:1;cursor:pointer;font-size:13px;color:var(--text)}
+.emp-row .ec-id{font-size:10px;color:var(--light);font-family:monospace;margin-left:auto}
+
+.form-actions{display:flex;gap:8px;margin-top:16px;position:sticky;bottom:0;background:#fff;padding-top:10px}
+.btn-submit{flex:1;padding:12px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-submit:active{transform:scale(.97)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+.btn-cancel{padding:12px 18px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer}
+
+/* EMPTY/LOADING */
+.empty{padding:50px 20px;text-align:center;color:var(--light)}
+.empty-icon{font-size:50px;margin-bottom:12px;opacity:.4}
+.empty-msg{font-size:13px}
+.loading-screen{position:fixed;inset:0;background:rgba(255,255,255,.92);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:12px}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--navy);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:300;opacity:0;transition:all .3s;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+.toast.warn{background:var(--warn)}
+
+/* HISTORY */
+.hist-item{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;box-shadow:var(--shadow);margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.hist-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.hist-icon.ok{background:var(--success-bg);color:var(--success)}
+.hist-icon.no{background:var(--danger-bg);color:var(--danger)}
+.hist-body{flex:1}
+.hist-title-h{font-size:13px;font-weight:600;color:var(--text)}
+.hist-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.hist-time{font-size:10px;color:var(--light);text-align:right;white-space:nowrap}
+
+/* DEADLINE list */
+.deadline-section{margin-bottom:16px}
+.deadline-section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;padding:0 4px}
+.deadline-section-title.dt-over{color:var(--danger)}
+.deadline-section-title.dt-soon{color:var(--warn)}
+
+</style>
+</head>
+<body>
+
+<!-- AUTH GUARD -->
+<div id="auth-screen" class="loading-screen hidden">
+  <div style="text-align:center;max-width:300px">
+    <div style="font-size:46px;margin-bottom:10px">🔒</div>
+    <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px">ต้องเข้าสู่ระบบ</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:18px">หน้านี้สำหรับ Owner / Admin เท่านั้น</div>
+    <a href="index.html" style="display:inline-block;padding:11px 22px;background:var(--navy);color:#fff;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">กลับสู่หน้าเข้าสู่ระบบ</a>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="loading" class="loading-screen hidden">
+  <div class="spinner"></div>
+  <div style="color:var(--muted);font-size:13px" id="loading-msg">กำลังโหลด...</div>
+</div>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div class="hdr-top">
+    <a href="Owner_Dashboard.html" class="hdr-back" title="กลับ">←</a>
+    <div class="hdr-brand">
+      <div class="hdr-title">จัดการ Checklist</div>
+      <div class="hdr-sub">Owner / Admin Console</div>
+    </div>
+    <div class="hdr-user">
+      ผู้ใช้งาน
+      <b id="cur-user">—</b>
+    </div>
+  </div>
+  <div class="tab-pills" id="tab-pills">
+    <button class="tab-btn tab-active" data-tab="dashboard"><span class="ic">📊</span>Dashboard</button>
+    <button class="tab-btn" data-tab="master"><span class="ic">📋</span>งานประจำ</button>
+    <button class="tab-btn" data-tab="urgent"><span class="ic">⚡</span>เร่งด่วน</button>
+    <button class="tab-btn" data-tab="deadlines"><span class="ic">⏰</span>เดดไลน์</button>
+    <button class="tab-btn" data-tab="history"><span class="ic">📜</span>ประวัติ</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ══ DASHBOARD TAB ══ -->
+  <div class="tab-content" id="tab-dashboard">
+    <div class="stat-grid">
+      <div class="stat-card s-success">
+        <div class="stat-lbl">งานประจำที่เปิดใช้</div>
+        <div class="stat-val" id="stat-master-active">—</div>
+        <div class="stat-sub">จากทั้งหมด <span id="stat-master-total">—</span> รายการ</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">งานเร่งด่วน (วันนี้)</div>
+        <div class="stat-val" id="stat-urgent-today">—</div>
+        <div class="stat-sub">เสร็จ <span id="stat-urgent-done">0</span> รายการ</div>
+      </div>
+      <div class="stat-card s-warn">
+        <div class="stat-lbl">รอดำเนินการ</div>
+        <div class="stat-val" id="stat-urgent-pending">—</div>
+        <div class="stat-sub">ยังไม่ได้เริ่ม</div>
+      </div>
+      <div class="stat-card s-danger">
+        <div class="stat-lbl">เลยกำหนด</div>
+        <div class="stat-val" id="stat-urgent-overdue">—</div>
+        <div class="stat-sub">ต้องตามด่วน</div>
+      </div>
+    </div>
+
+    <div class="sec-head">
+      <div class="sec-title">📌 เร่งด่วน ใกล้ครบกำหนด</div>
+    </div>
+    <div id="dash-soon" class="card-list">
+      <div class="empty"><div class="empty-icon">✨</div><div class="empty-msg">ไม่มีงานที่ใกล้ครบกำหนด</div></div>
+    </div>
+  </div>
+
+  <!-- ══ MASTER TASKS TAB ══ -->
+  <div class="tab-content hidden" id="tab-master">
+    <div class="sec-head">
+      <div class="sec-title">📋 งานประจำทั้งหมด</div>
+      <button class="btn-add" onclick="openMasterForm()">+ เพิ่มงาน</button>
+    </div>
+    <div class="filter-bar">
+      <input id="m-search" type="search" placeholder="🔍 ค้นหาชื่องาน / โซน" oninput="renderMasterList()">
+      <select id="m-block-filter" onchange="renderMasterList()">
+        <option value="">ทุกช่วงเวลา</option>
+        <option value="opening">opening</option>
+        <option value="ShiftChange">ShiftChange</option>
+        <option value="closing">closing</option>
+      </select>
+      <select id="m-status-filter" onchange="renderMasterList()">
+        <option value="">ทุกสถานะ</option>
+        <option value="Active">เปิดใช้</option>
+        <option value="Inactive">ปิด</option>
+      </select>
+    </div>
+    <div id="master-list" class="card-list"></div>
+  </div>
+
+  <!-- ══ URGENT TASKS TAB ══ -->
+  <div class="tab-content hidden" id="tab-urgent">
+    <div class="sec-head">
+      <div class="sec-title">⚡ งานเร่งด่วน</div>
+      <button class="btn-add btn-urgent" onclick="openUrgentForm()">+ สร้างงานด่วน</button>
+    </div>
+    <div class="filter-bar">
+      <select id="u-status-filter" onchange="renderUrgentList()">
+        <option value="active">กำลังดำเนินการ</option>
+        <option value="all">ทั้งหมด</option>
+        <option value="PENDING">รอเริ่ม</option>
+        <option value="IN_PROGRESS">กำลังทำ</option>
+        <option value="DONE">เสร็จแล้ว</option>
+        <option value="OVERDUE">เลยกำหนด</option>
+        <option value="CANCELLED">ยกเลิก</option>
+      </select>
+      <select id="u-priority-filter" onchange="renderUrgentList()">
+        <option value="">ทุกระดับ</option>
+        <option value="HIGH">สูง</option>
+        <option value="NORMAL">ปกติ</option>
+        <option value="LOW">ต่ำ</option>
+      </select>
+    </div>
+    <div id="urgent-list" class="card-list"></div>
+  </div>
+
+  <!-- ══ DEADLINES TAB ══ -->
+  <div class="tab-content hidden" id="tab-deadlines">
+    <div class="sec-head"><div class="sec-title">⏰ จัดการเดดไลน์</div></div>
+    <div id="deadlines-content"></div>
+  </div>
+
+  <!-- ══ HISTORY TAB ══ -->
+  <div class="tab-content hidden" id="tab-history">
+    <div class="sec-head"><div class="sec-title">📜 ประวัติงานเร่งด่วน</div></div>
+    <div class="filter-bar">
+      <input id="h-search" type="search" placeholder="🔍 ค้นหา..." oninput="renderHistory()">
+      <input id="h-date" type="date" onchange="renderHistory()">
+    </div>
+    <div id="history-list" class="card-list"></div>
+  </div>
+
+</div>
+
+<!-- ══════════ MASTER TASK FORM MODAL ══════════ -->
+<div id="modal-master" class="modal-bg hidden" onclick="closeModal(event,'modal-master')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title" id="mm-title">เพิ่มงานประจำ</div>
+      <button class="modal-close" onclick="closeModal(null,'modal-master')">✕</button>
+    </div>
+    <input type="hidden" id="mm-id">
+    <input type="hidden" id="mm-original-id">
+
+    <div class="form-grp">
+      <label class="form-lbl">ชื่องาน <span class="req">*</span></label>
+      <input id="mm-name" class="form-inp" placeholder="เช่น เปิดเครื่องชงกาแฟ">
+    </div>
+
+    <div class="form-grp">
+      <label class="form-lbl">รายละเอียดเพิ่มเติม</label>
+      <textarea id="mm-desc" class="form-txt" placeholder="คำอธิบายเพิ่มเติม (ถ้ามี)"></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-grp">
+        <label class="form-lbl">ช่วงเวลา <span class="req">*</span></label>
+        <select id="mm-block" class="form-sel">
+          <option value="opening">opening (เปิดร้าน)</option>
+          <option value="ShiftChange">ShiftChange (ระหว่างวัน)</option>
+          <option value="closing">closing (ปิดร้าน)</option>
+        </select>
+      </div>
+      <div class="form-grp">
+        <label class="form-lbl">โซน <span class="req">*</span></label>
+        <input id="mm-zone" class="form-inp" placeholder="เช่น บาร์ / ครัว" list="zone-options">
+        <datalist id="zone-options"></datalist>
+      </div>
+    </div>
+
+    <div class="form-grp">
+      <label class="form-lbl">ตำแหน่งที่รับผิดชอบ <span class="req">*</span></label>
+      <div id="mm-pos-chips" class="chip-row"></div>
+      <div class="form-hint">แตะเพื่อเลือก/ยกเลิก (เลือกได้หลายตำแหน่ง)</div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-grp">
+        <label class="form-lbl">ต้องถ่ายรูป?</label>
+        <div class="toggle-row">
+          <button type="button" class="toggle-opt" data-photo="NO" onclick="setMmPhoto('NO')">ไม่ต้อง</button>
+          <button type="button" class="toggle-opt is-on" data-photo="YES" onclick="setMmPhoto('YES')">ต้องการ</button>
+        </div>
+      </div>
+      <div class="form-grp">
+        <label class="form-lbl">สถานะ</label>
+        <div class="toggle-row">
+          <button type="button" class="toggle-opt is-on" data-status="Active" onclick="setMmStatus('Active')">เปิดใช้</button>
+          <button type="button" class="toggle-opt" data-status="Inactive" onclick="setMmStatus('Inactive')">ปิด</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModal(null,'modal-master')">ยกเลิก</button>
+      <button class="btn-submit" onclick="submitMaster()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ URGENT TASK FORM MODAL ══════════ -->
+<div id="modal-urgent" class="modal-bg hidden" onclick="closeModal(event,'modal-urgent')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title" id="mu-title">⚡ สร้างงานเร่งด่วน</div>
+      <button class="modal-close" onclick="closeModal(null,'modal-urgent')">✕</button>
+    </div>
+    <input type="hidden" id="mu-id">
+
+    <div class="form-grp">
+      <label class="form-lbl">ชื่องาน <span class="req">*</span></label>
+      <input id="mu-name" class="form-inp" placeholder="เช่น ซ่อมไฟห้องน้ำ">
+    </div>
+
+    <div class="form-grp">
+      <label class="form-lbl">รายละเอียด</label>
+      <textarea id="mu-desc" class="form-txt" placeholder="รายละเอียดงานเพิ่มเติม"></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-grp">
+        <label class="form-lbl">ระดับความสำคัญ</label>
+        <select id="mu-priority" class="form-sel">
+          <option value="HIGH">🔴 สูง</option>
+          <option value="NORMAL" selected>🟡 ปกติ</option>
+          <option value="LOW">🟢 ต่ำ</option>
+        </select>
+      </div>
+      <div class="form-grp">
+        <label class="form-lbl">โซน</label>
+        <input id="mu-zone" class="form-inp" placeholder="เช่น บาร์" list="zone-options">
+      </div>
+    </div>
+
+    <!-- งานครั้งเดียว / ซ้ำหลายวัน -->
+    <div class="form-grp">
+      <label class="form-lbl">รูปแบบงาน</label>
+      <div class="toggle-row">
+        <button type="button" class="toggle-opt is-on" data-assign="ONE_TIME" onclick="setMuAssign('ONE_TIME')">📌 ครั้งเดียว</button>
+        <button type="button" class="toggle-opt" data-assign="RECURRING" onclick="setMuAssign('RECURRING')">🔁 ซ้ำหลายวัน</button>
+      </div>
+    </div>
+
+    <!-- One-time: due date+time -->
+    <div id="mu-onetime-fields">
+      <div class="form-row">
+        <div class="form-grp">
+          <label class="form-lbl">วันที่ครบกำหนด</label>
+          <input id="mu-due-date" type="date" class="form-inp">
+        </div>
+        <div class="form-grp">
+          <label class="form-lbl">เวลาครบกำหนด</label>
+          <input id="mu-due-time" type="time" class="form-inp" value="18:00">
+        </div>
+      </div>
+    </div>
+
+    <!-- Recurring: start + days -->
+    <div id="mu-recurring-fields" class="hidden">
+      <div class="form-row">
+        <div class="form-grp">
+          <label class="form-lbl">เริ่มวันที่</label>
+          <input id="mu-recur-start" type="date" class="form-inp">
+        </div>
+        <div class="form-grp">
+          <label class="form-lbl">จำนวนวัน</label>
+          <input id="mu-recur-days" type="number" class="form-inp" min="1" max="30" value="3">
+        </div>
+      </div>
+      <div class="form-hint" id="mu-recur-info">ระบบจะสร้างให้ทำงานต่อเนื่องตามจำนวนวัน</div>
+    </div>
+
+    <!-- มอบหมายให้ใคร -->
+    <div class="form-grp">
+      <label class="form-lbl">มอบหมายให้</label>
+      <div class="toggle-row">
+        <button type="button" class="toggle-opt is-on" data-mode="POSITION" onclick="setMuTargetMode('POSITION')">👥 ตามตำแหน่ง</button>
+        <button type="button" class="toggle-opt" data-mode="INDIVIDUAL" onclick="setMuTargetMode('INDIVIDUAL')">👤 รายบุคคล</button>
+      </div>
+    </div>
+
+    <div id="mu-position-area">
+      <div class="form-grp">
+        <label class="form-lbl">เลือกตำแหน่ง (เลือกได้หลายตำแหน่ง)</label>
+        <div id="mu-pos-chips" class="chip-row"></div>
+      </div>
+    </div>
+
+    <div id="mu-individual-area" class="hidden">
+      <div class="form-grp">
+        <label class="form-lbl">เลือกพนักงาน</label>
+        <div class="emp-list" id="mu-emp-list"></div>
+      </div>
+    </div>
+
+    <div class="form-grp">
+      <label class="form-lbl">ต้องถ่ายรูปยืนยันหรือไม่?</label>
+      <div class="toggle-row">
+        <button type="button" class="toggle-opt is-on" data-photo="NO" onclick="setMuPhoto('NO')">ไม่ต้อง</button>
+        <button type="button" class="toggle-opt" data-photo="YES" onclick="setMuPhoto('YES')">ต้องการ</button>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModal(null,'modal-urgent')">ยกเลิก</button>
+      <button class="btn-submit" onclick="submitUrgent()">บันทึกงานด่วน</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//   CONFIG
+// ═══════════════════════════════════════════════════════════
+const API_URL  = 'https://script.google.com/macros/s/AKfycbxxjcQkhViS0-_7HVY_Ud9ADeKfXxBrq30hegHai_AGrjgQm_oTliQuMB1dpLe75Zc/exec';
+const SHEET_ID = '18hNJIl7zFTRLmu4CUrOhqxCGQ6iC_tb6OIuMln8VL30';
+
+// ═══════════════════════════════════════════════════════════
+//   STATE
+// ═══════════════════════════════════════════════════════════
+let masterTasks = [];     // [{checklist_id, position, time_block, zone, task_name, task_description, require_photo, status}]
+let urgentTasks = [];     // [{urgent_id, ...}]
+let employees   = [];     // [{id, name, nickname, position}]
+let user        = { id: '', name: '', role: '' };
+
+// form state
+let mmState = { photo: 'YES', status: 'Active', positions: new Set() };
+let muState = { assign: 'ONE_TIME', targetMode: 'POSITION', photo: 'NO', positions: new Set(), emps: new Set() };
+
+// Position master list (จาก master sheet)
+const KNOWN_POSITIONS = ['บาริสต้า','ผู้ช่วยบาริสต้า','พาร์ทไทม์','แม่ครัว','ผู้ช่วยครัว','ช่าง'];
+
+// ═══════════════════════════════════════════════════════════
+//   AUTH GUARD
+// ═══════════════════════════════════════════════════════════
+function checkAuth() {
+  const role = (localStorage.getItem('user_role') || '').toLowerCase();
+  const empId = localStorage.getItem('user_emp_id') || localStorage.getItem('emp_id') || '';
+  const name  = localStorage.getItem('user_name') || localStorage.getItem('staffName') || empId;
+  if (role !== 'owner' && role !== 'admin') {
+    document.getElementById('auth-screen').classList.remove('hidden');
+    return false;
+  }
+  user.id = empId; user.name = name; user.role = role;
+  document.getElementById('cur-user').textContent = name + ' (' + role + ')';
+  return true;
+}
+
+// ═══════════════════════════════════════════════════════════
+//   UTIL
+// ═══════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+function showLoading(on, msg) { $('loading').classList.toggle('hidden', !on); if (msg) $('loading-msg').textContent = msg; }
+function toast(msg, type) {
+  const el = $('toast');
+  el.textContent = msg; el.className = 'toast show ' + (type || '');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove('show'), 2800);
+}
+function escapeHTML(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function todayStr() { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function dateAddDays(yyyymmdd, days) {
+  const [y,m,d] = yyyymmdd.split('-').map(Number);
+  const dt = new Date(y, m-1, d); dt.setDate(dt.getDate()+days);
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+}
+function fmtThaiDate(yyyymmdd) {
+  if (!yyyymmdd) return '—';
+  const [y,m,d] = String(yyyymmdd).split('-');
+  if (!d) return yyyymmdd;
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return parseInt(d)+' '+months[parseInt(m)-1]+' '+(parseInt(y)+543);
+}
+function fmtDateTime(yyyymmdd, hhmm) {
+  if (!yyyymmdd) return '—';
+  return fmtThaiDate(yyyymmdd) + (hhmm ? ' • '+hhmm : '');
+}
+function dueState(yyyymmdd, hhmm) {
+  if (!yyyymmdd) return 'normal';
+  try {
+    const [y,m,d] = yyyymmdd.split('-').map(Number);
+    const [hh, mm] = (hhmm||'18:00').split(':').map(Number);
+    const due = new Date(y, m-1, d, hh, mm, 0);
+    const now = new Date();
+    const diffMs = due.getTime() - now.getTime();
+    if (diffMs < 0) return 'over';
+    if (diffMs < 3*60*60*1000) return 'soon'; // < 3 ชม.
+    return 'normal';
+  } catch(e) { return 'normal'; }
+}
+
+// ═══════════════════════════════════════════════════════════
+//   FETCH (gviz fallback — backend อ่านอยู่แล้ว แต่เผื่อ)
+// ═══════════════════════════════════════════════════════════
+async function fetchSheet(tab) {
+  try {
+    const res = await fetch('https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?tqx=out:json&sheet='+encodeURIComponent(tab)+'&t='+Date.now());
+    const txt = await res.text();
+    const m = txt.match(/\{.*\}/s);
+    return JSON.parse(m[0]).table;
+  } catch(e) { console.error('fetchSheet '+tab, e); return null; }
+}
+function cellVal(r, i) { return (r.c && r.c[i]) ? (r.c[i].v !== undefined && r.c[i].v !== null ? r.c[i].v : (r.c[i].f || '')) : ''; }
+
+// Master Tasks via gviz (Daily_Checklist_Master)
+async function loadMasterTasks() {
+  const t = await fetchSheet('Daily_Checklist_Master');
+  if (!t || !t.rows) { masterTasks = []; return; }
+  masterTasks = t.rows.filter(r => {
+    const id = cellVal(r, 0);
+    return id && id !== 'checklist_id';
+  }).map(r => ({
+    checklist_id:     String(cellVal(r, 0)),
+    position:         String(cellVal(r, 1)),
+    time_block:       String(cellVal(r, 2)),
+    zone:             String(cellVal(r, 3)),
+    task_name:        String(cellVal(r, 4)),
+    task_description: String(cellVal(r, 5)),
+    require_photo:    String(cellVal(r, 6) || 'NO').toUpperCase(),
+    status:           String(cellVal(r, 7) || 'Active')
+  }));
+}
+
+// Urgent Tasks via gviz (Urgent_Tasks)
+async function loadUrgentTasks() {
+  const t = await fetchSheet('Urgent_Tasks');
+  if (!t || !t.rows) { urgentTasks = []; return; }
+  urgentTasks = t.rows.filter(r => {
+    const id = cellVal(r, 0);
+    return id && id !== 'urgent_id';
+  }).map(r => ({
+    urgent_id:        String(cellVal(r, 0)),
+    task_name:        String(cellVal(r, 1)),
+    task_description: String(cellVal(r, 2)),
+    assign_type:      String(cellVal(r, 3)||'ONE_TIME'),
+    assign_to:        String(cellVal(r, 4)),
+    zone:             String(cellVal(r, 5)),
+    require_photo:    String(cellVal(r, 6)||'NO').toUpperCase(),
+    priority:         String(cellVal(r, 7)||'NORMAL').toUpperCase(),
+    due_date:         String(cellVal(r, 8)||''),
+    due_time:         String(cellVal(r, 9)||''),
+    recur_days:       parseInt(cellVal(r, 10)) || 0,
+    recur_start:      String(cellVal(r, 11)||''),
+    recur_end:        String(cellVal(r, 12)||''),
+    created_by:       String(cellVal(r, 13)||''),
+    created_at:       String(cellVal(r, 14)||''),
+    status:           String(cellVal(r, 15)||'PENDING').toUpperCase(),
+    completed_by:     String(cellVal(r, 16)||''),
+    completed_at:     String(cellVal(r, 17)||''),
+    photo_url:        String(cellVal(r, 18)||''),
+    note:             String(cellVal(r, 19)||'')
+  }));
+  // คำนวณ OVERDUE auto บน frontend (ไม่แตะชีท)
+  urgentTasks.forEach(u => {
+    if (u.status === 'PENDING' || u.status === 'IN_PROGRESS') {
+      // ONE_TIME: เลย due
+      // RECURRING: เลย recur_end
+      const checkDate = u.assign_type === 'RECURRING' ? u.recur_end : u.due_date;
+      if (checkDate && dueState(checkDate, u.due_time||'23:59') === 'over') {
+        u.status = 'OVERDUE';
+      }
+    }
+  });
+}
+
+// Employees via gviz (Employees) - มาจากชีท Master ของ OnaRoll หลัก
+// แต่ใช้ Spreadsheet เดียวกัน ถ้าไม่มีจะ fallback
+async function loadEmployees() {
+  // ลองจาก action backend ก่อน
+  try {
+    const r = await fetch(API_URL+'?action=GET_EMPLOYEES&t='+Date.now());
+    const data = await r.json();
+    if (Array.isArray(data) && data.length) {
+      employees = data.map(e => ({
+        id:       String(e['รหัสพนักงาน'] || e.empId || e.Employee_ID || ''),
+        name:     String(e['ชื่อ-นามสกุล'] || e.name || ''),
+        nickname: String(e['ชื่อเล่น'] || e.nickname || ''),
+        position: String(e['ตำแหน่ง'] || e.position || '')
+      })).filter(e => e.id);
+      return;
+    }
+  } catch(e) { /* fallback */ }
+  employees = [];
+}
+
+// ═══════════════════════════════════════════════════════════
+//   RENDER — DASHBOARD
+// ═══════════════════════════════════════════════════════════
+function renderDashboard() {
+  const masterActive = masterTasks.filter(t => t.status === 'Active').length;
+  $('stat-master-active').textContent = masterActive;
+  $('stat-master-total').textContent  = masterTasks.length;
+
+  const today = todayStr();
+  const urgentToday = urgentTasks.filter(u => {
+    return (u.assign_type === 'ONE_TIME' && u.due_date === today)
+        || (u.assign_type === 'RECURRING' && u.recur_start <= today && today <= u.recur_end);
+  });
+  const urgentDone    = urgentTasks.filter(u => u.status === 'DONE').length;
+  const urgentPending = urgentTasks.filter(u => u.status === 'PENDING' || u.status === 'IN_PROGRESS').length;
+  const urgentOver    = urgentTasks.filter(u => u.status === 'OVERDUE').length;
+
+  $('stat-urgent-today').textContent   = urgentToday.length;
+  $('stat-urgent-done').textContent    = urgentDone;
+  $('stat-urgent-pending').textContent = urgentPending;
+  $('stat-urgent-overdue').textContent = urgentOver;
+
+  // เร่งด่วน ใกล้ครบกำหนด (soon + over)
+  const soon = urgentTasks
+    .filter(u => u.status !== 'DONE' && u.status !== 'CANCELLED')
+    .map(u => {
+      const checkDate = u.assign_type === 'RECURRING' ? u.recur_end : u.due_date;
+      return { u, due: checkDate, state: dueState(checkDate, u.due_time||'23:59') };
+    })
+    .filter(x => x.state !== 'normal')
+    .sort((a, b) => (a.due || '9999').localeCompare(b.due || '9999'));
+
+  if (!soon.length) {
+    $('dash-soon').innerHTML = '<div class="empty"><div class="empty-icon">✨</div><div class="empty-msg">ไม่มีงานที่ใกล้ครบกำหนด</div></div>';
+  } else {
+    $('dash-soon').innerHTML = soon.slice(0, 5).map(x => urgentCardHtml(x.u)).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//   RENDER — MASTER LIST
+// ═══════════════════════════════════════════════════════════
+function renderMasterList() {
+  const q = ($('m-search').value || '').trim().toLowerCase();
+  const fb = $('m-block-filter').value;
+  const fs = $('m-status-filter').value;
+
+  let list = masterTasks.filter(t => {
+    if (fb && t.time_block !== fb) return false;
+    if (fs && t.status !== fs) return false;
+    if (q) {
+      const hay = (t.task_name+' '+t.zone+' '+t.position+' '+t.checklist_id).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (!list.length) {
+    $('master-list').innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-msg">ไม่พบรายการงาน</div></div>';
+    return;
+  }
+
+  $('master-list').innerHTML = list.map(t => {
+    const blockClass = t.time_block === 'opening' ? 'tg-open' : t.time_block === 'closing' ? 'tg-close' : 'tg-shift';
+    const isActive = t.status === 'Active';
+    const posList = String(t.position||'').split(',').map(s => s.trim()).filter(Boolean);
+    return `<div class="task-card ${isActive?'':'inactive'}">
+      <div class="task-row1">
+        <span class="task-id">${escapeHTML(t.checklist_id)}</span>
+        <div class="task-name">${escapeHTML(t.task_name)}</div>
+      </div>
+      ${t.task_description ? `<div style="font-size:11px;color:var(--muted);margin-bottom:5px;line-height:1.4">${escapeHTML(t.task_description)}</div>` : ''}
+      <div class="task-meta">
+        <span class="task-tag ${blockClass}">${escapeHTML(t.time_block)}</span>
+        <span class="task-tag tg-zone">📍 ${escapeHTML(t.zone)}</span>
+        ${t.require_photo === 'YES' ? '<span class="task-tag tg-photo">📷 ต้องถ่ายรูป</span>' : ''}
+        ${posList.map(p => `<span class="task-tag">👤 ${escapeHTML(p)}</span>`).join('')}
+      </div>
+      <div class="task-actions">
+        <button class="btn-action b-edit" onclick="openMasterForm('${escapeHTML(t.checklist_id)}')">✏️ แก้ไข</button>
+        <button class="btn-action b-toggle ${isActive?'is-on':''}" onclick="toggleMasterStatus('${escapeHTML(t.checklist_id)}')">${isActive?'✅ เปิดใช้':'⏸ ปิด'}</button>
+        <button class="btn-action b-delete" onclick="deleteMaster('${escapeHTML(t.checklist_id)}')">🗑 ลบ</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+//   RENDER — URGENT LIST
+// ═══════════════════════════════════════════════════════════
+function urgentCardHtml(u) {
+  const checkDate = u.assign_type === 'RECURRING' ? u.recur_end : u.due_date;
+  const ds = dueState(checkDate, u.due_time || '23:59');
+  const dueValClass = ds === 'over' ? 'due-over' : ds === 'soon' ? 'due-soon' : '';
+
+  // assign_to display
+  let assignDisplay = '—';
+  if (u.assign_to) {
+    if (u.assign_to.startsWith('POS:')) {
+      assignDisplay = '👥 ' + u.assign_to.slice(4).split('|').join(', ');
+    } else if (u.assign_to.startsWith('IND:')) {
+      const ids = u.assign_to.slice(4).split('|');
+      const names = ids.map(id => {
+        const emp = employees.find(e => e.id === id);
+        return emp ? (emp.nickname || emp.name || id) : id;
+      });
+      assignDisplay = '👤 ' + names.join(', ');
+    } else {
+      assignDisplay = u.assign_to;
+    }
+  }
+
+  // ใส่ปุ่ม action ตาม status
+  let actionsHtml = '';
+  if (u.status === 'DONE' || u.status === 'CANCELLED') {
+    actionsHtml = `<div class="u-actions">
+      <button class="btn-u btn-u-cancel" onclick="reopenUrgent('${u.urgent_id}')">↩ เปิดใหม่</button>
+    </div>`;
+  } else {
+    actionsHtml = `<div class="u-actions">
+      <button class="btn-u btn-u-done" onclick="markUrgentDone('${u.urgent_id}')">✓ เสร็จแล้ว</button>
+      <button class="btn-u btn-u-edit" onclick="openUrgentForm('${u.urgent_id}')">✏️</button>
+      <button class="btn-u btn-u-cancel" onclick="cancelUrgent('${u.urgent_id}')">✕</button>
+    </div>`;
+  }
+
+  return `<div class="urgent-card p-${u.priority} st-${u.status}">
+    <div class="u-row1">
+      <span class="u-priority p-${u.priority}">${u.priority === 'HIGH'?'🔴 ด่วน':u.priority === 'LOW'?'🟢 ทั่วไป':'🟡 ปกติ'}</span>
+      <span class="u-status st-${u.status}">${({PENDING:'รอเริ่ม',IN_PROGRESS:'กำลังทำ',DONE:'เสร็จ',OVERDUE:'⚠ เลยกำหนด',CANCELLED:'ยกเลิก'})[u.status]||u.status}</span>
+    </div>
+    <div class="u-name">${escapeHTML(u.task_name)}</div>
+    ${u.task_description ? `<div class="u-desc">${escapeHTML(u.task_description)}</div>` : ''}
+    <div class="u-meta">
+      <div class="u-meta-item">
+        <div class="u-meta-lbl">${u.assign_type === 'RECURRING' ? '🔁 ระยะเวลา' : '⏰ ครบกำหนด'}</div>
+        <div class="u-meta-val ${dueValClass}">${
+          u.assign_type === 'RECURRING'
+            ? fmtThaiDate(u.recur_start)+' → '+fmtThaiDate(u.recur_end)
+            : fmtDateTime(u.due_date, u.due_time)
+        }</div>
+      </div>
+      <div class="u-meta-item">
+        <div class="u-meta-lbl">มอบหมายให้</div>
+        <div class="u-meta-val">${escapeHTML(assignDisplay)}</div>
+      </div>
+      ${u.zone ? `<div class="u-meta-item"><div class="u-meta-lbl">📍 โซน</div><div class="u-meta-val">${escapeHTML(u.zone)}</div></div>` : ''}
+      ${u.require_photo === 'YES' ? `<div class="u-meta-item"><div class="u-meta-lbl">📷 ต้องการ</div><div class="u-meta-val">ถ่ายรูปยืนยัน</div></div>` : ''}
+      ${u.completed_by ? `<div class="u-meta-item"><div class="u-meta-lbl">✓ ทำโดย</div><div class="u-meta-val">${escapeHTML(u.completed_by)}</div></div>` : ''}
+      ${u.completed_at ? `<div class="u-meta-item"><div class="u-meta-lbl">เมื่อ</div><div class="u-meta-val">${escapeHTML(u.completed_at)}</div></div>` : ''}
+    </div>
+    ${actionsHtml}
+  </div>`;
+}
+
+function renderUrgentList() {
+  const filterStatus = $('u-status-filter').value;
+  const filterPri    = $('u-priority-filter').value;
+  let list = urgentTasks.slice();
+  if (filterStatus === 'active') {
+    list = list.filter(u => u.status === 'PENDING' || u.status === 'IN_PROGRESS' || u.status === 'OVERDUE');
+  } else if (filterStatus !== 'all') {
+    list = list.filter(u => u.status === filterStatus);
+  }
+  if (filterPri) list = list.filter(u => u.priority === filterPri);
+
+  // sort: OVERDUE first, then by due
+  const stRank = { OVERDUE:0, IN_PROGRESS:1, PENDING:2, DONE:3, CANCELLED:4 };
+  list.sort((a, b) => {
+    const r = (stRank[a.status]||9) - (stRank[b.status]||9);
+    if (r !== 0) return r;
+    const aDue = a.assign_type === 'RECURRING' ? a.recur_end : a.due_date;
+    const bDue = b.assign_type === 'RECURRING' ? b.recur_end : b.due_date;
+    return (aDue||'9999').localeCompare(bDue||'9999');
+  });
+
+  if (!list.length) {
+    $('urgent-list').innerHTML = '<div class="empty"><div class="empty-icon">⚡</div><div class="empty-msg">ไม่มีงานเร่งด่วน</div></div>';
+    return;
+  }
+  $('urgent-list').innerHTML = list.map(urgentCardHtml).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+//   RENDER — DEADLINES
+// ═══════════════════════════════════════════════════════════
+function renderDeadlines() {
+  const today = todayStr();
+  const overdue = [];
+  const todayDue = [];
+  const upcoming = [];
+
+  urgentTasks.forEach(u => {
+    if (u.status === 'DONE' || u.status === 'CANCELLED') return;
+    const dt = u.assign_type === 'RECURRING' ? u.recur_end : u.due_date;
+    if (!dt) return;
+    if (dt < today) overdue.push(u);
+    else if (dt === today) todayDue.push(u);
+    else upcoming.push(u);
+  });
+
+  upcoming.sort((a, b) => (a.due_date||a.recur_end||'').localeCompare(b.due_date||b.recur_end||''));
+
+  let html = '';
+  if (overdue.length) {
+    html += `<div class="deadline-section">
+      <div class="deadline-section-title dt-over">🔴 เลยกำหนด (${overdue.length})</div>
+      <div class="card-list">${overdue.map(urgentCardHtml).join('')}</div>
+    </div>`;
+  }
+  if (todayDue.length) {
+    html += `<div class="deadline-section">
+      <div class="deadline-section-title dt-soon">⏰ ครบวันนี้ (${todayDue.length})</div>
+      <div class="card-list">${todayDue.map(urgentCardHtml).join('')}</div>
+    </div>`;
+  }
+  if (upcoming.length) {
+    html += `<div class="deadline-section">
+      <div class="deadline-section-title">📅 กำลังจะถึง (${upcoming.length})</div>
+      <div class="card-list">${upcoming.slice(0,20).map(urgentCardHtml).join('')}</div>
+    </div>`;
+  }
+  if (!html) html = '<div class="empty"><div class="empty-icon">🎉</div><div class="empty-msg">ไม่มีเดดไลน์ใกล้ ทุกอย่างเรียบร้อย!</div></div>';
+  $('deadlines-content').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════
+//   RENDER — HISTORY (urgent ที่ done/cancelled)
+// ═══════════════════════════════════════════════════════════
+function renderHistory() {
+  const q = ($('h-search').value || '').trim().toLowerCase();
+  const fd = $('h-date').value;
+  let list = urgentTasks.filter(u => u.status === 'DONE' || u.status === 'CANCELLED');
+  if (fd) list = list.filter(u => (u.completed_at||'').slice(0,10) === fd);
+  if (q) list = list.filter(u => (u.task_name + ' ' + u.completed_by + ' ' + u.urgent_id).toLowerCase().includes(q));
+  list.sort((a, b) => (b.completed_at||'').localeCompare(a.completed_at||''));
+
+  if (!list.length) {
+    $('history-list').innerHTML = '<div class="empty"><div class="empty-icon">📜</div><div class="empty-msg">ยังไม่มีประวัติ</div></div>';
+    return;
+  }
+  $('history-list').innerHTML = list.map(urgentCardHtml).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+//   TABS
+// ═══════════════════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('tab-active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('hidden', c.id !== 'tab-'+tab));
+  if (tab === 'dashboard') renderDashboard();
+  else if (tab === 'master') renderMasterList();
+  else if (tab === 'urgent') renderUrgentList();
+  else if (tab === 'deadlines') renderDeadlines();
+  else if (tab === 'history') renderHistory();
+}
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+// ═══════════════════════════════════════════════════════════
+//   MASTER FORM
+// ═══════════════════════════════════════════════════════════
+function openMasterForm(id) {
+  const isEdit = !!id;
+  $('mm-title').textContent = isEdit ? '✏️ แก้ไขงานประจำ' : '+ เพิ่มงานประจำ';
+  $('mm-original-id').value = id || '';
+
+  // populate position chips
+  const posChips = $('mm-pos-chips');
+  posChips.innerHTML = KNOWN_POSITIONS.map(p =>
+    `<button type="button" class="chip" data-pos="${p}" onclick="toggleMmPosition(this)">${p}</button>`
+  ).join('');
+
+  // populate zone datalist
+  const zones = [...new Set(masterTasks.map(t => t.zone).filter(Boolean))].sort();
+  $('zone-options').innerHTML = zones.map(z => `<option value="${escapeHTML(z)}">`).join('');
+
+  if (isEdit) {
+    const t = masterTasks.find(x => x.checklist_id === id);
+    if (!t) { toast('ไม่พบรายการ', 'error'); return; }
+    $('mm-id').value = t.checklist_id;
+    $('mm-name').value = t.task_name;
+    $('mm-desc').value = t.task_description;
+    $('mm-block').value = t.time_block;
+    $('mm-zone').value = t.zone;
+    mmState.photo = t.require_photo;
+    mmState.status = t.status;
+    mmState.positions = new Set(String(t.position||'').split(',').map(s => s.trim()).filter(Boolean));
+  } else {
+    $('mm-id').value = '';
+    $('mm-name').value = '';
+    $('mm-desc').value = '';
+    $('mm-block').value = 'opening';
+    $('mm-zone').value = '';
+    mmState.photo = 'NO';
+    mmState.status = 'Active';
+    mmState.positions = new Set();
+  }
+  // sync chip state
+  document.querySelectorAll('#mm-pos-chips .chip').forEach(c => c.classList.toggle('is-on', mmState.positions.has(c.dataset.pos)));
+  document.querySelectorAll('#modal-master [data-photo]').forEach(b => b.classList.toggle('is-on', b.dataset.photo === mmState.photo));
+  document.querySelectorAll('#modal-master [data-status]').forEach(b => b.classList.toggle('is-on', b.dataset.status === mmState.status));
+
+  $('modal-master').classList.remove('hidden');
+}
+function toggleMmPosition(btn) {
+  const p = btn.dataset.pos;
+  if (mmState.positions.has(p)) mmState.positions.delete(p);
+  else mmState.positions.add(p);
+  btn.classList.toggle('is-on');
+}
+function setMmPhoto(v) { mmState.photo = v; document.querySelectorAll('#modal-master [data-photo]').forEach(b => b.classList.toggle('is-on', b.dataset.photo === v)); }
+function setMmStatus(v) { mmState.status = v; document.querySelectorAll('#modal-master [data-status]').forEach(b => b.classList.toggle('is-on', b.dataset.status === v)); }
+
+async function submitMaster() {
+  const name = $('mm-name').value.trim();
+  const zone = $('mm-zone').value.trim();
+  const positions = [...mmState.positions];
+  if (!name) return toast('กรุณาใส่ชื่องาน', 'error');
+  if (!zone) return toast('กรุณาใส่โซน', 'error');
+  if (!positions.length) return toast('เลือกตำแหน่งอย่างน้อย 1', 'error');
+
+  const originalId = $('mm-original-id').value;
+  const payload = {
+    action: originalId ? 'UPDATE_MASTER_TASK' : 'CREATE_MASTER_TASK',
+    checklist_id:     originalId || '',
+    task_name:        name,
+    task_description: $('mm-desc').value.trim(),
+    time_block:       $('mm-block').value,
+    zone:             zone,
+    position:         positions.join(', '),
+    require_photo:    mmState.photo,
+    status:           mmState.status,
+    actor:            user.id
+  };
+  showLoading(true, 'กำลังบันทึก...');
+  try {
+    await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+    toast(originalId ? '✅ บันทึกการแก้ไข' : '✅ เพิ่มงานสำเร็จ', 'success');
+    closeModal(null, 'modal-master');
+    setTimeout(refresh, 800);
+  } catch(e) {
+    toast('บันทึกล้มเหลว', 'error');
+  }
+  showLoading(false);
+}
+
+async function toggleMasterStatus(id) {
+  const t = masterTasks.find(x => x.checklist_id === id);
+  if (!t) return;
+  const newStatus = t.status === 'Active' ? 'Inactive' : 'Active';
+  showLoading(true, 'กำลังเปลี่ยนสถานะ...');
+  try {
+    await fetch(API_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({
+      action: 'UPDATE_MASTER_TASK', checklist_id: id, status: newStatus, actor: user.id, _partial: true
+    })});
+    t.status = newStatus;
+    renderMasterList();
+    toast(newStatus === 'Active' ? '✅ เปิดใช้งานแล้ว' : '⏸ ปิดงานแล้ว', 'success');
+  } catch(e) { toast('ทำรายการล้มเหลว', 'error'); }
+  showLoading(false);
+}
+
+async function deleteMaster(id) {
+  if (!confirm('ลบงาน '+id+' ?\n(ไม่สามารถกู้คืนได้)')) return;
+  showLoading(true, 'กำลังลบ...');
+  try {
+    await fetch(API_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({
+      action: 'DELETE_MASTER_TASK', checklist_id: id, actor: user.id
+    })});
+    masterTasks = masterTasks.filter(x => x.checklist_id !== id);
+    renderMasterList();
+    toast('🗑 ลบสำเร็จ', 'success');
+  } catch(e) { toast('ลบล้มเหลว', 'error'); }
+  showLoading(false);
+}
+
+// ═══════════════════════════════════════════════════════════
+//   URGENT FORM
+// ═══════════════════════════════════════════════════════════
+function openUrgentForm(id) {
+  const isEdit = !!id;
+  $('mu-title').textContent = isEdit ? '✏️ แก้ไขงานเร่งด่วน' : '⚡ สร้างงานเร่งด่วน';
+  $('mu-id').value = id || '';
+
+  // position chips
+  $('mu-pos-chips').innerHTML = KNOWN_POSITIONS.map(p =>
+    `<button type="button" class="chip" data-pos="${p}" onclick="toggleMuPosition(this)">${p}</button>`
+  ).join('');
+  // emp list
+  if (employees.length) {
+    $('mu-emp-list').innerHTML = employees.map(e =>
+      `<div class="emp-row" onclick="toggleMuEmp('${e.id}', this)">
+        <input type="checkbox" data-emp="${e.id}" onclick="event.stopPropagation()">
+        <label>${escapeHTML(e.nickname || e.name)}</label>
+        <span class="ec-id">${escapeHTML(e.id)}</span>
+      </div>`
+    ).join('');
+  } else {
+    $('mu-emp-list').innerHTML = '<div class="empty"><div class="empty-msg">ไม่พบรายชื่อพนักงาน</div></div>';
+  }
+
+  // defaults
+  muState = { assign:'ONE_TIME', targetMode:'POSITION', photo:'NO', positions:new Set(), emps:new Set() };
+  $('mu-name').value = '';
+  $('mu-desc').value = '';
+  $('mu-zone').value = '';
+  $('mu-priority').value = 'NORMAL';
+  $('mu-due-date').value = todayStr();
+  $('mu-due-time').value = '18:00';
+  $('mu-recur-start').value = todayStr();
+  $('mu-recur-days').value = 3;
+
+  if (isEdit) {
+    const u = urgentTasks.find(x => x.urgent_id === id);
+    if (!u) return toast('ไม่พบงาน', 'error');
+    $('mu-name').value = u.task_name;
+    $('mu-desc').value = u.task_description;
+    $('mu-zone').value = u.zone;
+    $('mu-priority').value = u.priority;
+    muState.assign = u.assign_type;
+    muState.photo = u.require_photo;
+    if (u.assign_type === 'RECURRING') {
+      $('mu-recur-start').value = u.recur_start;
+      $('mu-recur-days').value = u.recur_days || 1;
+    } else {
+      $('mu-due-date').value = u.due_date;
+      $('mu-due-time').value = u.due_time || '18:00';
+    }
+    // assign_to parse
+    if (u.assign_to.startsWith('POS:')) {
+      muState.targetMode = 'POSITION';
+      u.assign_to.slice(4).split('|').forEach(p => muState.positions.add(p));
+    } else if (u.assign_to.startsWith('IND:')) {
+      muState.targetMode = 'INDIVIDUAL';
+      u.assign_to.slice(4).split('|').forEach(p => muState.emps.add(p));
+    }
+  }
+
+  setMuAssign(muState.assign);
+  setMuTargetMode(muState.targetMode);
+  setMuPhoto(muState.photo);
+  document.querySelectorAll('#mu-pos-chips .chip').forEach(c => c.classList.toggle('is-on', muState.positions.has(c.dataset.pos)));
+  document.querySelectorAll('#mu-emp-list .emp-row').forEach(r => {
+    const id = r.querySelector('input').dataset.emp;
+    const on = muState.emps.has(id);
+    r.classList.toggle('is-on', on);
+    r.querySelector('input').checked = on;
+  });
+
+  $('modal-urgent').classList.remove('hidden');
+}
+
+function setMuAssign(v) {
+  muState.assign = v;
+  document.querySelectorAll('#modal-urgent [data-assign]').forEach(b => b.classList.toggle('is-on', b.dataset.assign === v));
+  $('mu-onetime-fields').classList.toggle('hidden', v !== 'ONE_TIME');
+  $('mu-recurring-fields').classList.toggle('hidden', v !== 'RECURRING');
+}
+function setMuTargetMode(v) {
+  muState.targetMode = v;
+  document.querySelectorAll('#modal-urgent [data-mode]').forEach(b => b.classList.toggle('is-on', b.dataset.mode === v));
+  $('mu-position-area').classList.toggle('hidden', v !== 'POSITION');
+  $('mu-individual-area').classList.toggle('hidden', v !== 'INDIVIDUAL');
+}
+function setMuPhoto(v) {
+  muState.photo = v;
+  document.querySelectorAll('#modal-urgent [data-photo]').forEach(b => b.classList.toggle('is-on', b.dataset.photo === v));
+}
+function toggleMuPosition(btn) {
+  const p = btn.dataset.pos;
+  if (muState.positions.has(p)) muState.positions.delete(p);
+  else muState.positions.add(p);
+  btn.classList.toggle('is-on');
+}
+function toggleMuEmp(empId, rowEl) {
+  if (muState.emps.has(empId)) muState.emps.delete(empId);
+  else muState.emps.add(empId);
+  rowEl.classList.toggle('is-on');
+  rowEl.querySelector('input').checked = muState.emps.has(empId);
+}
+
+async function submitUrgent() {
+  const name = $('mu-name').value.trim();
+  if (!name) return toast('กรุณาใส่ชื่องาน', 'error');
+
+  let assignTo = '';
+  if (muState.targetMode === 'POSITION') {
+    if (!muState.positions.size) return toast('เลือกตำแหน่งอย่างน้อย 1', 'error');
+    assignTo = 'POS:' + [...muState.positions].join('|');
+  } else {
+    if (!muState.emps.size) return toast('เลือกพนักงานอย่างน้อย 1 คน', 'error');
+    assignTo = 'IND:' + [...muState.emps].join('|');
+  }
+
+  let dueDate='', dueTime='', recurStart='', recurDays=0, recurEnd='';
+  if (muState.assign === 'ONE_TIME') {
+    dueDate = $('mu-due-date').value;
+    dueTime = $('mu-due-time').value || '18:00';
+    if (!dueDate) return toast('กรุณาเลือกวันที่ครบกำหนด', 'error');
+  } else {
+    recurStart = $('mu-recur-start').value;
+    recurDays  = parseInt($('mu-recur-days').value) || 1;
+    if (!recurStart) return toast('กรุณาเลือกวันเริ่ม', 'error');
+    if (recurDays < 1) return toast('จำนวนวันต้อง ≥ 1', 'error');
+    recurEnd = dateAddDays(recurStart, recurDays - 1);
+  }
+
+  const id = $('mu-id').value;
+  const payload = {
+    action:           id ? 'UPDATE_URGENT_TASK' : 'CREATE_URGENT_TASK',
+    urgent_id:        id || '',
+    task_name:        name,
+    task_description: $('mu-desc').value.trim(),
+    assign_type:      muState.assign,
+    assign_to:        assignTo,
+    zone:             $('mu-zone').value.trim(),
+    require_photo:    muState.photo,
+    priority:         $('mu-priority').value,
+    due_date:         dueDate,
+    due_time:         dueTime,
+    recur_days:       recurDays,
+    recur_start:      recurStart,
+    recur_end:        recurEnd,
+    actor:            user.id,
+    actor_name:       user.name
+  };
+  showLoading(true, 'กำลังบันทึก...');
+  try {
+    await fetch(API_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) });
+    toast(id ? '✅ แก้ไขสำเร็จ' : '⚡ สร้างงานด่วนสำเร็จ', 'success');
+    closeModal(null, 'modal-urgent');
+    setTimeout(refresh, 800);
+  } catch(e) { toast('บันทึกล้มเหลว', 'error'); }
+  showLoading(false);
+}
+
+async function markUrgentDone(id) {
+  if (!confirm('ยืนยันว่างานนี้เสร็จแล้ว?')) return;
+  showLoading(true, 'กำลังบันทึก...');
+  try {
+    await fetch(API_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({
+      action: 'MARK_URGENT_DONE', urgent_id: id, actor: user.id, actor_name: user.name
+    })});
+    const u = urgentTasks.find(x => x.urgent_id === id);
+    if (u) { u.status = 'DONE'; u.completed_by = user.name; u.completed_at = new Date().toLocaleString('th-TH'); }
+    refreshCurrentTab();
+    toast('✓ บันทึกว่าเสร็จแล้ว', 'success');
+  } catch(e) { toast('ล้มเหลว', 'error'); }
+  showLoading(false);
+}
+async function cancelUrgent(id) {
+  if (!confirm('ยกเลิกงานนี้?')) return;
+  showLoading(true, 'กำลังยกเลิก...');
+  try {
+    await fetch(API_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({
+      action: 'CANCEL_URGENT', urgent_id: id, actor: user.id
+    })});
+    const u = urgentTasks.find(x => x.urgent_id === id);
+    if (u) u.status = 'CANCELLED';
+    refreshCurrentTab();
+    toast('ยกเลิกแล้ว', 'warn');
+  } catch(e) { toast('ล้มเหลว', 'error'); }
+  showLoading(false);
+}
+async function reopenUrgent(id) {
+  showLoading(true, 'กำลังเปิดงานใหม่...');
+  try {
+    await fetch(API_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({
+      action: 'REOPEN_URGENT', urgent_id: id, actor: user.id
+    })});
+    const u = urgentTasks.find(x => x.urgent_id === id);
+    if (u) { u.status = 'PENDING'; u.completed_by = ''; u.completed_at = ''; }
+    refreshCurrentTab();
+    toast('↩ เปิดงานใหม่', 'success');
+  } catch(e) { toast('ล้มเหลว', 'error'); }
+  showLoading(false);
+}
+
+// ═══════════════════════════════════════════════════════════
+//   MODAL CONTROL
+// ═══════════════════════════════════════════════════════════
+function closeModal(event, id) {
+  if (event && event.target !== event.currentTarget) return;
+  $(id).classList.add('hidden');
+}
+
+// ═══════════════════════════════════════════════════════════
+//   INIT / REFRESH
+// ═══════════════════════════════════════════════════════════
+function refreshCurrentTab() {
+  const active = document.querySelector('.tab-btn.tab-active');
+  if (active) switchTab(active.dataset.tab);
+}
+async function refresh() {
+  showLoading(true, 'กำลังโหลดข้อมูล...');
+  await Promise.all([loadMasterTasks(), loadUrgentTasks(), loadEmployees()]);
+  showLoading(false);
+  refreshCurrentTab();
+}
+window.addEventListener('load', async () => {
+  if (!checkAuth()) return;
+  await refresh();
+});
+</script>
+</body>
+</html>
