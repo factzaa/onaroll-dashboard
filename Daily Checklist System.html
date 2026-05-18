@@ -644,7 +644,7 @@ input,textarea,select{font-size:16px!important}
             const tz = -now.getTimezoneOffset();
             const localISO = new Date(now.getTime() + tz*60000).toISOString().slice(0,19).replace('T',' ');
             const todayDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
-            fullHistory.push({
+            const newRecord = {
                 'Date': todayDate, 'วันที่': todayDate,
                 'Timestamp': localISO, 'เวลา': localISO,
                 'Checklist_ID': id, 'id': id,
@@ -656,13 +656,24 @@ input,textarea,select{font-size:16px!important}
                 'Status': 'Completed', 'สถานะ': 'Completed',
                 'photoUrl': photos.join(','), 'รูปภาพ': photos.join(','),
                 'staffNote': '-', 'หมายเหตุ': '-'
-            });
+            };
+            fullHistory.push(newRecord);
+
+            // 🔥 KEY FIX: อัปเดต todayRecordsMap ด้วย (renderChecklist filter ใช้ตัวนี้)
+            todayRecordsMap[safeId] = {
+                status: 'Completed',
+                Status: 'Completed',
+                สถานะ: 'Completed',
+                Timestamp: localISO,
+                photoUrl: photos.join(',')
+            };
 
             // ลบ pending photo ของ task นี้
             delete pendingPhotos[safeId];
 
             // re-render ทันที (ไม่รอ backend) — user เห็นผลทันที
             if (activeTab === 'Dashboard') renderDashboard();
+            else if (activeTab === 'Urgent') renderUrgent();
             else renderChecklist();
 
             showToast("✅ บันทึกสำเร็จ!");
