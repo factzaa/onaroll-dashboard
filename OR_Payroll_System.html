@@ -332,7 +332,7 @@ svg{display:inline-block;vertical-align:middle}
 const SHEET_ID = '1aTkdKkfMXkKutMuVJBew4k5PfPoIkQsr6pmtUAQtPlE';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvProkNuSUhJSGgO2M94x_ybX_S-9ZtRx75RsBKIMQgmuSw23P_-7z8XPAflKMq6XR9g/exec';
 
-let employees = [], summaryData = [], historyData = [], localInputs = {};
+let employees = [], summaryData = [], historyData = [], summaryRecordsData = [], localInputs = {};
 let dateStart = '', dateEnd = '', selectedMonth = '';
 let currentTab = 'entry', selectedProfileEmp = null;
 
@@ -353,6 +353,51 @@ async function fetchSheet(tab){
     const m=txt.match(/\{.*\}/s);
     return JSON.parse(m[0]).table;
   }catch(e){return null;}
+}
+
+// 🔗 Parse Summary_Records → filter เฉพาะรอบปัจจุบัน → คืนเป็น array of object
+// คอลัมน์ตามชีท: A=เดือน, B=ช่วงวันที่, C=รหัสพนักงาน, D=ชื่อ-นามสกุล, E=ชื่อเล่น,
+// F=ประเภทการจ้าง, G=ค่าจ้างพื้นฐาน, H=จำนวนวันทำงาน, I=เรท OT ต่อชม., J=จำนวนชม. OT,
+// K=จำนวนครั้งที่สาย, L=ยอดหักสาย/ขาด, M=ยอดเงินเบิก, N=เงินพิเศษ/โบนัส,
+// O=หมายเหตุเงินพิเศษ, P=ยอดอื่นๆ, Q=หมายเหตุเงินหัก, R=ยอดจ่าย
+async function fetchSummaryRecordsForCycle(){
+  const t = await fetchSheet('Summary_Records');
+  if (!t || !t.rows) return [];
+  const cycleStr = `${dateStart} ถึง ${dateEnd}`;
+  const cell = (r,i) => (r.c && r.c[i]) ? (r.c[i].v ?? r.c[i].f ?? '') : '';
+  const num  = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+  // ตัด header row ออก (gviz บางทีคืน header เป็น row แรกพร้อม cols, บางทีแยก)
+  const rows = t.rows.filter(r => {
+    const id = String(cell(r,2) || '').trim().toUpperCase();
+    const cyc = String(cell(r,1) || '').trim();
+    return id && id !== 'รหัสพนักงาน' && cyc === cycleStr;
+  });
+  // ถ้ามีหลายแถวต่อ empId (บันทึก audit หลายครั้งในรอบเดียวกัน) → เก็บแถวล่าสุด
+  const map = {};
+  rows.forEach(r => {
+    const id = String(cell(r,2)).trim().toUpperCase();
+    map[id] = {
+      empId:         id,
+      month:         cell(r,0),
+      cycle:         cell(r,1),
+      name:          cell(r,3),
+      nickname:      cell(r,4),
+      salaryType:    cell(r,5) || 'Daily',
+      baseRate:      num(cell(r,6)),
+      daysWorked:    num(cell(r,7)),
+      otRate:        num(cell(r,8)),
+      otHours:       num(cell(r,9)),
+      lateMins:      num(cell(r,10)),
+      lateDeduction: num(cell(r,11)),
+      advancePay:    num(cell(r,12)),
+      otherEarn:     num(cell(r,13)),
+      otherEarnNote: cell(r,14),
+      otherDed:      num(cell(r,15)),
+      otherDedNote:  cell(r,16),
+      total:         num(cell(r,17))
+    };
+  });
+  return Object.values(map);
 }
 
 function switchTab(name, btn){
@@ -706,22 +751,33 @@ async function refreshData(){
 async function refreshPayrollBg() {
   const icon=document.getElementById('sync-icon');
   try{
-    // ── fetch พร้อมกัน ──
-    const [resSum, resHist] = await Promise.all([
+    // ── fetch พร้อมกัน 3 แหล่ง ──
+    const [resSum, resHist, sumRec] = await Promise.all([
       fetch(`${APPS_SCRIPT_URL}?action=GET_CALC_SUMMARY&start=${dateStart}&end=${dateEnd}&t=${Date.now()}`),
-      fetch(`${APPS_SCRIPT_URL}?action=GET_PAYROLL_HISTORY&t=${Date.now()}`)
+      fetch(`${APPS_SCRIPT_URL}?action=GET_PAYROLL_HISTORY&t=${Date.now()}`),
+      fetchSummaryRecordsForCycle()  // 🔗 ดึง Summary_Records ของรอบนี้มาเติมอัตโนมัติ
     ]);
-    summaryData=await resSum.json();
-    historyData=await resHist.json();
+    summaryData        = await resSum.json();
+    historyData        = await resHist.json();
+    summaryRecordsData = sumRec || [];
+    console.log('[Payroll] CALC_SUMMARY:', summaryData);
+    console.log('[Payroll] PAYROLL_HISTORY:', historyData.length, 'rows');
+    console.log('[Payroll] SUMMARY_RECORDS (รอบนี้):', summaryRecordsData);
     savePayrollCache(summaryData, historyData);
     applyPayrollData();
     toast('ซิงค์ข้อมูลสำเร็จ');
-  }catch(e){toast('ซิงค์ไม่สำเร็จ กรุณาลองใหม่','error');}
+  }catch(e){toast('ซิงค์ไม่สำเร็จ กรุณาลองใหม่','error'); console.error(e);}
   if(icon) icon.style.animation='';
   showLoading(false);
 }
 
 function applyPayrollData() {
+  // สร้าง map สำหรับ Summary_Records lookup เร็วขึ้น
+  const summaryRecMap = {};
+  (summaryRecordsData||[]).forEach(s => {
+    summaryRecMap[String(s.empId).trim().toUpperCase()] = s;
+  });
+
   employees.forEach(emp=>{
     const sum=summaryData.find(s=>String(s.empId)===String(emp.id))||{};
     const log=historyData.filter(h=>{
@@ -730,27 +786,40 @@ function applyPayrollData() {
       const idField = String(h['รหัสพนักงาน'] || h['empId'] || '');
       return mField===selectedMonth && idField===String(emp.id);
     }).pop()||{};
+    const sr = summaryRecMap[String(emp.id).trim().toUpperCase()] || {};  // 🔗 Audit snapshot
 
-    // helper: อ่าน field รองรับชื่อไทย/English
+    // helper: อ่าน field รองรับชื่อไทย/English จาก Payroll_Records (priority 1)
     const g = (thKey, enKey, def='') => {
       if (log[enKey] !== undefined && log[enKey] !== '') return log[enKey];
       if (log[thKey] !== undefined && log[thKey] !== '') return log[thKey];
       return def;
     };
 
+    // 🔗 helper ใหม่: เอาค่าจาก Summary_Records (priority 2) ถ้ามี ไม่งั้น fallback default
+    //    ใช้ "" และ 0 เป็น "ไม่มีข้อมูล" — ถ้าใน sr เป็น 0 จะถือว่ายังไม่ได้กรอก ยกเว้น lateMins/daysWorked ที่ 0 ก็ถือว่ามีค่า
+    const sNum = (key, def=0) => {
+      const v = sr[key];
+      return (v !== undefined && v !== null && v !== '') ? Number(v) : def;
+    };
+    const sStr = (key, def='') => {
+      const v = sr[key];
+      return (v !== undefined && v !== null && v !== '' && v !== '-' && v !== '0') ? String(v) : def;
+    };
+
+    // ── PRIORITY: Payroll_Records > Summary_Records > Manager_Dashboard_Calc > default
     localInputs[emp.id]={
-      salaryType:    g('ประเภทการจ้าง',    'salaryType',    'Daily'),
-      baseRate:      Number(g('ค่าจ้างพื้นฐาน',  'baseRate',      350)),
-      otHours:       Number(g('จำนวนชม. OT',    'otHours',       Number(sum.ot)||0)),
-      otRate:        Number(g('เรท OT ต่อชม.',   'otRate',        25)),
-      lateMins:      Number(g('จำนวนครั้งที่สาย','lateMins',      Number(sum.lateCount)||0)),
-      lateDeduction: Number(g('ยอดหักสาย/ขาด',   'lateDeduction', 0)),
-      advancePay:    Number(g('ยอดเงินเบิก',      'advancePay',    0)),
-      otherEarn:     Number(g('เงินพิเศษ/โบนัส', 'otherEarn',     0)),
-      otherEarnNote: g('หมายเหตุเงินพิเศษ',       'otherEarnNote', ''),
-      otherDed:      Number(g('ยอดหักอื่นๆ',      'otherDed',      0)),
-      otherDedNote:  g('หมายเหตุเงินหัก',         'otherDedNote',  ''),
-      daysWorked:    Number(g('จำนวนวันทำงาน',     'daysWorked',    Number(sum.workDays)||0))
+      salaryType:    g('ประเภทการจ้าง',    'salaryType',    sStr('salaryType','Daily')),
+      baseRate:      Number(g('ค่าจ้างพื้นฐาน',  'baseRate',      sNum('baseRate', 350))),
+      otHours:       Number(g('จำนวนชม. OT',    'otHours',       sNum('otHours',  Number(sum.ot)||0))),
+      otRate:        Number(g('เรท OT ต่อชม.',   'otRate',        sNum('otRate',   25))),
+      lateMins:      Number(g('จำนวนครั้งที่สาย','lateMins',      sNum('lateMins', Number(sum.lateCount)||0))),
+      lateDeduction: Number(g('ยอดหักสาย/ขาด',   'lateDeduction', sNum('lateDeduction',0))),
+      advancePay:    Number(g('ยอดเงินเบิก',      'advancePay',    sNum('advancePay',   0))),
+      otherEarn:     Number(g('เงินพิเศษ/โบนัส', 'otherEarn',     sNum('otherEarn',    0))),
+      otherEarnNote: g('หมายเหตุเงินพิเศษ',       'otherEarnNote', sStr('otherEarnNote','')),
+      otherDed:      Number(g('ยอดหักอื่นๆ',      'otherDed',      sNum('otherDed',     0))),
+      otherDedNote:  g('หมายเหตุเงินหัก',         'otherDedNote',  sStr('otherDedNote', '')),
+      daysWorked:    Number(g('จำนวนวันทำงาน',     'daysWorked',    sNum('daysWorked', Number(sum.workDays)||0)))
     };
   });
   renderEntry();
