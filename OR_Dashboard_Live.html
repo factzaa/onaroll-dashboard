@@ -105,8 +105,34 @@ tr:hover td{background:var(--blue-pale)}
 .loading-overlay p{font-size:13px;color:var(--text-muted);font-weight:500}
 .loading-sheet{font-size:12px;color:var(--text-light);margin-top:-8px}
 #perfReportCards{display:grid;grid-template-columns:1fr;gap:10px;margin-top:4px}
-/* ══ DESKTOP ══ */
-@media(min-width:1px){
+
+/* ══ MOBILE BASE (< 768px) ══ */
+/* บนมือถือ: ซ่อน sidebar, content เต็มจอ, แสดง bottom-nav */
+.sidebar{transform:translateX(-100%);transition:transform .25s ease;z-index:200}
+.sidebar.is-open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,.25)}
+.app-body{margin-left:0}
+.main{padding:12px;padding-bottom:80px}
+.topbar{padding:0 12px;height:52px}
+.topbar-title{font-size:14px;font-weight:700}
+.menu-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:transparent;border:none;border-radius:8px;color:var(--navy);font-size:20px;cursor:pointer;margin-right:6px}
+.menu-toggle:active{background:rgba(0,0,0,.06)}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:150}
+.sidebar-backdrop.is-open{display:block}
+.kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+.grid-2{display:flex;flex-direction:column;gap:10px}
+.chart-wrap{height:200px}
+.chart-wrap-sm{height:160px}
+.filter-bar{flex-direction:column;align-items:stretch;gap:8px}
+.filter-group{flex-direction:column;align-items:stretch;gap:4px}
+.filter-group input,.filter-group select{width:100%}
+.btn-apply,.btn-reset{width:100%;padding:10px}
+
+/* ══ DESKTOP (tablet ขึ้นไป) ══ */
+@media(min-width:768px){
+  .menu-toggle{display:none}
+  .sidebar{transform:translateX(0)}
+  .sidebar-backdrop{display:none!important}
+  .app-body{margin-left:var(--sidebar-w)}
   .sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
   .sidebar-logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#2979d4,#29b6f6);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;margin-bottom:8px}
   .sidebar-logo h1{font-size:14px;font-weight:700;color:#fff}.sidebar-logo p{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px}
@@ -138,8 +164,18 @@ tr:hover td{background:var(--blue-pale)}
   .chart-wrap{height:225px}.chart-wrap-sm{height:170px}
   #perfReportCards{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
 }
-
 </style>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a2b5e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="OnaRoll">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <script src="pwa-init.js" defer></script>
+  <!-- /PWA -->
 </head>
 <body>
 
@@ -149,8 +185,11 @@ tr:hover td{background:var(--blue-pale)}
   <div class="loading-sheet" id="loadingSheet"></div>
 </div>
 
+<!-- SIDEBAR BACKDROP (mobile) -->
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
 <!-- SIDEBAR (desktop) -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <div class="sidebar-logo-icon">OR</div>
     <h1>OnaRoll Dashboard</h1>
@@ -180,6 +219,7 @@ tr:hover td{background:var(--blue-pale)}
 <div class="app-body">
   <!-- TOPBAR -->
   <div class="topbar">
+    <button class="menu-toggle" onclick="toggleSidebar()" aria-label="เมนู">☰</button>
     <div class="topbar-title" id="topbarTitle">การเข้างาน</div>
     <div class="topbar-right">
       <div class="gs-pill">
@@ -1259,6 +1299,31 @@ function bnavSwitch(name, btn) {
   if(fakeBtn) switchSection(name, fakeBtn);
   else switchSection(name, {classList:{add:function(){},remove:function(){},toggle:function(){}}});
 }
+
+// 📱 Mobile sidebar toggle
+function toggleSidebar() {
+  var sb = document.getElementById('sidebar');
+  var bd = document.getElementById('sidebarBackdrop');
+  if (!sb || !bd) return;
+  var isOpen = sb.classList.toggle('is-open');
+  bd.classList.toggle('is-open', isOpen);
+  document.body.style.overflow = isOpen ? 'hidden' : '';
+}
+
+// ปิด sidebar อัตโนมัติเมื่อแตะเมนูบนมือถือ
+document.addEventListener('click', function(e) {
+  if (window.innerWidth >= 768) return; // desktop ไม่ต้องปิด
+  var item = e.target.closest('.nav-item');
+  if (item) {
+    var sb = document.getElementById('sidebar');
+    var bd = document.getElementById('sidebarBackdrop');
+    if (sb && sb.classList.contains('is-open')) {
+      sb.classList.remove('is-open');
+      if (bd) bd.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+  }
+});
 </script>
 </body>
 </html>
