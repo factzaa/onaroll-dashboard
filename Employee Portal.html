@@ -461,7 +461,35 @@ async function fetchAllData(id) {
     }
 }
 
-// ══ STATS ══
+// ── Zone detection — รองรับทั้ง IN_ZONE text และพิกัดจริง ──
+// ใช้พิกัดเดียวกับ index.html (SHOP_LAT=16.728082, SHOP_LON=101.292051)
+const SHOP_LAT = 16.728082, SHOP_LNG = 101.292051, RADIUS_M = 200;
+function haversine(la1,ln1,la2,ln2){const R=6371000,dL=(la2-la1)*Math.PI/180,dl=(ln2-ln1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dl/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+
+function parseZone(locStr) {
+    // รองรับ 3 รูปแบบ:
+    // 1. "IN_ZONE" หรือ "IN_ZONE,23m,..."
+    // 2. "OUT_OF_ZONE,45m,..."
+    // 3. "16.728082,101.292051" (พิกัดดิบจาก index.html เดิม)
+    if (!locStr || locStr === '-' || locStr === '0') return null;
+    const s = locStr.toUpperCase();
+    if (s.startsWith('IN_ZONE'))  return { inZone: true,  dist: null };
+    if (s.startsWith('OUT_OF_ZONE')) {
+        const m = locStr.match(/(\d+)m/);
+        return { inZone: false, dist: m ? parseInt(m[1]) : null };
+    }
+    // พิกัดดิบ — คำนวณระยะห่างจากร้านเอง
+    const parts = locStr.split(',').map(p => parseFloat(p.trim())).filter(n => !isNaN(n) && n !== 0);
+    if (parts.length >= 2) {
+        const lat = parts[0], lng = parts[1];
+        // ตรวจว่าเป็นพิกัดจริง (ไม่ใช่ค่าอื่น)
+        if (lat > 10 && lat < 25 && lng > 95 && lng < 110) {
+            const dist = Math.round(haversine(SHOP_LAT, SHOP_LNG, lat, lng));
+            return { inZone: dist <= RADIUS_M, dist };
+        }
+    }
+    return null;
+}
 function getFilteredAtt() {
     const startEl = document.getElementById('start-date');
     const endEl   = document.getElementById('end-date');
@@ -641,12 +669,15 @@ function renderAttendance() {
         const outRow = rows.find(r=>String(getVal(r,'สถานะ')).toUpperCase()==='CHECK_OUT');
         const late   = inRow ? (parseInt(String(getVal(inRow,'สาย(นาที)')).replace(/[^0-9]/g,''))||0) : 0;
         const ot     = outRow? (parseFloat(String(getVal(outRow,'OT(ชม.)')||getVal(outRow,'OT(ชน.)')||0))||0) : 0;
-        const loc    = inRow ? String(getVal(inRow,'พิกัด')||'') : '';
-        const inZone = loc.toUpperCase().includes('IN_ZONE');
+        const loc    = inRow ? String(getVal(inRow,'พิกัด')||getVal(inRow,'location')||'') : '';
+        const zoneResult = parseZone(loc);
+        const inZone = zoneResult ? zoneResult.inZone : null;
 
         const dayBadge = late>0 ? `<span class="att-day-badge db-late">สาย ${late} น.</span>`
                        : ot>0   ? `<span class="att-day-badge db-ot">OT ${ot} ชม.</span>`
-                       : inRow  ? `<span class="att-day-badge db-ok">มาตรงเวลา</span>` : '';
+                       : (inZone===true) ? `<span class="att-day-badge db-ok">✅ มาตรงเวลา</span>`
+                       : (inZone===false) ? `<span class="att-day-badge db-late">📍 นอกพื้นที่</span>`
+                       : inRow  ? `<span class="att-day-badge db-ok">มีข้อมูล</span>` : '';
 
         const dateObj = parseDate(ds);
         const dateDisp = dateObj ? dateObj.toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'short',year:'numeric'}) : ds;
@@ -656,10 +687,14 @@ function renderAttendance() {
             const time = getVal(row,'เวลาเช็คอิน')||getVal(row,'เวลา')||'—';
             const l    = isIn ? (parseInt(String(getVal(row,'สาย(นาที)')).replace(/[^0-9]/g,''))||0) : 0;
             const o    = !isIn? (parseFloat(String(getVal(row,'OT(ชม.)')||getVal(row,'OT(ชน.)')||0))||0) : 0;
-            const zone = String(getVal(row,'พิกัด')||'');
-            const zoneHtml = zone ? (zone.toUpperCase().includes('IN_ZONE')
-                ? '<span class="att-flag flag-zone-in">✅ ในพื้นที่</span>'
-                : '<span class="att-flag flag-zone-out">📍 นอกพื้นที่</span>') : '';
+            const zone    = String(getVal(row,'พิกัด')||getVal(row,'location')||'');
+            const zr      = parseZone(zone);
+            const distTxt = zr && zr.dist ? ' '+zr.dist+'ม.' : '';
+            const zoneHtml = zr !== null
+                ? (zr.inZone
+                    ? '<span class="att-flag flag-zone-in">✅ ในพื้นที่'+distTxt+'</span>'
+                    : '<span class="att-flag flag-zone-out">📍 นอกพื้นที่'+distTxt+'</span>')
+                : '';
             return `<div class="att-row">
                 <span class="att-badge ${isIn?'badge-in':'badge-out'}">${isIn?'เข้างาน':'ออกงาน'}</span>
                 <div class="att-info">
