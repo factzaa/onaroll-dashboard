@@ -251,7 +251,7 @@ html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:
         <div class="spinner"></div>
         <p id="frameLoaderText">กำลังโหลด...</p>
       </div>
-      <iframe id="mainIframe" style="width:100%;height:100%;border:none;flex:1" onload="onFrameLoad()"></iframe>
+      <iframe id="mainIframe" style="width:100%;height:100%;border:none;flex:1" onload="typeof onFrameLoad==='function'&&onFrameLoad()"></iframe>
     </div>
   </div>
 </div>
@@ -283,6 +283,7 @@ var NAV_ADMIN = [
   {s:'จัดการ & Audit', items:[
     {src:'home', title:'หน้าแรก', icon:'🏠', sub:'Welcome'},
     {src:'Daily Checklist System.html', title:'Checklist', icon:'✅', sub:'Daily Tasks'},
+    {src:'Checklist_Admin.html', title:'จัดการ Checklist', icon:'📋', sub:'Master & Urgent', badge:'Admin'},
     {src:'Manager_Console_Inner.html', title:'Audit & คำร้อง', icon:'🛡️', sub:'Audit Control', badge:'Core'},
   ]},
   {s:'รายงาน', items:[
@@ -323,6 +324,7 @@ var NAV  = (userRole === 'owner' || userRole === 'admin') ? NAV_ADMIN  : NAV_MAN
 var QUICK_ADMIN = [
   {src:'Manager_Console_Inner.html', title:'Audit & คำร้อง', icon:'🛡️', sub:'Core'},
   {src:'Daily Checklist System.html', title:'Checklist', icon:'✅', sub:'Daily Tasks'},
+  {src:'Checklist_Admin.html', title:'จัดการ Checklist', icon:'📋', sub:'Master & Urgent'},
   {src:'Sales Tracking.html', title:'บันทึกยอดขาย', icon:'💰', sub:'Sales'},
   {src:'HR Management.html', title:'HR', icon:'👥', sub:'จัดการพนักงาน'},
   {src:'Weekly Scheduler.html', title:'จัด Job', icon:'📅', sub:'Scheduler'},
@@ -355,6 +357,7 @@ var BNAV = (userRole === 'owner' || userRole === 'admin') ? BNAV_ADMIN : BNAV_MA
 
 // More menu
 var MORE_ADMIN = [
+  {src:'Checklist_Admin.html', icon:'📋', label:'จัดการ Checklist'},
   {src:'Expenses.html', icon:'🧾', label:'บันทึกรายจ่าย'},
   {src:'HR Management.html', icon:'👥', label:'HR'},
   {src:'Weekly Scheduler.html', icon:'📅', label:'จัด Job'},
