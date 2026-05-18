@@ -35,7 +35,7 @@ body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:
 .sync-btn:hover{background:var(--blue);border-color:var(--blue)}
 .sync-btn:disabled{opacity:.4;pointer-events:none}
 /* ══ SIDEBAR (hidden mobile) ══ */
-.sidebar{display:none}
+.sidebar{display:flex;flex-direction:column;width:var(--sidebar-w);flex-shrink:0;background:var(--navy);min-height:100vh;position:fixed;top:0;left:0;bottom:0;z-index:100}
 /* ══ BOTTOM NAV (mobile) ══ */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--bottom-h);padding-bottom:env(safe-area-inset-bottom);background:#fff;border-top:1px solid var(--border);display:flex;z-index:50;box-shadow:0 -2px 10px rgba(26,43,94,.08)}
 .bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;cursor:pointer;font-family:inherit;color:var(--text-light);transition:color .15s;padding:5px 2px;-webkit-tap-highlight-color:transparent}
@@ -106,9 +106,8 @@ tr:hover td{background:var(--blue-pale)}
 .loading-sheet{font-size:12px;color:var(--text-light);margin-top:-8px}
 #perfReportCards{display:grid;grid-template-columns:1fr;gap:10px;margin-top:4px}
 /* ══ DESKTOP ══ */
-@media(min-width:768px){
+@media(min-width:1px){
   body{display:flex}
-  .sidebar{display:flex;flex-direction:column;width:var(--sidebar-w);flex-shrink:0;background:var(--navy);min-height:100vh;position:fixed;top:0;left:0;bottom:0;z-index:100}
   .sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
   .sidebar-logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#2979d4,#29b6f6);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;margin-bottom:8px}
   .sidebar-logo h1{font-size:14px;font-weight:700;color:#fff}.sidebar-logo p{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px}
@@ -511,7 +510,9 @@ function parseDate(str) {
   if (m2) return m2[3] + "-" + m2[2].padStart(2,"0") + "-" + m2[1].padStart(2,"0");
   // fallback
   var d = new Date(s);
-  if (!isNaN(d)) return d.toISOString().slice(0,10);
+  if (!isNaN(d)) {
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
   return s.slice(0,10);
 }
 
@@ -612,7 +613,11 @@ function getPayrollCycle(d, offset) {
     mid.setMonth(mid.getMonth() + offset);
     return getPayrollCycle(mid, 0);
   }
-  return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
+  // ใช้ local date format (ไม่ใช้ toISOString เพราะ UTC offset ทำให้วันขยับ -1 วัน)
+  function localFmt(dt) {
+    return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+  }
+  return { start: localFmt(start), end: localFmt(end) };
 }
 
 function initFilters() {
@@ -656,6 +661,8 @@ function initFilters() {
     if (!v) return;
     var now = new Date();
     var from, to;
+    // helper format local date
+    function lf(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
     if (v==="cycle") {
       var c = getPayrollCycle(now);
       from = c.start; to = c.end;
@@ -663,17 +670,18 @@ function initFilters() {
       var c = getPayrollCycle(now, -1);
       from = c.start; to = c.end;
     } else {
-      to = now.toISOString().slice(0,10);
-      if (v==="7") from = new Date(now-7*864e5).toISOString().slice(0,10);
-      else if (v==="30") from = new Date(now-30*864e5).toISOString().slice(0,10);
-      else if (v==="90") from = new Date(now-90*864e5).toISOString().slice(0,10);
+      to = lf(now);
+      if (v==="7") from = lf(new Date(now.getFullYear(),now.getMonth(),now.getDate()-7));
+      else if (v==="30") from = lf(new Date(now.getFullYear(),now.getMonth(),now.getDate()-30));
+      else if (v==="90") from = lf(new Date(now.getFullYear(),now.getMonth(),now.getDate()-90));
       else if (v==="m") {
         var y=now.getFullYear(), mo=String(now.getMonth()+1).padStart(2,"0");
-        from = y+"-"+mo+"-01"; to = y+"-"+mo+"-31";
+        var lastD = new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+        from = y+"-"+mo+"-01"; to = y+"-"+mo+"-"+String(lastD).padStart(2,"0");
       } else if (v==="prev") {
         var d2 = new Date(now.getFullYear(), now.getMonth(), 0);
         var d1 = new Date(now.getFullYear(), now.getMonth()-1, 1);
-        from = d1.toISOString().slice(0,10); to = d2.toISOString().slice(0,10);
+        from = lf(d1); to = lf(d2);
       } else if (v==="all") { from = "2020-01-01"; to = "2099-12-31"; }
     }
     document.getElementById("dateFrom").value = from;
