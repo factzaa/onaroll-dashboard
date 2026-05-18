@@ -270,10 +270,10 @@ html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:
 var userName = localStorage.getItem('user_name') || '—';
 var userRole = (localStorage.getItem('user_role') || '').toLowerCase();
 var userId   = localStorage.getItem('user_id') || '—';
-var roleTh   = userRole === 'admin' ? 'Admin' : userRole === 'manager' ? 'Manager' : 'User';
+var roleTh   = userRole === 'owner' ? 'Owner' : userRole === 'admin' ? 'Admin' : userRole === 'manager' ? 'Manager' : 'User';
 
 // ══ AUTH GUARD ══
-if (userRole !== 'admin' && userRole !== 'manager') {
+if (userRole !== 'owner' && userRole !== 'admin' && userRole !== 'manager') {
   document.getElementById('auth-guard').classList.add('show');
 }
 
@@ -317,7 +317,7 @@ var NAV_MANAGER = [
   ]},
 ];
 
-var NAV = userRole === 'admin' ? NAV_ADMIN : NAV_MANAGER;
+var NAV  = (userRole === 'owner' || userRole === 'admin') ? NAV_ADMIN  : NAV_MANAGER;
 
 // Quick menu cards สำหรับ welcome screen
 var QUICK_ADMIN = [
@@ -351,7 +351,7 @@ var BNAV_MANAGER = [
   {key:'Sales Tracking.html', icon:'💰', label:'บันทึกยอดขาย'},
   {key:'more', icon:'⋯', label:'เพิ่มเติม'},
 ];
-var BNAV = userRole === 'admin' ? BNAV_ADMIN : BNAV_MANAGER;
+var BNAV = (userRole === 'owner' || userRole === 'admin') ? BNAV_ADMIN : BNAV_MANAGER;
 
 // More menu
 var MORE_ADMIN = [
