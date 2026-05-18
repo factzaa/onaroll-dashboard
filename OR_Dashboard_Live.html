@@ -77,7 +77,7 @@ body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:
 .chart-wrap-sm{position:relative;width:100%;height:155px}
 /* ══ TABLE ══ */
 .table-wrap{overflow-x:auto;max-height:280px;overflow-y:auto;border-radius:var(--r-sm);border:1px solid var(--border)}
-table{width:100%;border-collapse:collapse;font-size:12px;min-width:380px}
+table{width:100%;border-collapse:collapse;font-size:12px}
 th{padding:8px 10px;text-align:left;font-weight:700;font-size:10px;color:var(--text-muted);border-bottom:2px solid var(--border);background:var(--surface2);position:sticky;top:0;z-index:1;text-transform:uppercase;letter-spacing:.3px}
 td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
 tr:last-child td{border-bottom:none}
@@ -108,31 +108,55 @@ tr:hover td{background:var(--blue-pale)}
 
 /* ══ MOBILE BASE (< 768px) ══ */
 /* บนมือถือ: ซ่อน sidebar, content เต็มจอ, แสดง bottom-nav */
+*,*::before,*::after{box-sizing:border-box}
+html,body{overflow-x:hidden;max-width:100vw}
 .sidebar{transform:translateX(-100%);transition:transform .25s ease;z-index:200}
 .sidebar.is-open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,.25)}
-.app-body{margin-left:0}
-.main{padding:12px;padding-bottom:80px}
-.topbar{padding:0 12px;height:52px}
-.topbar-title{font-size:14px;font-weight:700}
-.menu-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:transparent;border:none;border-radius:8px;color:var(--navy);font-size:20px;cursor:pointer;margin-right:6px}
+.app-body{margin-left:0;width:100%;max-width:100vw;overflow-x:hidden}
+.main{padding:10px;padding-bottom:80px;max-width:100%;overflow-x:hidden}
+.topbar{padding:0 10px;height:52px}
+.topbar-title{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.topbar-right{flex-shrink:0;max-width:140px}
+.topbar .gs-pill{font-size:10px;padding:3px 7px}
+.menu-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:transparent;border:none;border-radius:8px;color:var(--navy);font-size:20px;cursor:pointer;margin-right:4px;flex-shrink:0}
 .menu-toggle:active{background:rgba(0,0,0,.06)}
 .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:150}
 .sidebar-backdrop.is-open{display:block}
-.kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
-.grid-2{display:flex;flex-direction:column;gap:10px}
-.chart-wrap{height:200px}
-.chart-wrap-sm{height:160px}
-.filter-bar{flex-direction:column;align-items:stretch;gap:8px}
-.filter-group{flex-direction:column;align-items:stretch;gap:4px}
-.filter-group input,.filter-group select{width:100%}
+
+/* Card & layout: บังคับเต็มกรอบ ไม่ล้น */
+.card,.kpi-card{max-width:100%;overflow:hidden}
+.kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px;width:100%}
+.kpi-card{padding:10px;min-width:0}
+.kpi-card .kpi-value{font-size:18px;word-break:break-all}
+.kpi-card .kpi-label{font-size:10px}
+.grid-2{display:flex;flex-direction:column;gap:10px;width:100%}
+.chart-wrap{height:200px;width:100%;max-width:100%}
+.chart-wrap-sm{height:160px;width:100%;max-width:100%}
+
+/* Filter: เรียงคอลัมน์เดียวเต็มกรอบ */
+.filter-bar{flex-direction:column;align-items:stretch;gap:8px;width:100%}
+.filter-top,.filter-bottom{display:flex;flex-direction:column;gap:8px;width:100%}
+.filter-group{flex-direction:column!important;align-items:stretch;gap:4px;width:100%!important;min-width:0!important;max-width:100%}
+.filter-group input,.filter-group select{width:100%;min-width:0;max-width:100%}
 .btn-apply,.btn-reset{width:100%;padding:10px}
+
+/* Table: scroll ภายในกรอบเอง ไม่ดันหน้าจอ */
+.table-wrap{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+.table-wrap table{min-width:auto;font-size:11px}
+.table-wrap th,.table-wrap td{padding:6px 5px;white-space:nowrap}
+
+/* Section heading */
+.section{max-width:100%;overflow:hidden}
+.card-title{font-size:13px}
 
 /* ══ DESKTOP (tablet ขึ้นไป) ══ */
 @media(min-width:768px){
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{overflow-x:visible}
   .menu-toggle{display:none}
   .sidebar{transform:translateX(0)}
   .sidebar-backdrop{display:none!important}
-  .app-body{margin-left:var(--sidebar-w)}
+  .app-body{margin-left:var(--sidebar-w);overflow-x:visible}
   .sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
   .sidebar-logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#2979d4,#29b6f6);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;margin-bottom:8px}
   .sidebar-logo h1{font-size:14px;font-weight:700;color:#fff}.sidebar-logo p{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px}
