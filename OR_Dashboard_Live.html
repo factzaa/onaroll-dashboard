@@ -9,7 +9,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh}
+body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;display:flex}
 :root{
   --navy:#1a2b5e;--blue:#2979d4;--blue-light:#e8f1fd;--blue-pale:#f0f6ff;
   --sky:#29b6f6;--surface:#fff;--surface2:#f7fafd;--bg:#f0f4f8;
@@ -35,7 +35,7 @@ body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:
 .sync-btn:hover{background:var(--blue);border-color:var(--blue)}
 .sync-btn:disabled{opacity:.4;pointer-events:none}
 /* ══ SIDEBAR (hidden mobile) ══ */
-.sidebar{display:none}
+.sidebar{display:flex;flex-direction:column;width:var(--sidebar-w);flex-shrink:0;background:var(--navy);min-height:100vh;position:fixed;top:0;left:0;bottom:0;z-index:100}
 /* ══ BOTTOM NAV (mobile) ══ */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--bottom-h);padding-bottom:env(safe-area-inset-bottom);background:#fff;border-top:1px solid var(--border);display:flex;z-index:50;box-shadow:0 -2px 10px rgba(26,43,94,.08)}
 .bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;cursor:pointer;font-family:inherit;color:var(--text-light);transition:color .15s;padding:5px 2px;-webkit-tap-highlight-color:transparent}
@@ -44,7 +44,7 @@ body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:
 .bnav-icon{font-size:19px;line-height:1}
 .bnav-label{font-size:9px;font-weight:600}
 /* ══ LAYOUT ══ */
-.app-body{padding-bottom:var(--bottom-h)}
+.app-body{padding-bottom:0;margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
 .main{padding:12px;max-width:1400px;margin:0 auto}
 /* ══ FILTER ══ */
 .filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
@@ -106,9 +106,7 @@ tr:hover td{background:var(--blue-pale)}
 .loading-sheet{font-size:12px;color:var(--text-light);margin-top:-8px}
 #perfReportCards{display:grid;grid-template-columns:1fr;gap:10px;margin-top:4px}
 /* ══ DESKTOP ══ */
-@media(min-width:768px){
-  body{display:flex}
-  .sidebar{display:flex;flex-direction:column;width:var(--sidebar-w);flex-shrink:0;background:var(--navy);min-height:100vh;position:fixed;top:0;left:0;bottom:0;z-index:100}
+@media(min-width:1px){
   .sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
   .sidebar-logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#2979d4,#29b6f6);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;margin-bottom:8px}
   .sidebar-logo h1{font-size:14px;font-weight:700;color:#fff}.sidebar-logo p{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px}
@@ -125,7 +123,6 @@ tr:hover td{background:var(--blue-pale)}
   .sync-info span{font-size:11px;color:rgba(255,255,255,.5);vertical-align:middle}
   #syncTime{font-size:10px;color:rgba(255,255,255,.35);display:block;margin-top:3px;padding-left:11px}
   .sync-btn{width:100%;padding:9px;font-size:12px}
-  .app-body{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;padding-bottom:0}
   .bottom-nav{display:none}
   .topbar{padding:0 24px;height:60px}
   .topbar-title{font-size:15px}
@@ -173,6 +170,9 @@ tr:hover td{background:var(--blue-pale)}
       <span id="syncTime"></span>
     </div>
     <button class="sync-btn" id="syncBtn" onclick="loadAllSheets()" disabled>🔄 รีเฟรชข้อมูล</button>
+    <button onclick="doLogout()" style="width:100%;margin-top:8px;padding:9px;border-radius:var(--r-sm);border:none;background:rgba(220,38,38,.15);color:#fca5a5;font-family:'Kanit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s" onmouseover="this.style.background='rgba(220,38,38,.3)'" onmouseout="this.style.background='rgba(220,38,38,.15)'">
+      <span style="font-size:14px">↩</span> ออกจากระบบ
+    </button>
   </div>
 </aside>
 
@@ -214,10 +214,12 @@ tr:hover td{background:var(--blue-pale)}
           <label>ช่วงด่วน</label>
           <select id="quickRange">
             <option value="">เลือกช่วง</option>
+            <option value="cycle">รอบเงินเดือนนี้ (21-20)</option>
+            <option value="cycle_prev">รอบเงินเดือนที่แล้ว</option>
             <option value="7">7 วันล่าสุด</option>
             <option value="30">30 วันล่าสุด</option>
             <option value="90">90 วันล่าสุด</option>
-            <option value="m">เดือนนี้</option>
+            <option value="m">เดือนนี้ (1-31)</option>
             <option value="prev">เดือนที่แล้ว</option>
             <option value="all">ทั้งหมด</option>
           </select>
@@ -247,6 +249,17 @@ tr:hover td{background:var(--blue-pale)}
 
   <!-- SALES -->
   <div class="section" id="sec-sales">
+    <div id="sales-period-bar" style="background:linear-gradient(135deg,#1a2b5e,#243272);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">ช่วงยอดขาย (รายเดือน)</div>
+        <div style="font-size:13px;font-weight:700;color:#fff" id="sales-period-label">—</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="shiftSaleMonth(-1)" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-family:inherit;font-size:12px;font-weight:700;padding:5px 10px;cursor:pointer">‹ ก่อนหน้า</button>
+        <button onclick="resetSaleMonth()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-family:inherit;font-size:12px;font-weight:700;padding:5px 10px;cursor:pointer">เดือนนี้</button>
+        <button onclick="shiftSaleMonth(1)" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-family:inherit;font-size:12px;font-weight:700;padding:5px 10px;cursor:pointer">ถัดไป ›</button>
+      </div>
+    </div>
     <div class="kpi-grid" id="sales-kpi"></div>
     <div class="card"><div class="card-title">💹 ยอดขายรายวัน</div><div class="chart-wrap"><canvas id="salesLineChart" role="img" aria-label="กราฟยอดขาย">ยอดขายรายวัน</canvas></div></div>
     <div class="grid-2">
@@ -260,6 +273,17 @@ tr:hover td{background:var(--blue-pale)}
 
   <!-- EXPENSES -->
   <div class="section" id="sec-expenses">
+    <div id="exp-period-bar" style="background:linear-gradient(135deg,#1a2b5e,#243272);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">ช่วงค่าใช้จ่าย (รายเดือน)</div>
+        <div style="font-size:13px;font-weight:700;color:#fff" id="exp-period-label">—</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="shiftSaleMonth(-1)" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-family:inherit;font-size:12px;font-weight:700;padding:5px 10px;cursor:pointer">‹ ก่อนหน้า</button>
+        <button onclick="resetSaleMonth()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-family:inherit;font-size:12px;font-weight:700;padding:5px 10px;cursor:pointer">เดือนนี้</button>
+        <button onclick="shiftSaleMonth(1)" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-family:inherit;font-size:12px;font-weight:700;padding:5px 10px;cursor:pointer">ถัดไป ›</button>
+      </div>
+    </div>
     <div class="kpi-grid" id="exp-kpi"></div>
     <div class="grid-2">
       <div class="card"><div class="card-title">🍽️ ค่าใช้จ่ายตามหมวดหมู่</div><div class="chart-wrap"><canvas id="expCatChart" role="img" aria-label="หมวดหมู่ค่าใช้จ่าย">หมวดหมู่</canvas></div></div>
@@ -314,6 +338,8 @@ let DATA = {};
 let charts = {};
 let currentSection = "attendance";
 let filterFrom = "", filterTo = "", filterEmp = "";
+// sales ใช้ช่วงวันที่ 1-ท้ายเดือนแยกต่างหาก
+let salesFrom = "", salesTo = "";
 let checkMap = {};
 let posTaskCount = {};
 
@@ -395,6 +421,13 @@ function loadCache() {
     if (Date.now() - obj.ts > CACHE_TTL) return null;
     return obj.data;
   } catch(e) { return null; }
+}
+
+function doLogout() {
+  ['user_id','user_name','user_role','user_pos'].forEach(function(k){ localStorage.removeItem(k); });
+  // ถ้าอยู่ใน iframe → แจ้ง parent ให้ logout
+  try { if (window.parent && window.parent !== window) { window.parent.postMessage('logout','*'); return; } } catch(e){}
+  window.location.href = 'index.html';
 }
 
 async function loadAllSheets() {
@@ -485,7 +518,9 @@ function parseDate(str) {
   if (m2) return m2[3] + "-" + m2[2].padStart(2,"0") + "-" + m2[1].padStart(2,"0");
   // fallback
   var d = new Date(s);
-  if (!isNaN(d)) return d.toISOString().slice(0,10);
+  if (!isNaN(d)) {
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
   return s.slice(0,10);
 }
 
@@ -575,15 +610,45 @@ function parseData() {
   DATA.perf_parsed = [];
 }
 
+// ── คำนวณรอบเงินเดือน 21-20 ──
+function getPayrollCycle(d, offset) {
+  offset = offset || 0;
+  var y=d.getFullYear(), m=d.getMonth(), day=d.getDate(), start, end;
+  if (day <= 20) { var sm=m===0?11:m-1, sy=m===0?y-1:y; start=new Date(sy,sm,21); end=new Date(y,m,20); }
+  else { var em=m===11?0:m+1, ey=m===11?y+1:y; start=new Date(y,m,21); end=new Date(ey,em,20); }
+  if (offset) {
+    var mid = new Date(start.getTime() + (end-start)/2);
+    mid.setMonth(mid.getMonth() + offset);
+    return getPayrollCycle(mid, 0);
+  }
+  // ใช้ local date format (ไม่ใช้ toISOString เพราะ UTC offset ทำให้วันขยับ -1 วัน)
+  function localFmt(dt) {
+    return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+  }
+  return { start: localFmt(start), end: localFmt(end) };
+}
+
 function initFilters() {
   var att = DATA.attendance || [];
   var dates = att.map(function(r) { return r.date; }).filter(Boolean).sort();
-  if (dates.length) {
-    filterFrom = dates[0];
-    filterTo = dates[dates.length - 1];
-    document.getElementById("dateFrom").value = filterFrom;
-    document.getElementById("dateTo").value = filterTo;
-  }
+
+  // ── Attendance default: รอบเงินเดือนปัจจุบัน (21-20) ──
+  var now = new Date();
+  var cycle = getPayrollCycle(now);
+  filterFrom = cycle.start;
+  filterTo   = cycle.end;
+  document.getElementById("dateFrom").value = filterFrom;
+  document.getElementById("dateTo").value   = filterTo;
+  document.getElementById("quickRange").value = "cycle";
+
+  // ── Sales default: วันที่ 1-ท้ายเดือนปัจจุบัน ──
+  var y = now.getFullYear(), mo = String(now.getMonth()+1).padStart(2,"0");
+  var lastDay = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  salesFrom = y+"-"+mo+"-01";
+  salesTo   = y+"-"+mo+"-"+String(lastDay).padStart(2,"0");
+  _salesMonthOffset = 0;
+  // label จะ update ตอน switchSection('sales')
+
   var emps = [];
   var seen = {};
   att.forEach(function(r) {
@@ -603,20 +668,33 @@ function initFilters() {
     var v = this.value;
     if (!v) return;
     var now = new Date();
-    var from, to = now.toISOString().slice(0,10);
-    if (v==="7") from = new Date(now-7*864e5).toISOString().slice(0,10);
-    else if (v==="30") from = new Date(now-30*864e5).toISOString().slice(0,10);
-    else if (v==="90") from = new Date(now-90*864e5).toISOString().slice(0,10);
-    else if (v==="m") {
-      var y=now.getFullYear(), mo=String(now.getMonth()+1).padStart(2,"0");
-      from = y+"-"+mo+"-01"; to = y+"-"+mo+"-31";
-    } else if (v==="prev") {
-      var d2 = new Date(now.getFullYear(), now.getMonth(), 0);
-      var d1 = new Date(now.getFullYear(), now.getMonth()-1, 1);
-      from = d1.toISOString().slice(0,10); to = d2.toISOString().slice(0,10);
-    } else if (v==="all") { from = "2020-01-01"; to = "2099-12-31"; }
+    var from, to;
+    // helper format local date
+    function lf(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+    if (v==="cycle") {
+      var c = getPayrollCycle(now);
+      from = c.start; to = c.end;
+    } else if (v==="cycle_prev") {
+      var c = getPayrollCycle(now, -1);
+      from = c.start; to = c.end;
+    } else {
+      to = lf(now);
+      if (v==="7") from = lf(new Date(now.getFullYear(),now.getMonth(),now.getDate()-7));
+      else if (v==="30") from = lf(new Date(now.getFullYear(),now.getMonth(),now.getDate()-30));
+      else if (v==="90") from = lf(new Date(now.getFullYear(),now.getMonth(),now.getDate()-90));
+      else if (v==="m") {
+        var y=now.getFullYear(), mo=String(now.getMonth()+1).padStart(2,"0");
+        var lastD = new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+        from = y+"-"+mo+"-01"; to = y+"-"+mo+"-"+String(lastD).padStart(2,"0");
+      } else if (v==="prev") {
+        var d2 = new Date(now.getFullYear(), now.getMonth(), 0);
+        var d1 = new Date(now.getFullYear(), now.getMonth()-1, 1);
+        from = lf(d1); to = lf(d2);
+      } else if (v==="all") { from = "2020-01-01"; to = "2099-12-31"; }
+    }
     document.getElementById("dateFrom").value = from;
     document.getElementById("dateTo").value = to;
+    // quickRange ควบคุมเฉพาะ attendance — sales ยังใช้ salesFrom/salesTo ปัจจุบัน
   };
 }
 
@@ -632,18 +710,62 @@ function applyFilter() {
 function resetFilter() {
   var att = DATA.attendance || [];
   var dates = att.map(function(r) { return r.date; }).filter(Boolean).sort();
-  filterFrom = dates[0] || ""; filterTo = dates[dates.length-1] || ""; filterEmp = "";
+  // reset attendance กลับรอบ 21-20
+  var cycle = getPayrollCycle(new Date());
+  filterFrom = cycle.start; filterTo = cycle.end; filterEmp = "";
   document.getElementById("dateFrom").value = filterFrom;
   document.getElementById("dateTo").value = filterTo;
   document.getElementById("empFilter").value = "";
-  document.getElementById("quickRange").value = "";
+  document.getElementById("quickRange").value = "cycle";
   document.getElementById("filterStatus").textContent = "";
+  // reset sales กลับ 1-ท้ายเดือน
+  var y2 = now.getFullYear(), mo2 = String(now.getMonth()+1).padStart(2,"0");
+  var lastDay2 = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  salesFrom = y2+"-"+mo2+"-01";
+  salesTo   = y2+"-"+mo2+"-"+String(lastDay2).padStart(2,"0");
+  _salesMonthOffset = 0;
   renderSection();
 }
 
+// ── Sales month navigation ──
+var _salesMonthOffset = 0; // 0=เดือนปัจจุบัน
+
+function updateSalesPeriodLabel() {
+    var thM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    var s = new Date(salesFrom), e = new Date(salesTo);
+    var lbl = s.getDate()+' '+thM[s.getMonth()]+' '+(s.getFullYear()+543)+' – '+e.getDate()+' '+thM[e.getMonth()]+' '+(e.getFullYear()+543);
+    var el1 = document.getElementById('sales-period-label');
+    if (el1) el1.textContent = lbl;
+    var el2 = document.getElementById('exp-period-label');
+    if (el2) el2.textContent = lbl;
+}
+
+function setSalesMonth(offset) {
+    var now = new Date();
+    var d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    var y = d.getFullYear(), m = d.getMonth();
+    salesFrom = y+'-'+String(m+1).padStart(2,'0')+'-01';
+    var lastDay = new Date(y, m+1, 0).getDate();
+    salesTo   = y+'-'+String(m+1).padStart(2,'0')+'-'+String(lastDay).padStart(2,'0');
+    _salesMonthOffset = offset;
+    updateSalesPeriodLabel();
+    renderSection();
+}
+
+function shiftSaleMonth(dir) { setSalesMonth(_salesMonthOffset + dir); }
+function resetSaleMonth()    { setSalesMonth(0); }
+
+// Attendance range check
 function inRange(date) {
   if (filterFrom && date < filterFrom) return false;
-  if (filterTo && date > filterTo) return false;
+  if (filterTo   && date > filterTo)   return false;
+  return true;
+}
+
+// Sales range check — ใช้วันที่ 1-ท้ายเดือน แยกจาก attendance
+function inSalesRange(date) {
+  if (salesFrom && date < salesFrom) return false;
+  if (salesTo   && date > salesTo)   return false;
   return true;
 }
 
@@ -675,8 +797,8 @@ function switchSection(name, btn) {
 
 function renderSection() {
   if (currentSection === "attendance") renderAttendance();
-  else if (currentSection === "sales") renderSales();
-  else if (currentSection === "expenses") renderExpenses();
+  else if (currentSection === "sales") { updateSalesPeriodLabel(); renderSales(); }
+  else if (currentSection === "expenses") { updateSalesPeriodLabel(); renderExpenses(); }
   else if (currentSection === "performance") renderPerformance();
 }
 
@@ -774,7 +896,7 @@ function renderAttendance() {
 
 /* ---- SALES ---- */
 function renderSales() {
-  var sales = (DATA.sales||[]).filter(function(r) { return inRange(r.date); });
+  var sales = (DATA.sales||[]).filter(function(r) { return inSalesRange(r.date); });
   var total = sales.reduce(function(s,r) { return s+r.total; }, 0);
   var disc = sales.reduce(function(s,r) { return s+r.discount; }, 0);
   var avg = sales.length ? total/sales.length : 0;
@@ -830,7 +952,7 @@ function renderSales() {
 
 /* ---- EXPENSES ---- */
 function renderExpenses() {
-  var exps = (DATA.expenses||[]).filter(function(r) { return inRange(r.date); });
+  var exps = (DATA.expenses||[]).filter(function(r) { return inSalesRange(r.date); });
   var total = exps.reduce(function(s,r) { return s+r.amount; }, 0);
   var byCat = {};
   exps.forEach(function(r) { byCat[r.category]=(byCat[r.category]||0)+r.amount; });
