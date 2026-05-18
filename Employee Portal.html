@@ -1,317 +1,691 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Employee Portal - TimeHub Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap');
-        body { 
-            font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif; 
-            background-color: #f8fafc; 
-            color: #1e293b; 
-            -webkit-tap-highlight-color: transparent;
-        }
-        .glass-header { 
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
-            border-bottom-left-radius: 3rem; 
-            border-bottom-right-radius: 3rem; 
-        }
-        .tab-active { @apply bg-slate-900 text-white shadow-lg scale-105; }
-        .card-animate { animation: slideUp 0.4s ease-out forwards; opacity: 0; }
-        @keyframes slideUp { 
-            from { opacity: 0; transform: translateY(20px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>My Portal — OnaRoll</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:#f0f4f8;color:#1a2332;font-family:'Kanit',sans-serif;padding-bottom:90px}
+:root{
+  --navy:#1a2b5e;--navy2:#243272;--blue:#2979d4;--blue-l:#e8f0fb;
+  --green:#059669;--green-l:rgba(5,150,105,.1);--green-b:rgba(5,150,105,.25);
+  --red:#dc2626;--red-l:rgba(220,38,38,.08);
+  --amber:#d97706;--amber-l:rgba(217,119,6,.1);--amber-b:rgba(217,119,6,.25);
+  --purple:#7c3aed;--purple-l:rgba(124,58,237,.1);
+  --bg:#f0f4f8;--white:#fff;
+  --border:rgba(26,43,94,.08);--border2:rgba(26,43,94,.14);
+  --muted:#7b8db0;--light:#a8b9d4;
+  --shadow:0 1px 4px rgba(26,43,94,.08),0 3px 10px rgba(26,43,94,.06);
+  --shadow-md:0 4px 20px rgba(26,43,94,.12);
+  --r:16px;--r-sm:12px;--r-full:9999px;
+}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:10px 16px;position:sticky;top:0;z-index:50}
+.top-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.top-title{font-size:15px;font-weight:800;color:var(--navy);flex:1}
+.top-sub{font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.btn-back{display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:7px 13px;font-family:'Kanit',sans-serif;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s}
+.btn-back:active{background:var(--blue-l);color:var(--blue);border-color:#b3d4f7;transform:scale(.95)}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 60%,#2c3e8a 100%);padding:20px 16px 24px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.04)}
+.hero::after{content:'';position:absolute;bottom:-60px;left:-20px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.03)}
+.hero-top{display:flex;align-items:center;gap:14px;margin-bottom:18px;position:relative;z-index:1}
+.hero-av{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;flex-shrink:0;position:relative}
+.hero-av-badge{position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-radius:50%;border:2px solid var(--navy);background:var(--green);display:flex;align-items:center;justify-content:center;font-size:8px}
+.hero-name{font-size:19px;font-weight:800;color:#fff;line-height:1.2}
+.hero-id{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.hero-pos{font-size:11px;color:rgba(255,255,255,.7);margin-top:3px;display:flex;align-items:center;gap:5px}
+.role-chip{padding:2px 8px;border-radius:var(--r-full);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.2)}
+
+/* KPI strip */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:relative;z-index:1}
+.kpi-box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 8px;text-align:center}
+.kpi-lbl{font-size:8px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:3px}
+.kpi-val{font-size:20px;font-weight:800;color:#fff;line-height:1;display:block}
+.kpi-sub{font-size:9px;color:rgba(255,255,255,.35);display:block;margin-top:1px}
+.kpi-val.green{color:#6ee7b7}
+.kpi-val.red{color:#fca5a5}
+.kpi-val.amber{color:#fcd34d}
+
+/* ── PAGE WRAP ── */
+.page-wrap{max-width:540px;margin:0 auto;padding:14px 14px 0;display:flex;flex-direction:column;gap:14px}
+
+/* ── SECTION LABEL ── */
+.sec-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.sec-label::before{content:'';width:3px;height:3px;border-radius:50%;background:var(--blue);display:block}
+
+/* ── CARD ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:6px}
+
+/* ── TAB ── */
+.tab-bar{display:flex;gap:5px;background:var(--white);border:1px solid var(--border);border-radius:var(--r-full);padding:4px;box-shadow:var(--shadow)}
+.tab-pill{flex:1;padding:8px 6px;border-radius:var(--r-full);border:none;font-family:'Kanit',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--muted);background:transparent;text-transform:uppercase;letter-spacing:.3px}
+.tab-pill.active{background:var(--navy);color:#fff}
+
+/* ── SECTIONS ── */
+.section{display:flex;flex-direction:column;gap:10px}
+.section.hidden{display:none}
+
+/* ── PERFORMANCE CARD ── */
+.perf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.perf-box{background:var(--bg);border-radius:var(--r-sm);padding:12px;border:1px solid var(--border)}
+.pb-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.pb-val{font-size:24px;font-weight:800;color:var(--navy);line-height:1}
+.pb-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.pb-val.ok{color:var(--green)}
+.pb-val.warn{color:var(--amber)}
+.pb-val.bad{color:var(--red)}
+
+/* grade ring */
+.grade-wrap{display:flex;align-items:center;justify-content:center;gap:16px;padding:14px 0;border-top:1px solid var(--border)}
+.grade-ring{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;border:4px solid;flex-shrink:0}
+.grade-A{border-color:var(--green);color:var(--green);background:var(--green-l)}
+.grade-B{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
+.grade-C{border-color:var(--amber);color:var(--amber);background:var(--amber-l)}
+.grade-D,.grade-F{border-color:var(--red);color:var(--red);background:var(--red-l)}
+.grade-info{flex:1}
+.grade-title{font-size:16px;font-weight:800;color:var(--navy)}
+.grade-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+
+/* progress bar */
+.prog-wrap{margin-top:10px}
+.prog-label{display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px}
+.prog-bar{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.prog-fill{height:100%;border-radius:4px;transition:width .6s ease}
+
+/* ── MINI CHART (pure CSS bar) ── */
+.chart-wrap{padding:4px 0 0}
+.chart-bars{display:flex;align-items:flex-end;gap:4px;height:60px}
+.chart-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.chart-bar{width:100%;border-radius:4px 4px 0 0;min-height:4px;transition:height .5s ease}
+.chart-bar.in{background:var(--blue)}
+.chart-bar.late{background:var(--amber)}
+.chart-xlbl{font-size:8px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center}
+.chart-legend{display:flex;gap:12px;margin-top:8px;justify-content:center}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:var(--muted)}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* ── FILTER ── */
+.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.date-inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:9px 11px;font-family:'Kanit',sans-serif;font-size:12px;font-weight:600;color:var(--navy);outline:none;transition:border-color .2s}
+.date-inp:focus{border-color:var(--blue);background:var(--white)}
+.date-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px}
+
+/* ── ATTENDANCE TIMELINE ── */
+.att-timeline{display:flex;flex-direction:column;gap:0}
+.att-day{border-radius:var(--r-sm);overflow:hidden;margin-bottom:8px;border:1px solid var(--border)}
+.att-day-header{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--bg);border-bottom:1px solid var(--border)}
+.att-day-date{font-size:12px;font-weight:700;color:var(--navy)}
+.att-day-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:var(--r-full)}
+.db-ok{background:var(--green-l);color:var(--green);border:1px solid var(--green-b)}
+.db-late{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b)}
+.db-ot{background:var(--purple-l);color:var(--purple);border:1px solid rgba(124,58,237,.25)}
+.att-rows{background:var(--white)}
+.att-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border)}
+.att-row:last-child{border-bottom:none}
+.att-badge{padding:2px 9px;border-radius:var(--r-full);font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.badge-in{background:var(--green-l);color:var(--green);border:1px solid var(--green-b)}
+.badge-out{background:var(--red-l);color:var(--red);border:1px solid rgba(220,38,38,.2)}
+.att-info{flex:1}
+.att-time{font-size:15px;font-weight:700;color:var(--navy)}
+.att-meta{font-size:10px;color:var(--muted);margin-top:1px}
+.att-flag{font-size:10px;font-weight:700;padding:1px 7px;border-radius:var(--r-full)}
+.flag-late{background:var(--amber-l);color:var(--amber)}
+.flag-ot{background:var(--purple-l);color:var(--purple)}
+.flag-zone-in{background:var(--green-l);color:var(--green)}
+.flag-zone-out{background:var(--red-l);color:var(--red)}
+
+/* ── SUMMARY ROW ── */
+.sum-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.sum-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;text-align:center}
+.sum-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:3px}
+.sum-val{font-size:18px;font-weight:800;color:var(--navy)}
+.sum-val.ok{color:var(--green)}.sum-val.warn{color:var(--amber)}.sum-val.bad{color:var(--red)}
+
+/* ── PETITION ── */
+.pet-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);animation:slideUp .3s ease both}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.pet-status-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pet-type-chip{font-size:10px;font-weight:700;padding:2px 9px;border-radius:var(--r-full);background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b)}
+.pet-status{font-size:10px;font-weight:700;padding:2px 9px;border-radius:var(--r-full)}
+.s-approved{background:var(--green-l);color:var(--green);border:1px solid var(--green-b)}
+.s-rejected{background:var(--red-l);color:var(--red);border:1px solid rgba(220,38,38,.2)}
+.s-pending{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b)}
+.pet-reason{font-size:12px;color:#475569;font-style:italic;background:var(--bg);border-radius:var(--r-sm);padding:9px 12px;line-height:1.6;margin-bottom:8px}
+.pet-meta{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+.pet-note{font-size:11px;color:var(--blue);margin-top:6px;font-style:italic;padding:6px 10px;background:var(--blue-l);border-radius:var(--r-sm)}
+
+/* ── FORM ── */
+.form-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
+.form-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:5px}
+.form-inp,.form-sel,.form-ta{width:100%;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:10px;font-family:'Kanit',sans-serif;font-size:14px;color:var(--navy);outline:none;transition:border-color .2s}
+.form-inp:focus,.form-sel:focus,.form-ta:focus{border-color:var(--blue);background:var(--white)}
+.form-ta{resize:none;min-height:88px}
+.form-ta::placeholder{color:var(--light)}
+.form-btns{display:flex;gap:8px;margin-top:4px}
+.btn-cancel{flex:1;padding:12px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg);color:var(--muted);font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.btn-submit{flex:2;padding:12px;border-radius:var(--r-sm);border:none;background:var(--navy);color:#fff;font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(26,43,94,.2)}
+.btn-submit:active{background:var(--blue);transform:scale(.97)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── BOTTOM NAV ── */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:0;padding:6px 16px calc(6px + env(safe-area-inset-bottom));z-index:100;box-shadow:0 -2px 12px rgba(26,43,94,.06)}
+.bn-btn{flex:1;max-width:80px;display:flex;flex-direction:column;align-items:center;gap:2px;border:none;background:transparent;cursor:pointer;font-family:'Kanit',sans-serif;color:var(--light);padding:4px;transition:color .15s}
+.bn-btn.active{color:var(--navy)}
+.bn-btn:active{transform:scale(.9)}
+.bn-icon{font-size:20px;line-height:1}
+.bn-lbl{font-size:9px;font-weight:600}
+.bn-center{background:linear-gradient(135deg,var(--blue),var(--navy));border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-top:-10px;border:3px solid var(--bg);box-shadow:0 4px 16px rgba(41,121,212,.3);flex-shrink:0}
+.bn-center:active{transform:scale(.92)}
+
+/* ── EMPTY / LOADING ── */
+.empty-state{text-align:center;padding:40px 20px;color:var(--light);font-size:12px}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.4}
+.loading-wrap{text-align:center;padding:40px 20px}
+.spinner{width:28px;height:28px;border:3px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+
+/* ── ERROR ── */
+.error-card{background:var(--white);border:1px solid rgba(220,38,38,.15);border-radius:var(--r);padding:28px 20px;text-align:center;box-shadow:var(--shadow)}
+.btn-err-back{width:100%;padding:13px;background:var(--navy);border:none;border-radius:var(--r-sm);color:#fff;font-family:'Kanit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:20px}
+</style>
 </head>
-<body class="min-h-screen pb-32">
-    <div id="root"></div>
+<body>
 
-    <script type="text/babel">
-        const { useState, useEffect, useMemo, useCallback } = React;
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="top-icon">👤</div>
+  <div style="flex:1">
+    <div class="top-title">My Portal</div>
+    <div class="top-sub">Employee Dashboard</div>
+  </div>
+  <button class="btn-back" onclick="history.back()">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    กลับ
+  </button>
+</header>
 
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxvProkNuSUhJSGgO2M94x_ybX_S-9ZtRx75RsBKIMQgmuSw23P_-7z8XPAflKMq6XR9g/exec';
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-top">
+    <div class="hero-av" id="hero-av">—
+      <div class="hero-av-badge">✓</div>
+    </div>
+    <div>
+      <div class="hero-name" id="hero-name">กำลังโหลด...</div>
+      <div class="hero-id"  id="hero-id">—</div>
+      <div class="hero-pos">
+        <span id="hero-pos">—</span>
+        <span class="role-chip" id="hero-role">—</span>
+      </div>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi-box"><span class="kpi-lbl">วันทำงาน</span><span class="kpi-val" id="k-days">—</span><span class="kpi-sub">วัน/เดือน</span></div>
+    <div class="kpi-box"><span class="kpi-lbl">สาย</span><span class="kpi-val red" id="k-late">—</span><span class="kpi-sub">ครั้ง</span></div>
+    <div class="kpi-box"><span class="kpi-lbl">OT</span><span class="kpi-val amber" id="k-ot">—</span><span class="kpi-sub">ชม.</span></div>
+    <div class="kpi-box"><span class="kpi-lbl">คะแนน</span><span class="kpi-val green" id="k-score">—</span><span class="kpi-sub">/ 100</span></div>
+  </div>
+</div>
 
-        const Icon = ({ name, size = 20, className = "" }) => {
-            useEffect(() => { lucide.createIcons(); }, [name]);
-            return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
+<!-- CONTENT -->
+<div class="page-wrap">
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab-pill active" id="tab-dash"     onclick="switchView('dash')">ภาพรวม</button>
+    <button class="tab-pill"        id="tab-history"  onclick="switchView('history')">ประวัติ</button>
+    <button class="tab-pill"        id="tab-petition" onclick="switchView('petition')">คำร้อง</button>
+  </div>
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <div class="section" id="sec-dash">
+    <div id="dash-loading" class="loading-wrap"><div class="spinner"></div><div class="loading-txt">กำลังโหลด...</div></div>
+    <div id="dash-content" style="display:none;flex-direction:column;gap:10px"></div>
+  </div>
+
+  <!-- ═══ HISTORY ═══ -->
+  <div class="section hidden" id="sec-history">
+    <div class="card" style="padding:12px">
+      <div class="filter-row">
+        <div><label class="date-lbl">ตั้งแต่วันที่</label><input type="date" id="start-date" class="date-inp" onchange="renderAttendance()"></div>
+        <div><label class="date-lbl">ถึงวันที่</label><input type="date" id="end-date" class="date-inp" onchange="renderAttendance()"></div>
+      </div>
+      <div class="sum-row">
+        <div class="sum-box"><span class="sum-lbl">วันทำงาน</span><span class="sum-val ok" id="s-days">—</span></div>
+        <div class="sum-box"><span class="sum-lbl">สาย (ครั้ง)</span><span class="sum-val warn" id="s-late">—</span></div>
+        <div class="sum-box"><span class="sum-lbl">OT (ชม.)</span><span class="sum-val" id="s-ot" style="color:var(--purple)">—</span></div>
+      </div>
+    </div>
+    <div id="att-list"><div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">กำลังโหลด...</div></div></div>
+  </div>
+
+  <!-- ═══ PETITION ═══ -->
+  <div class="section hidden" id="sec-petition">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="sec-label" style="margin-bottom:0">คำร้องของฉัน</div>
+      <button class="btn-submit" style="flex:0;padding:7px 16px;font-size:12px" onclick="switchView('form')">+ ยื่นคำร้องใหม่</button>
+    </div>
+    <div id="pet-list"><div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">กำลังโหลด...</div></div></div>
+  </div>
+
+  <!-- ═══ FORM ═══ -->
+  <div class="section hidden" id="sec-form">
+    <div class="form-card">
+      <div style="font-size:17px;font-weight:800;color:var(--navy);margin-bottom:4px">📝 ยื่นคำร้อง</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:16px">กรอกข้อมูลให้ครบก่อนส่ง</div>
+      <label class="form-lbl">วันที่ต้องการ</label>
+      <input type="date" id="f-date" class="form-inp">
+      <label class="form-lbl">ประเภทคำร้อง</label>
+      <select id="f-type" class="form-sel">
+        <option value="Sick Leave">🤒 ลาป่วย</option>
+        <option value="Personal Leave">📋 ลากิจ</option>
+        <option value="Annual Leave">🌴 ลาพักร้อน</option>
+        <option value="OT Request">⏰ ขอทำ OT</option>
+        <option value="Schedule Change">📅 ขอปรับตารางงาน</option>
+        <option value="Correction">✏️ ขอแก้ไขเวลา</option>
+        <option value="Other">💬 อื่นๆ</option>
+      </select>
+      <label class="form-lbl">เหตุผล</label>
+      <textarea id="f-reason" class="form-ta" rows="4" placeholder="ระบุเหตุผลและรายละเอียด..."></textarea>
+      <div class="form-btns">
+        <button class="btn-cancel" onclick="switchView('petition')">ยกเลิก</button>
+        <button class="btn-submit" id="f-submit-btn" onclick="handleSubmitPetition()">ส่งคำร้อง</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <button class="bn-btn active" id="bn-dash"     onclick="switchView('dash')"><div class="bn-icon">📊</div><div class="bn-lbl">ภาพรวม</div></button>
+  <button class="bn-btn"        id="bn-history"  onclick="switchView('history')"><div class="bn-icon">🕐</div><div class="bn-lbl">ประวัติ</div></button>
+  <button class="bn-center"     id="bn-form"     onclick="switchView('form')">✚</button>
+  <button class="bn-btn"        id="bn-petition" onclick="switchView('petition')"><div class="bn-icon">📋</div><div class="bn-lbl">คำร้อง</div></button>
+  <button class="bn-btn"        onclick="history.back()"><div class="bn-icon">🏠</div><div class="bn-lbl">กลับ</div></button>
+</nav>
+
+<script>
+// ══ CONFIG ══
+const API_URL = 'https://script.google.com/macros/s/AKfycbxvProkNuSUhJSGgO2M94x_ybX_S-9ZtRx75RsBKIMQgmuSw23P_-7z8XPAflKMq6XR9g/exec';
+
+// ══ STATE ══
+let attendance = [], petitions = [];
+let resolvedEmpId = localStorage.getItem('user_id');
+const empName  = localStorage.getItem('user_name') || 'พนักงาน';
+const userPos  = localStorage.getItem('user_pos')  || '—';
+const userRole = localStorage.getItem('user_role') || 'user';
+const now      = new Date();
+const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+const today    = now.toISOString().split('T')[0];
+
+// ══ INIT ══
+window.onload = async function() {
+    document.getElementById('start-date').value = firstDay;
+    document.getElementById('end-date').value   = today;
+    document.getElementById('f-date').value     = today;
+    document.getElementById('hero-name').textContent = empName;
+    document.getElementById('hero-av').innerHTML = empName.charAt(0).toUpperCase() + '<div class="hero-av-badge">✓</div>';
+    document.getElementById('hero-pos').textContent  = userPos;
+    const roleTh = userRole==='admin'?'Admin':userRole==='manager'?'Manager':userRole==='owner'?'Owner':'Staff';
+    document.getElementById('hero-role').textContent = roleTh;
+
+    let currentId = resolvedEmpId;
+    if (!currentId && empName !== 'พนักงาน') currentId = await resolveIdByName(empName);
+    if (!currentId) { showError('ไม่พบรหัสพนักงานในระบบ โปรดล็อกอินใหม่'); return; }
+    document.getElementById('hero-id').textContent = currentId;
+    resolvedEmpId = currentId;
+    await fetchAllData(currentId);
+};
+
+// ══ HELPERS (logic เดิมทุกบรรทัด) ══
+function getVal(item, key) {
+    if (!item) return '';
+    const target = Object.keys(item).find(k => k.trim() === key.trim());
+    return target ? item[target] : '';
+}
+
+function parseDate(d) {
+    if (!d) return null;
+    const s = String(d).split('T')[0].trim();
+    const p = s.includes('-') ? s.split('-') : s.split('/');
+    if (p.length < 3) return null;
+    let y = parseInt(p[0]), m = parseInt(p[1])-1, day = parseInt(p[2]);
+    if (String(p[0]).length < 4) { day=parseInt(p[0]); m=parseInt(p[1])-1; y=parseInt(p[2]); }
+    if (y > 2400) y -= 543;
+    return new Date(y, m, day, 0, 0, 0, 0);
+}
+
+async function resolveIdByName(name) {
+    try {
+        const res  = await fetch(`${API_URL}?action=GET_EMPLOYEES&t=${Date.now()}`);
+        const emps = await res.json();
+        const match = emps.find(e => (e['ชื่อเล่น']||e['Nickname']||e['ชื่อ-นามสกุล']||'').trim() === name.trim());
+        if (match) {
+            const foundId = match['รหัสพนักงาน'] || match['Employee_ID'];
+            localStorage.setItem('user_id', foundId);
+            resolvedEmpId = foundId;
+            document.getElementById('hero-id').textContent = foundId;
+            return foundId;
+        }
+        return null;
+    } catch(e) { return null; }
+}
+
+async function fetchAllData(id) {
+    showLoading();
+    try {
+        const [resAtt, resPet] = await Promise.all([
+            fetch(`${API_URL}?action=GET_MY_HISTORY&empId=${id}&t=${Date.now()}`).then(r=>r.json()),
+            fetch(`${API_URL}?action=GET_MY_PETITIONS&empId=${id}&t=${Date.now()}`).then(r=>r.json())
+        ]);
+        attendance = Array.isArray(resAtt) ? resAtt : (resAtt.data||[]);
+        petitions  = Array.isArray(resPet) ? resPet : (resPet.data||[]);
+        updateStats();
+        renderDashboard();
+        renderAttendance();
+        renderPetitions();
+    } catch(e) { showError('การเชื่อมต่อฐานข้อมูลขัดข้อง'); }
+}
+
+// ══ STATS ══
+function getFilteredAtt() {
+    const s = new Date(document.getElementById('start-date').value).setHours(0,0,0,0);
+    const e = new Date(document.getElementById('end-date').value).setHours(23,59,59,999);
+    return attendance.filter(item => {
+        const d = parseDate(getVal(item,'วันที่'));
+        return d && d.getTime() >= s && d.getTime() <= e;
+    });
+}
+
+function updateStats() {
+    const filtered = getFilteredAtt();
+    const uniqueDays = new Set(filtered.map(i=>parseDate(getVal(i,'วันที่'))?.toDateString()).filter(Boolean)).size;
+    const totalLate  = filtered.reduce((sum,item)=>sum+(parseInt(String(getVal(item,'สาย(นาที)')).replace(/[^0-9]/g,''))||0),0);
+    const lateCount  = filtered.filter(i=>(parseInt(String(getVal(i,'สาย(นาที)')).replace(/[^0-9]/g,''))||0)>0).length;
+    const totalOT    = filtered.reduce((sum,item)=>sum+(parseFloat(String(getVal(item,'OT(ชม.)')||getVal(item,'OT(ชน.)')||0))||0),0);
+    const score      = Math.max(0, Math.min(100, 100 - lateCount*5));
+    const grade      = score>=90?'A':score>=80?'B':score>=60?'C':score>=40?'D':'F';
+
+    // Hero KPI
+    document.getElementById('k-days').textContent  = uniqueDays;
+    document.getElementById('k-late').textContent  = lateCount;
+    document.getElementById('k-ot').textContent    = totalOT.toFixed(1);
+    document.getElementById('k-score').textContent = score;
+
+    // Summary row in history tab
+    document.getElementById('s-days').textContent = uniqueDays+' วัน';
+    document.getElementById('s-late').textContent = lateCount+' ครั้ง';
+    document.getElementById('s-ot').textContent   = totalOT.toFixed(1);
+
+    return { uniqueDays, lateCount, totalLate, totalOT, score, grade, filtered };
+}
+
+// ══ DASHBOARD ══
+function renderDashboard() {
+    const { uniqueDays, lateCount, totalLate, totalOT, score, grade } = updateStats();
+
+    // KPI ย้อนหลัง 7 วัน สำหรับ chart
+    const days7 = [];
+    for (let i=6; i>=0; i--) {
+        const d = new Date(); d.setDate(d.getDate()-i);
+        const ds = d.toLocaleDateString('en-CA');
+        const dayAtt = attendance.filter(a => {
+            const pd = parseDate(getVal(a,'วันที่'));
+            return pd && pd.toLocaleDateString('en-CA') === ds;
+        });
+        const hasIn   = dayAtt.some(a=>String(getVal(a,'สถานะ')).toUpperCase()==='CHECK_IN');
+        const lMin    = dayAtt.reduce((s,a)=>s+(parseInt(String(getVal(a,'สาย(นาที)')).replace(/[^0-9]/g,''))||0),0);
+        const dayName = d.toLocaleDateString('th-TH',{weekday:'short'}).replace('วัน','');
+        days7.push({ds, dayName, hasIn, lMin});
+    }
+    const maxBar = 60;
+
+    // grade config
+    const gradeMap = {
+        A:{cls:'grade-A',text:'ยอดเยี่ยม',sub:'ไม่มาสายเลย ผลงานดีเด่น'},
+        B:{cls:'grade-B',text:'ดี',sub:'มาสายน้อย ผลงานดี'},
+        C:{cls:'grade-C',text:'พอใช้',sub:'ควรพัฒนาความตรงต่อเวลา'},
+        D:{cls:'grade-D',text:'ต้องปรับปรุง',sub:'มาสายบ่อย กรุณาใส่ใจเวลา'},
+        F:{cls:'grade-F',text:'ไม่ผ่านเกณฑ์',sub:'โปรดพบผู้จัดการ'},
+    };
+    const gInfo = gradeMap[grade] || gradeMap.C;
+    const barColor = score>=80?'var(--green)':score>=60?'var(--amber)':'var(--red)';
+
+    const html = `
+    <!-- Performance Card -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Performance ประจำเดือน</div></div>
+      <div class="perf-grid">
+        <div class="perf-box">
+          <div class="pb-lbl">📅 วันทำงาน</div>
+          <div class="pb-val ok">${uniqueDays}</div>
+          <div class="pb-sub">วัน / เดือนนี้</div>
+        </div>
+        <div class="perf-box">
+          <div class="pb-lbl">⏰ มาสาย</div>
+          <div class="pb-val ${lateCount===0?'ok':lateCount<=2?'warn':'bad'}">${lateCount}</div>
+          <div class="pb-sub">ครั้ง (รวม ${totalLate} นาที)</div>
+        </div>
+        <div class="perf-box">
+          <div class="pb-lbl">🌙 OT สะสม</div>
+          <div class="pb-val" style="color:var(--purple)">${totalOT.toFixed(1)}</div>
+          <div class="pb-sub">ชั่วโมง</div>
+        </div>
+        <div class="perf-box">
+          <div class="pb-lbl">⭐ คะแนน</div>
+          <div class="pb-val ${score>=80?'ok':score>=60?'warn':'bad'}">${score}</div>
+          <div class="pb-sub">เต็ม 100 คะแนน</div>
+        </div>
+      </div>
+
+      <!-- Grade -->
+      <div class="grade-wrap">
+        <div class="grade-ring ${gInfo.cls}">${grade}</div>
+        <div class="grade-info">
+          <div class="grade-title">${gInfo.text}</div>
+          <div class="grade-sub">${gInfo.sub}</div>
+          <div class="prog-wrap">
+            <div class="prog-label"><span>คะแนน</span><span>${score}/100</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:${score}%;background:${barColor}"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7-Day Chart -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">📈 การมาทำงาน 7 วันล่าสุด</div></div>
+      <div class="chart-wrap">
+        <div class="chart-bars">
+          ${days7.map(d=>`
+            <div class="chart-bar-col">
+              <div class="chart-bar ${d.hasIn?(d.lMin>0?'late':'in'):''}"
+                style="height:${d.hasIn?Math.max(20,Math.min(100,100-Math.round(d.lMin/maxBar*100)))+'%':'8px'};opacity:${d.hasIn?1:.25}"></div>
+              <div class="chart-xlbl">${d.dayName}</div>
+            </div>`).join('')}
+        </div>
+        <div class="chart-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>มาตรงเวลา</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div>มาสาย</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--border2)"></div>ไม่มา</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Petition summary -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📋 สรุปคำร้อง</div>
+        <button onclick="switchView('form')" style="font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-l);border:none;border-radius:var(--r-full);padding:4px 12px;cursor:pointer">+ ยื่นใหม่</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        ${[
+          {lbl:'ทั้งหมด',val:petitions.length,color:'var(--navy)'},
+          {lbl:'อนุมัติ',val:petitions.filter(p=>p.Status==='Approved').length,color:'var(--green)'},
+          {lbl:'รออนุมัติ',val:petitions.filter(p=>!p.Status||p.Status==='Pending').length,color:'var(--amber)'},
+        ].map(s=>`
+          <div class="sum-box">
+            <span class="sum-lbl">${s.lbl}</span>
+            <span class="sum-val" style="color:${s.color}">${s.val}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+
+    const dc = document.getElementById('dash-content');
+    dc.innerHTML = html;
+    dc.style.display = 'flex';
+    document.getElementById('dash-loading').style.display = 'none';
+}
+
+// ══ ATTENDANCE TIMELINE (grouped by day) ══
+function renderAttendance() {
+    updateStats();
+    const filtered = getFilteredAtt();
+    const el = document.getElementById('att-list');
+    if (!filtered.length) {
+        el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>ไม่พบข้อมูลในช่วงที่เลือก</div>';
+        return;
+    }
+    // group by date
+    const grouped = {};
+    filtered.forEach(item => {
+        const ds = String(getVal(item,'วันที่')||'').slice(0,10);
+        if (!grouped[ds]) grouped[ds] = [];
+        grouped[ds].push(item);
+    });
+
+    el.innerHTML = Object.keys(grouped).sort((a,b)=>b.localeCompare(a)).map(ds => {
+        const rows = grouped[ds];
+        const inRow  = rows.find(r=>String(getVal(r,'สถานะ')).toUpperCase()==='CHECK_IN');
+        const outRow = rows.find(r=>String(getVal(r,'สถานะ')).toUpperCase()==='CHECK_OUT');
+        const late   = inRow ? (parseInt(String(getVal(inRow,'สาย(นาที)')).replace(/[^0-9]/g,''))||0) : 0;
+        const ot     = outRow? (parseFloat(String(getVal(outRow,'OT(ชม.)')||getVal(outRow,'OT(ชน.)')||0))||0) : 0;
+        const loc    = inRow ? String(getVal(inRow,'พิกัด')||'') : '';
+        const inZone = loc.toUpperCase().includes('IN_ZONE');
+
+        const dayBadge = late>0 ? `<span class="att-day-badge db-late">สาย ${late} น.</span>`
+                       : ot>0   ? `<span class="att-day-badge db-ot">OT ${ot} ชม.</span>`
+                       : inRow  ? `<span class="att-day-badge db-ok">มาตรงเวลา</span>` : '';
+
+        const dateObj = parseDate(ds);
+        const dateDisp = dateObj ? dateObj.toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'short',year:'numeric'}) : ds;
+
+        const buildRow = (row, isIn) => {
+            if (!row) return '';
+            const time = getVal(row,'เวลาเช็คอิน')||getVal(row,'เวลา')||'—';
+            const l    = isIn ? (parseInt(String(getVal(row,'สาย(นาที)')).replace(/[^0-9]/g,''))||0) : 0;
+            const o    = !isIn? (parseFloat(String(getVal(row,'OT(ชม.)')||getVal(row,'OT(ชน.)')||0))||0) : 0;
+            const zone = String(getVal(row,'พิกัด')||'');
+            const zoneHtml = zone ? (zone.toUpperCase().includes('IN_ZONE')
+                ? '<span class="att-flag flag-zone-in">✅ ในพื้นที่</span>'
+                : '<span class="att-flag flag-zone-out">📍 นอกพื้นที่</span>') : '';
+            return `<div class="att-row">
+                <span class="att-badge ${isIn?'badge-in':'badge-out'}">${isIn?'เข้างาน':'ออกงาน'}</span>
+                <div class="att-info">
+                    <div class="att-time">${time} น.</div>
+                    <div class="att-meta">${isIn&&l>0?`<span class="att-flag flag-late">สาย ${l} น.</span> `:''} ${!isIn&&o>0?`<span class="att-flag flag-ot">OT ${o} ชม.</span> `:''}${zoneHtml}</div>
+                </div>
+            </div>`;
         };
 
-        function App() {
-            const [view, setView] = useState('history'); 
-            const [attendance, setAttendance] = useState([]);
-            const [petitions, setPetitions] = useState([]);
-            const [loading, setLoading] = useState(true);
-            const [error, setError] = useState(null);
-            const [resolvedEmpId, setResolvedEmpId] = useState(localStorage.getItem('user_id'));
+        return `<div class="att-day">
+            <div class="att-day-header">
+                <div class="att-day-date">${dateDisp}</div>
+                ${dayBadge}
+            </div>
+            <div class="att-rows">
+                ${buildRow(inRow, true)}
+                ${buildRow(outRow, false)}
+                ${!inRow&&!outRow?'<div style="padding:10px 12px;font-size:12px;color:var(--light)">ไม่พบการลงเวลา</div>':''}
+            </div>
+        </div>`;
+    }).join('');
+}
 
-            const now = new Date();
-            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-            const today = now.toISOString().split('T')[0];
-            const [startDate, setStartDate] = useState(firstDay);
-            const [endDate, setEndDate] = useState(today);
+// ══ PETITIONS ══
+function renderPetitions() {
+    const el = document.getElementById('pet-list');
+    if (!petitions.length) {
+        el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div>ยังไม่มีรายการคำร้อง<br><small>กดปุ่ม + ยื่นคำร้องใหม่</small></div>';
+        return;
+    }
+    const sMap = {Approved:'s-approved ✅ อนุมัติ', Rejected:'s-rejected ❌ ไม่อนุมัติ', Pending:'s-pending 🕐 รอพิจารณา'};
+    el.innerHTML = [...petitions].reverse().map((p,i) => {
+        const st    = p.Status||'Pending';
+        const [cls,...words] = (sMap[st]||'s-pending 🕐 รอพิจารณา').split(' ');
+        const stTh  = words.join(' ');
+        const type  = getVal(p,'Type')||'—';
+        const date  = getVal(p,'Date')||'—';
+        const reason= getVal(p,'Reason')||'—';
+        const note  = getVal(p,'Manager_Note')||'';
+        const border= st==='Approved'?'var(--green)':st==='Rejected'?'var(--red)':'var(--amber)';
+        return `<div class="pet-card" style="border-left-color:${border};animation-delay:${i*0.05}s">
+            <div class="pet-status-row">
+                <span class="pet-type-chip">${type}</span>
+                <span class="pet-status ${cls}">${stTh}</span>
+            </div>
+            <div class="pet-reason">"${reason}"</div>
+            <div class="pet-meta">
+                <span>📅 สำหรับวัน: ${date}</span>
+                <span>ส่งเมื่อ: ${getVal(p,'Timestamp')||getVal(p,'Submit_Date')||'—'}</span>
+            </div>
+            ${note&&note!=='-'?`<div class="pet-note">💬 ผู้จัดการ: "${note}"</div>`:''}
+        </div>`;
+    }).join('');
+}
 
-            const empName = localStorage.getItem('user_name') || 'พนักงาน';
+// ══ SUBMIT PETITION (logic เดิมทุกบรรทัด) ══
+async function handleSubmitPetition() {
+    const date   = document.getElementById('f-date').value;
+    const type   = document.getElementById('f-type').value;
+    const reason = document.getElementById('f-reason').value.trim();
+    if (!date||!reason) { alert('⚠️ กรุณากรอกข้อมูลให้ครบ'); return; }
+    const payload = { action:'SUBMIT_PETITION', empId:resolvedEmpId, name:empName, date, type, reason };
+    const btn = document.getElementById('f-submit-btn');
+    btn.disabled=true; btn.textContent='กำลังส่ง...';
+    try {
+        await fetch(API_URL, { method:'POST', mode:'no-cors', body:JSON.stringify(payload) });
+        setTimeout(()=>{ alert('✅ ส่งคำร้องเรียบร้อยแล้ว'); switchView('petition'); fetchAllData(resolvedEmpId); btn.disabled=false; btn.textContent='ส่งคำร้อง'; }, 800);
+    } catch(e) { alert('❌ ส่งข้อมูลไม่สำเร็จ'); btn.disabled=false; btn.textContent='ส่งคำร้อง'; }
+}
 
-            // --- 🚀 ฟังก์ชันพิเศษ: ค้นหารหัสพนักงานจากชื่อ (แก้ปัญหา Login ไม่ส่ง ID) ---
-            const resolveIdByName = useCallback(async (name) => {
-                try {
-                    const res = await fetch(`${API_URL}?action=GET_EMPLOYEES&t=${Date.now()}`);
-                    const emps = await res.json();
-                    const match = emps.find(e => {
-                        const eName = (e['ชื่อเล่น'] || e['Nickname'] || e['ชื่อ-นามสกุล'] || "").trim();
-                        return eName === name.trim();
-                    });
-                    if (match) {
-                        const foundId = match['รหัสพนักงาน'] || match['Employee_ID'];
-                        localStorage.setItem('user_id', foundId); // บันทึกไว้ใช้ครั้งหน้า
-                        setResolvedEmpId(foundId);
-                        return foundId;
-                    }
-                    return null;
-                } catch (e) {
-                    console.error("ID Resolve Error", e);
-                    return null;
-                }
-            }, []);
+// ══ VIEW SWITCHING ══
+function switchView(v) {
+    ['dash','history','petition','form'].forEach(s=>{
+        document.getElementById('sec-'+s).classList.toggle('hidden', s!==v);
+    });
+    ['dash','history','petition'].forEach(t=>{
+        const pill=document.getElementById('tab-'+t); if(pill)pill.classList.toggle('active',t===v);
+        const bn=document.getElementById('bn-'+t); if(bn)bn.classList.toggle('active',t===v);
+    });
+    if(v==='history') renderAttendance();
+    if(v==='petition') renderPetitions();
+}
 
-            const fetchAllData = useCallback(async (id) => {
-                setLoading(true);
-                setError(null);
-                try {
-                    const [resAttendance, resPetitions] = await Promise.all([
-                        fetch(`${API_URL}?action=GET_MY_HISTORY&empId=${id}&t=${Date.now()}`).then(r => r.json()),
-                        fetch(`${API_URL}?action=GET_MY_PETITIONS&empId=${id}&t=${Date.now()}`).then(r => r.json())
-                    ]);
-                    setAttendance(Array.isArray(resAttendance) ? resAttendance : (resAttendance.data || []));
-                    setPetitions(Array.isArray(resPetitions) ? resPetitions : (resPetitions.data || []));
-                } catch (e) {
-                    setError("การเชื่อมต่อฐานข้อมูลขัดข้อง");
-                } finally {
-                    setLoading(false);
-                }
-            }, []);
+// ══ UI HELPERS ══
+function showLoading() {
+    document.getElementById('dash-loading').style.display='block';
+    document.getElementById('dash-content').style.display='none';
+    document.getElementById('att-list').innerHTML='<div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">กำลังซิงค์ข้อมูล...</div></div>';
+    document.getElementById('pet-list').innerHTML='<div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">กำลังโหลด...</div></div>';
+}
 
-            useEffect(() => {
-                const init = async () => {
-                    let currentId = resolvedEmpId;
-                    
-                    // ถ้าไม่มี ID แต่มีชื่อ ให้พยายามหา ID
-                    if (!currentId && empName !== 'พนักงาน') {
-                        setLoading(true);
-                        currentId = await resolveIdByName(empName);
-                    }
-
-                    if (!currentId) {
-                        setLoading(false);
-                        setError("ไม่พบรหัสพนักงานในระบบ โปรดล็อกอินใหม่อีกครั้ง");
-                        return;
-                    }
-
-                    fetchAllData(currentId);
-                };
-                init();
-            }, [resolvedEmpId, empName, resolveIdByName, fetchAllData]);
-
-            const getVal = (item, key) => {
-                if (!item) return "";
-                const target = Object.keys(item).find(k => k.trim() === key.trim());
-                return target ? item[target] : "";
-            };
-
-            const parseDate = (d) => {
-                if (!d) return null;
-                const s = String(d).split('T')[0].trim();
-                const p = s.includes('-') ? s.split('-') : s.split('/');
-                if (p.length < 3) return null;
-                let y = parseInt(p[0]), m = parseInt(p[1])-1, day = parseInt(p[2]);
-                if (String(p[0]).length < 4) { day = parseInt(p[0]); m = parseInt(p[1])-1; y = parseInt(p[2]); }
-                if (y > 2400) y -= 543;
-                return new Date(y, m, day, 0, 0, 0, 0);
-            };
-
-            const filteredAttendance = useMemo(() => {
-                const s = new Date(startDate).setHours(0,0,0,0);
-                const e = new Date(endDate).setHours(23,59,59,999);
-                return attendance.filter(item => {
-                    const d = parseDate(getVal(item, 'วันที่'));
-                    return d && d.getTime() >= s && d.getTime() <= e;
-                });
-            }, [attendance, startDate, endDate]);
-
-            const stats = useMemo(() => {
-                const uniqueDays = new Set(filteredAttendance.map(i => parseDate(getVal(i, 'วันที่'))?.toDateString()).filter(Boolean)).size;
-                const totalLate = filteredAttendance.reduce((sum, item) => {
-                    const lateMins = String(getVal(item, 'สาย(นาที)')).replace(/[^0-9]/g, '');
-                    return sum + (parseInt(lateMins) || 0);
-                }, 0);
-                return { days: uniqueDays, lateMins: totalLate };
-            }, [filteredAttendance]);
-
-            const handleSubmitPetition = async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                const payload = { 
-                    action: 'SUBMIT_PETITION', 
-                    empId: resolvedEmpId, 
-                    name: empName, 
-                    date: formData.get('date'), 
-                    type: formData.get('type'), 
-                    reason: formData.get('reason') 
-                };
-                setLoading(true);
-                try {
-                    await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                    setTimeout(() => { 
-                        alert("✅ ส่งคำร้องเรียบร้อยแล้ว"); 
-                        setView('petition'); 
-                        fetchAllData(resolvedEmpId); 
-                    }, 800);
-                } catch (e) { 
-                    alert("❌ ส่งข้อมูลไม่สำเร็จ"); 
-                    setLoading(false); 
-                }
-            };
-
-            return (
-                <div className="max-w-md mx-auto min-h-screen relative overflow-x-hidden">
-                    <header className="glass-header pt-12 pb-10 px-6 text-white shadow-2xl relative overflow-hidden">
-                        <div className="flex justify-between items-start mb-8 relative z-10">
-                            <button onClick={() => window.location.href='Main_Hub.html'} className="p-3 bg-white/10 rounded-2xl backdrop-blur-md border border-white/20 active:scale-95 transition-all">
-                                <Icon name="home" />
-                            </button>
-                            <div className="text-right">
-                                <h1 className="text-2xl font-black italic tracking-tighter uppercase leading-none">Employee Portal</h1>
-                                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-2 italic">
-                                    {empName} ({resolvedEmpId || 'ค้นหารหัส...'})
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3 relative z-10 font-bold">
-                            <div className="bg-white/5 border border-white/10 p-4 rounded-3xl text-center backdrop-blur-sm">
-                                <span className="text-[8px] uppercase text-slate-400 block mb-1">วันทำงาน</span>
-                                <span className="text-2xl italic tracking-tight">{stats.days}</span>
-                            </div>
-                            <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-3xl text-center backdrop-blur-sm">
-                                <span className="text-[8px] uppercase text-rose-300 block mb-1">สายสะสม</span>
-                                <span className="text-2xl italic tracking-tight text-rose-400">{stats.lateMins}</span>
-                            </div>
-                            <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-3xl text-center backdrop-blur-sm">
-                                <span className="text-[8px] uppercase text-emerald-300 block mb-1">คำร้อง</span>
-                                <span className="text-2xl italic tracking-tight text-emerald-400">{petitions.length}</span>
-                            </div>
-                        </div>
-                    </header>
-
-                    <main className="px-5 -mt-6 relative z-20">
-                        <div className="flex bg-white p-1.5 rounded-full shadow-xl border border-slate-100 mb-8 max-w-[280px] mx-auto sticky top-4 z-50">
-                            <button onClick={() => setView('history')} className={`flex-1 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${view === 'history' ? 'tab-active' : 'text-slate-400'}`}>ประวัติเข้างาน</button>
-                            <button onClick={() => setView('petition')} className={`flex-1 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${view === 'petition' ? 'tab-active' : 'text-slate-400'}`}>สถานะคำร้อง</button>
-                        </div>
-
-                        {loading ? (
-                            <div className="py-24 text-center">
-                                <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest animate-pulse italic">กำลังซิงค์ข้อมูลพนักงาน...</p>
-                            </div>
-                        ) : error ? (
-                            <div className="py-20 text-center bg-white rounded-[3rem] border border-rose-100 p-10 shadow-lg card-animate">
-                                <Icon name="alert-circle" size={56} className="mx-auto text-rose-400 mb-4" />
-                                <h3 className="text-lg font-black text-slate-800 mb-2 uppercase italic">ไม่พบข้อมูลพนักงาน</h3>
-                                <p className="text-xs font-bold text-slate-400 mb-8 leading-relaxed italic">{error}</p>
-                                <button onClick={() => window.location.href='index.html'} className="w-full py-5 bg-slate-900 text-white rounded-[2rem] text-[11px] font-black uppercase tracking-widest active:scale-95 shadow-xl">
-                                    กลับหน้า Login
-                                </button>
-                            </div>
-                        ) : (
-                            <>
-                                {view === 'history' && (
-                                    <div className="space-y-6">
-                                        <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-4">
-                                            <div className="flex items-center gap-2 mb-2"><Icon name="filter" size={14} className="text-blue-500" /><h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">กรองวันที่</h3></div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none text-xs font-bold text-blue-600" />
-                                                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none text-xs font-bold text-blue-600" />
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            {filteredAttendance.length > 0 ? filteredAttendance.map((item, idx) => {
-                                                const time = getVal(item, 'เวลาเช็คอิน') || getVal(item, 'เวลา');
-                                                const dateStr = getVal(item, 'วันที่');
-                                                const status = getVal(item, 'สถานะ');
-                                                const late = parseInt(getVal(item, 'สาย(นาที)')) || 0;
-                                                return (
-                                                    <div key={idx} className="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-100 flex justify-between items-center card-animate" style={{ animationDelay: `${idx * 0.05}s` }}>
-                                                        <div className="space-y-1">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase ${late > 0 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                                                                    {status === 'CHECK_IN' ? 'เข้างาน' : 'ออกงาน'} {late > 0 ? `(สาย ${late}น.)` : ''}
-                                                                </span>
-                                                                <span className="text-[9px] font-black text-slate-300 italic">{dateStr}</span>
-                                                            </div>
-                                                            <h4 className="font-black text-slate-700 text-lg tracking-tight">{time} น.</h4>
-                                                        </div>
-                                                        <Icon name="check-circle" size={18} className="text-slate-200" />
-                                                    </div>
-                                                );
-                                            }) : <div className="py-20 text-center opacity-40 italic text-xs">ไม่พบข้อมูล</div>}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {view === 'petition' && (
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-center px-2 mb-2"><h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">คำร้องของฉัน</h3><button onClick={() => setView('form')} className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-full text-[9px] font-black uppercase shadow-lg shadow-blue-200">สร้างใหม่</button></div>
-                                        <div className="space-y-3">
-                                            {petitions.length > 0 ? petitions.map((p, idx) => (
-                                                <div key={idx} className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 card-animate">
-                                                    <div className="flex justify-between items-start mb-4"><span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase ${p.Status === 'Approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-orange-100 text-orange-600'}`}>{p.Status || 'Pending'}</span><span className="text-[9px] font-black text-slate-300">📅 {getVal(p, 'Date')}</span></div>
-                                                    <h4 className="font-black text-slate-700 uppercase italic text-sm mb-1">{getVal(p, 'Type')}</h4>
-                                                    <p className="text-[11px] text-slate-500 italic">"{getVal(p, 'Reason')}"</p>
-                                                </div>
-                                            )) : <div className="py-20 text-center opacity-30 italic text-xs">ยังไม่มีรายการ</div>}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {view === 'form' && (
-                                    <div className="bg-white p-8 rounded-[3rem] shadow-2xl border border-slate-100 max-w-md mx-auto card-animate relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full -mr-12 -mt-12 opacity-50"></div>
-                                        <h3 className="text-2xl font-black italic uppercase text-slate-900 mb-2">ยื่นคำร้อง</h3>
-                                        <p className="text-[10px] text-blue-600 font-black uppercase tracking-[0.2em] mb-8">ส่งข้อมูลถึงผู้พิจารณา</p>
-                                        <form onSubmit={handleSubmitPetition} className="space-y-5">
-                                            <input type="date" name="date" required className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 outline-none focus:border-blue-500 font-bold text-sm" defaultValue={today} />
-                                            <select name="type" required className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 outline-none focus:border-blue-500 font-bold text-sm appearance-none">
-                                                <option value="Sick Leave">ลาป่วย</option><option value="Personal Leave">ลากิจ</option><option value="Correction">แก้ไขเวลา</option>
-                                            </select>
-                                            <textarea name="reason" rows="4" required className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 outline-none focus:border-blue-500 font-bold text-sm italic" placeholder="ระบุเหตุผล..."></textarea>
-                                            <div className="flex gap-3 pt-4"><button type="button" onClick={() => setView('history')} className="flex-1 py-4 bg-slate-100 text-slate-400 rounded-2xl font-black uppercase text-xs">ยกเลิก</button><button type="submit" className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs shadow-lg shadow-blue-200">ส่งคำร้อง</button></div>
-                                        </form>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </main>
-
-                    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-5 bg-white/80 backdrop-blur-2xl p-3 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-white/50 z-[100]">
-                        <button onClick={() => setView('history')} className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${view === 'history' ? 'bg-slate-900 text-white scale-110' : 'text-slate-300'}`}><Icon name="clock" size={24} /></button>
-                        <button onClick={() => setView('form')} className={`w-14 h-14 rounded-full flex items-center justify-center bg-blue-600 text-white shadow-xl active:scale-90 ${view === 'form' ? 'ring-4 ring-blue-100' : ''}`}><Icon name="plus" size={28} /></button>
-                        <button onClick={() => setView('petition')} className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${view === 'petition' ? 'bg-slate-900 text-white scale-110' : 'text-slate-300'}`}><Icon name="file-text" size={24} /></button>
-                    </div>
-                </div>
-            );
-        }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+function showError(msg) {
+    const html=`<div class="error-card"><div style="font-size:40px;margin-bottom:12px">⚠️</div><div style="font-size:16px;font-weight:800;color:var(--red);margin-bottom:6px">ไม่พบข้อมูล</div><div style="font-size:13px;color:var(--muted)">${msg}</div><button class="btn-err-back" onclick="location.href='index.html'">↩ กลับหน้า Login</button></div>`;
+    document.getElementById('dash-loading').style.display='none';
+    document.getElementById('dash-content').innerHTML=html; document.getElementById('dash-content').style.display='flex';
+    document.getElementById('att-list').innerHTML=html;
+}
+</script>
 </body>
 </html>
