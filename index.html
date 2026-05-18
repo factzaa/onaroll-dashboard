@@ -423,8 +423,8 @@
 
     <!-- ACTIONS -->
     <div class="action-row">
-        <button onclick="handleCheckAction('CHECK_IN')"  id="btn-clock-in"  class="btn-action btn-disabled">บันทึกเข้างาน</button>
-        <button onclick="handleCheckAction('CHECK_OUT')" id="btn-clock-out" class="btn-action btn-disabled">บันทึกออกงาน</button>
+        <button onclick="handleCheckAction('CHECK_IN')"  id="btn-clock-in"  class="btn-action">บันทึกเข้างาน</button>
+        <button onclick="handleCheckAction('CHECK_OUT')" id="btn-clock-out" class="btn-action">บันทึกออกงาน</button>
     </div>
 
 
@@ -499,24 +499,21 @@
         navigator.geolocation.getCurrentPosition(pos => { 
             userPos = pos.coords;
             const dist = calculateDistance(userPos.latitude, userPos.longitude, SHOP_LAT, SHOP_LON);
+            // 🟢 ปุ่มเปิดเสมอ ไม่ว่าจะอยู่ในหรือนอกเขต — แสดง banner เป็น visual indicator แทน
+            document.getElementById('btn-clock-in').classList.remove('btn-disabled');
+            document.getElementById('btn-clock-out').classList.remove('btn-disabled');
             if (dist <= RADIUS_IN) {
                 dot.className = 'dot-in';
                 text.innerText = `✅ อยู่ในพื้นที่ร้าน (${Math.round(dist)}ม.)`;
                 banner.className = 'in-zone';
-                document.getElementById('btn-clock-in').classList.remove('btn-disabled');
-                document.getElementById('btn-clock-out').classList.remove('btn-disabled');
             } else if (dist <= RADIUS_LIMIT) {
                 dot.className = 'dot-out';
-                text.innerText = `⚠️ นอกรัศมีเช็คอิน (${Math.round(dist)}ม.)`;
+                text.innerText = `⚠️ นอกรัศมีเช็คอิน (${Math.round(dist)}ม.) — กดบันทึกได้แต่จะถูกระบุว่านอกเขต`;
                 banner.className = 'out-zone';
-                document.getElementById('btn-clock-in').classList.add('btn-disabled');
-                document.getElementById('btn-clock-out').classList.remove('btn-disabled');
             } else {
                 dot.className = 'dot-out';
-                text.innerText = `❌ นอกพื้นที่ทำงาน (${Math.round(dist)}ม.)`;
+                text.innerText = `❌ นอกพื้นที่ทำงาน (${Math.round(dist)}ม.) — กดบันทึกได้แต่จะถูกระบุว่านอกเขต`;
                 banner.className = 'out-zone';
-                document.getElementById('btn-clock-in').classList.add('btn-disabled');
-                document.getElementById('btn-clock-out').classList.add('btn-disabled');
             }
         }, (err) => {
             navigator.geolocation.getCurrentPosition(p => { userPos = p.coords; }, null, { enableHighAccuracy: false });
@@ -587,9 +584,14 @@
     async function handleCheckAction(type) {
         const id = document.getElementById('emp-id').value.trim().toUpperCase();
         if (!id || !capturedBlob) return showToast("⚠️ กรุณากรอก ID และสแกนหน้า", "error");
-        if (type === 'CHECK_IN' && userPos) {
+        // 🟢 ไม่ block อีกแล้ว — ถ้าอยู่นอกเขต ขอ confirm ก่อน แล้วบันทึกพร้อม flag OUT_OF_ZONE
+        if (userPos) {
             const dGuard = calculateDistance(userPos.latitude, userPos.longitude, SHOP_LAT, SHOP_LON);
-            if (dGuard > RADIUS_IN) return showToast(`❌ อยู่นอกพื้นที่ (${Math.round(dGuard)}ม.) — ไม่สามารถเช็คอินได้`, "error");
+            if (dGuard > RADIUS_IN) {
+                const actionLabel = type === 'CHECK_IN' ? 'เช็คอิน' : 'เช็คเอาท์';
+                const ok = confirm(`⚠️ คุณอยู่นอกพื้นที่ร้าน (${Math.round(dGuard)} เมตร)\n\nต้องการบันทึก${actionLabel}จากนอกเขตหรือไม่?\n\n(ระบบจะระบุในประวัติว่า "นอกพื้นที่")`);
+                if (!ok) return;
+            }
         }
         const btn = type === 'CHECK_IN' ? document.getElementById('btn-clock-in') : document.getElementById('btn-clock-out');
         const originalText = btn.innerText; btn.disabled = true; btn.innerText = "กำลังบันทึก..."; 
@@ -643,7 +645,15 @@
                 ? `${status} ${lateMinutes > 0 ? `(${lateMinutes} นาที)` : ""}\nเวลา: ${now.toLocaleTimeString('th-TH')}`
                 : (otHours > 0 ? `OT: ${otHours} ชม.\nเวลา: ${now.toLocaleTimeString('th-TH')}` : `เลิกงานปกติ\nเวลา: ${now.toLocaleTimeString('th-TH')}`);
             document.getElementById('result-screen').classList.remove('hidden');
-            saveHistory({ type, nickname, time: now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false}), lateMinutes, otHours });
+            // ── คำนวณ zone ตอนบันทึก เพื่อแสดงในประวัติ + ส่งให้ Sheet ──
+            const zoneInfo = (() => {
+                if (!userPos) return { inZone: false, label: 'ไม่ทราบพิกัด', distM: null };
+                const d = calculateDistance(userPos.latitude, userPos.longitude, SHOP_LAT, SHOP_LON);
+                return d <= RADIUS_IN
+                    ? { inZone: true,  label: 'IN_ZONE',                          distM: Math.round(d) }
+                    : { inZone: false, label: 'OUT_OF_ZONE,'+Math.round(d)+'m',   distM: Math.round(d) };
+            })();
+            saveHistory({ type, nickname, time: now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false}), lateMinutes, otHours, inZone: zoneInfo.inZone, distM: zoneInfo.distM });
 
         } catch (e) { 
             console.error(e);
@@ -689,7 +699,13 @@
         if (!list || !list.length) { el.innerHTML = '<div class="hist-empty">ยังไม่มีรายการวันนี้</div>'; return; }
         el.innerHTML = [...list].reverse().map(h => {
             const isIn = h.type === 'CHECK_IN';
-            const zoneHtml = isIn ? '<span class="hist-zone ok">✔ ในพื้นที่</span>' : '';
+            // 🟢 แสดง zone status ทั้ง CHECK_IN และ CHECK_OUT — เขียวถ้าในเขต, แดงถ้านอกเขต
+            let zoneHtml = '';
+            if (h.inZone === true) {
+                zoneHtml = '<span class="hist-zone ok">✔ ในพื้นที่</span>';
+            } else if (h.inZone === false) {
+                zoneHtml = '<span class="hist-zone no">⚠ นอกพื้นที่'+(h.distM?' ('+h.distM+'ม.)':'')+'</span>';
+            }
             const lateHtml = h.lateMinutes > 0 ? `<span class="hist-late">สาย ${h.lateMinutes}น.</span>` : '';
             const otHtml   = h.otHours   > 0 ? `<span class="hist-late">OT ${h.otHours}ชม.</span>` : '';
             return `<div class="hist-row">
