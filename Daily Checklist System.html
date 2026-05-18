@@ -53,6 +53,50 @@ input,textarea,select{font-size:16px!important}
 .tab-btn.tab-active{background:#fff;color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .tab-btn:active{transform:scale(.96)}
 
+/* ── URGENT TASKS ── */
+.urgent-badge{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;background:#e53935;color:#fff;border-radius:9px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;box-shadow:0 0 0 2px #1a2b5e;animation:badgePulse 1.6s ease-in-out infinite}
+@keyframes badgePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.urgent-banner{background:linear-gradient(135deg,#fef2f2 0%,#fff7ed 100%);border:1px solid #fecaca;border-left:4px solid #e53935;border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s}
+.urgent-banner:active{transform:scale(.98)}
+.urgent-banner-icon{font-size:24px;animation:shake 2s ease-in-out infinite}
+@keyframes shake{0%,90%,100%{transform:rotate(0)}93%{transform:rotate(-12deg)}96%{transform:rotate(12deg)}}
+.urgent-banner-text{flex:1}
+.urgent-banner-title{font-size:13px;font-weight:700;color:#b91c1c;margin-bottom:2px}
+.urgent-banner-sub{font-size:11px;color:#7c2d12;font-weight:500}
+.urgent-banner-arrow{font-size:18px;color:#dc2626;font-weight:700}
+
+.u-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:all .15s}
+.u-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+.u-card.p-HIGH::before{background:#e53935}
+.u-card.p-NORMAL::before{background:#f57c00}
+.u-card.p-LOW::before{background:#00897b}
+.u-card.is-overdue{background:#fef2f2}
+.u-card.is-overdue::before{background:#e53935;animation:pulseRed 2s infinite}
+@keyframes pulseRed{0%,100%{opacity:1}50%{opacity:.4}}
+.u-card-head{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.u-pri{font-size:9px;font-weight:700;padding:3px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:.5px;color:#fff}
+.u-pri.p-HIGH{background:#e53935}
+.u-pri.p-NORMAL{background:#f57c00}
+.u-pri.p-LOW{background:#00897b}
+.u-due{font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+.u-due.is-soon{background:#fff3e0;color:#c2410c;border-color:#fed7aa}
+.u-due.is-over{background:#fee2e2;color:#b91c1c;border-color:#fecaca;font-weight:700}
+.u-zone{font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;background:#e0e7ff;color:#3730a3;border:1px solid #c7d2fe;margin-left:auto}
+.u-name{font-size:14px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:4px}
+.u-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px}
+.u-photo-req{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;margin-bottom:8px}
+.u-photos{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.u-photos img{width:44px;height:44px;border-radius:8px;object-fit:cover;border:2px solid #fff;box-shadow:0 0 0 1px var(--border)}
+.u-add-photo{width:44px;height:44px;border-radius:8px;background:var(--surface2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--light);font-size:18px}
+.u-add-photo:active{transform:scale(.92);background:var(--blue-light)}
+.u-actions{display:flex;gap:6px;margin-top:10px}
+.u-btn-done{flex:1;padding:10px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;box-shadow:0 2px 6px rgba(16,185,129,.3)}
+.u-btn-done:active{transform:scale(.97)}
+.u-btn-done:disabled{background:#cbd5e1;cursor:not-allowed;box-shadow:none}
+.u-status-tag{font-size:10px;font-weight:700;padding:5px 10px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;text-align:center;flex:1}
+.u-status-tag.st-DONE{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
+.u-status-tag.st-OVERDUE{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+
 /* ══ MAIN ══ */
 .main{max-width:640px;margin:0 auto;padding:16px 14px}
 
@@ -259,6 +303,7 @@ input,textarea,select{font-size:16px!important}
     <button class="tab-btn" id="tab-Opening" onclick="changeTab('Opening')">เปิดร้าน</button>
     <button class="tab-btn" id="tab-ShiftChange" onclick="changeTab('ShiftChange')">ระหว่างวัน</button>
     <button class="tab-btn" id="tab-Closing" onclick="changeTab('Closing')">ปิดร้าน</button>
+    <button class="tab-btn" id="tab-Urgent" onclick="changeTab('Urgent')" style="position:relative">⚡ ด่วน<span id="urgent-badge" class="urgent-badge hidden">0</span></button>
     <button class="tab-btn tab-active" id="tab-Dashboard" onclick="changeTab('Dashboard')">แดชบอร์ด</button>
   </div>
 </div>
@@ -323,6 +368,17 @@ input,textarea,select{font-size:16px!important}
     <div id="empty-state" class="hidden">
       <div style="font-size:40px;margin-bottom:12px">✅</div>
       <p style="font-size:13px;font-weight:500">ไม่มีงานค้างในช่วงนี้<br><span style="font-size:11px;color:var(--light)">Everything is clear.</span></p>
+    </div>
+  </div>
+
+  <!-- URGENT VIEW — งานเร่งด่วนของฉัน -->
+  <div id="urgent-view" class="hidden" style="padding-bottom:20px">
+    <div id="urgent-container"></div>
+    <div id="urgent-empty" class="hidden">
+      <div style="text-align:center;padding:48px 20px;color:var(--light)">
+        <div style="font-size:40px;margin-bottom:12px">🎉</div>
+        <p style="font-size:13px;font-weight:500">ไม่มีงานเร่งด่วนของฉันตอนนี้<br><span style="font-size:11px;color:var(--light)">All clear, great work!</span></p>
+      </div>
     </div>
   </div>
 
@@ -394,8 +450,8 @@ input,textarea,select{font-size:16px!important}
         // ── CACHE (3 min TTL) ──
         const CACHE_KEY = 'or_checklist_v2';
         const CACHE_TTL = 3 * 60 * 1000;
-        function _saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), masterTasks, todayRecordsMap, fullHistory })); } catch(e) {} }
-        function _loadCache() { try { const o = JSON.parse(localStorage.getItem(CACHE_KEY)||'null'); if(!o||Date.now()-o.ts>CACHE_TTL) return false; masterTasks=o.masterTasks||[]; todayRecordsMap=o.todayRecordsMap||{}; fullHistory=o.fullHistory||[]; return true; } catch(e){ return false; } }
+        function _saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), masterTasks, todayRecordsMap, fullHistory, urgentTasks })); } catch(e) {} }
+        function _loadCache() { try { const o = JSON.parse(localStorage.getItem(CACHE_KEY)||'null'); if(!o||Date.now()-o.ts>CACHE_TTL) return false; masterTasks=o.masterTasks||[]; todayRecordsMap=o.todayRecordsMap||{}; fullHistory=o.fullHistory||[]; urgentTasks=o.urgentTasks||[]; return true; } catch(e){ return false; } }
 
         Chart.register(ChartDataLabels);
         const API_URL = 'https://script.google.com/macros/s/AKfycbxxjcQkhViS0-_7HVY_Ud9ADeKfXxBrq30hegHai_AGrjgQm_oTliQuMB1dpLe75Zc/exec';
@@ -404,9 +460,11 @@ input,textarea,select{font-size:16px!important}
         let masterTasks = [], todayRecordsMap = {}, fullHistory = [];
         let activeTab = 'Dashboard', currentStatusFilter = 'all', currentStaffFilter = null, myChart = null;
         let pendingPhotos = {}, fixPhotos = [], currentTaskId = "";
+        let urgentTasks = [], urgentPhotos = {}; // 🔥 urgent state
 
         const userName = localStorage.getItem('user_name') || "Verified Staff";
         const userPos = localStorage.getItem('user_pos') || "Staff";
+        const userEmpId = (localStorage.getItem('user_emp_id') || localStorage.getItem('emp_id') || '').toUpperCase();
 
         // 🚀 🆕 ฟังก์ชันรวมสำหรับการทำ ID ให้ปลอดภัยและเหมือนกันทั้งระบบ
         const getSafeId = (id) => {
@@ -458,7 +516,7 @@ input,textarea,select{font-size:16px!important}
             // ⚡ Show cache instantly then fetch fresh
             if (_loadCache()) {
                 document.getElementById('job-status-text').innerText = '⚡ Cache';
-                setTimeout(renderDashboard, 30);
+                setTimeout(() => { renderDashboard(); updateUrgentBadge(); }, 30);
             }
             fetchData();
         };
@@ -467,17 +525,22 @@ input,textarea,select{font-size:16px!important}
             const icon = document.getElementById('sync-icon');
             icon?.classList.add('animate-spin');
             try {
-                const [resMaster, resRecords, resHistory] = await Promise.all([
+                const [resMaster, resRecords, resHistory, resUrgent] = await Promise.all([
                     fetch(`${API_URL}?action=GET_MASTER_TASKS&t=${Date.now()}`).then(r => r.json()),
                     fetch(`${API_URL}?action=GET_TODAY_PROGRESS&t=${Date.now()}`).then(r => r.json()),
-                    fetch(`${API_URL}?action=GET_TODAY_RECORDS&t=${Date.now()}`).then(r => r.json())
+                    fetch(`${API_URL}?action=GET_TODAY_RECORDS&t=${Date.now()}`).then(r => r.json()),
+                    fetch(`${API_URL}?action=GET_URGENT_TASKS&t=${Date.now()}`).then(r => r.json()).catch(() => [])
                 ]);
                 masterTasks = Array.isArray(resMaster) ? resMaster : [];
                 todayRecordsMap = resRecords || {};
                 fullHistory = Array.isArray(resHistory) ? resHistory : [];
-                
+                urgentTasks = Array.isArray(resUrgent) ? resUrgent : []; // 🔥
+                updateUrgentBadge();
+
                 if(activeTab === 'Dashboard') {
                    setTimeout(renderDashboard, 100); 
+                } else if (activeTab === 'Urgent') {
+                   renderUrgent();
                 } else {
                    renderChecklist();
                 }
@@ -942,11 +1005,17 @@ window.changeTab = function(tabId) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
     document.getElementById('tab-' + tabId).classList.add('tab-active');
     const isDash = tabId === 'Dashboard';
+    const isUrgent = tabId === 'Urgent';
     document.getElementById('dashboard-view').style.display = isDash ? 'block' : 'none';
     const cv = document.getElementById('checklist-view');
-    cv.style.display = isDash ? 'none' : 'block';
-    cv.classList.toggle('hidden', isDash);
-    if (isDash) setTimeout(renderDashboard, 100); else renderChecklist();
+    cv.style.display = (!isDash && !isUrgent) ? 'block' : 'none';
+    cv.classList.toggle('hidden', isDash || isUrgent);
+    const uv = document.getElementById('urgent-view');
+    uv.style.display = isUrgent ? 'block' : 'none';
+    uv.classList.toggle('hidden', !isUrgent);
+    if (isDash) setTimeout(renderDashboard, 100);
+    else if (isUrgent) renderUrgent();
+    else renderChecklist();
 };
 
 // Fix: renderChecklist zone grouping CSS
@@ -1114,7 +1183,277 @@ window.addEventListener('load', function() {
     // ensure dashboard is visible at start
     document.getElementById('dashboard-view').style.display = 'block';
     document.getElementById('checklist-view').style.display = 'none';
+    const uv = document.getElementById('urgent-view'); if (uv) uv.style.display = 'none';
 });
+
+// ════════════════════════════════════════════════════════════════
+//  🔥 URGENT TASKS — งานเร่งด่วนของพนักงาน
+// ════════════════════════════════════════════════════════════════
+function todayStrLocal() {
+    const d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+// คืน true ถ้างาน urgent นี้เกี่ยวกับ user คนปัจจุบัน (ตาม position หรือ empId)
+// admin/manager เห็นทุกอย่าง
+function isUrgentForMe(u) {
+    const role = (localStorage.getItem('user_role')||'').toLowerCase();
+    if (role === 'admin' || role === 'owner' || role === 'manager') return true;
+    const at = String(u.assign_to||'').trim();
+    if (!at) return true; // ไม่ระบุ = ทุกคน
+    if (at.startsWith('POS:')) {
+        const targets = at.slice(4).split('|').map(s => normalize(s).toLowerCase()).filter(Boolean);
+        const myPos = normalize(userPos).toLowerCase();
+        return targets.some(t => myPos.includes(t) || t.includes(myPos));
+    }
+    if (at.startsWith('IND:')) {
+        const ids = at.slice(4).split('|').map(s => s.trim().toUpperCase()).filter(Boolean);
+        return ids.includes(userEmpId);
+    }
+    // assign_to แบบ raw — เช็คทั้ง position และ empId
+    const atLow = at.toLowerCase();
+    return atLow.includes(userPos.toLowerCase()) || (userEmpId && atLow.includes(userEmpId.toLowerCase()));
+}
+
+// คืน true ถ้างาน urgent active ในวันที่ปัจจุบัน
+function isUrgentActiveToday(u) {
+    const today = todayStrLocal();
+    // RECURRING: today ระหว่าง recur_start และ recur_end
+    if (u.assign_type === 'RECURRING') {
+        const s = normalizeDate(u.recur_start), e = normalizeDate(u.recur_end);
+        return s && e && s <= today && today <= e;
+    }
+    // ONE_TIME: due_date >= today (รวมเลยกำหนดก็ยังต้องโชว์)
+    const d = normalizeDate(u.due_date);
+    if (!d) return false;
+    // โชว์ตั้งแต่วันนี้ + งานที่เลยมาแล้วแต่ยังไม่เสร็จ
+    return d >= today || (d < today && u.status !== 'DONE' && u.status !== 'CANCELLED');
+}
+
+// คืน list งาน urgent ของฉันที่ยัง "ต้องทำ" (ไม่นับ DONE/CANCELLED)
+function myActiveUrgents() {
+    return (urgentTasks||[])
+        .filter(u => u.status !== 'DONE' && u.status !== 'CANCELLED')
+        .filter(isUrgentForMe)
+        .filter(isUrgentActiveToday);
+}
+
+function updateUrgentBadge() {
+    const list = myActiveUrgents();
+    const badge = document.getElementById('urgent-badge');
+    if (!badge) return;
+    if (list.length > 0) {
+        badge.textContent = list.length;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+    // อัปเดต banner ที่ dashboard ด้วย
+    renderUrgentBanner(list.length);
+}
+
+function renderUrgentBanner(count) {
+    const dashView = document.getElementById('dashboard-view');
+    if (!dashView) return;
+    let banner = document.getElementById('urgent-banner');
+    if (count > 0) {
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'urgent-banner';
+            banner.className = 'urgent-banner';
+            banner.onclick = () => changeTab('Urgent');
+            dashView.insertBefore(banner, dashView.firstChild);
+        }
+        const hasOver = myActiveUrgents().some(u => {
+            const d = normalizeDate(u.assign_type === 'RECURRING' ? u.recur_end : u.due_date);
+            return d && d < todayStrLocal();
+        });
+        banner.innerHTML = `
+            <div class="urgent-banner-icon">${hasOver ? '🚨' : '⚡'}</div>
+            <div class="urgent-banner-text">
+                <div class="urgent-banner-title">${hasOver ? 'มีงานเลยกำหนด!' : 'คุณมีงานเร่งด่วน '+count+' รายการ'}</div>
+                <div class="urgent-banner-sub">แตะเพื่อดูรายละเอียด</div>
+            </div>
+            <div class="urgent-banner-arrow">→</div>`;
+    } else if (banner) {
+        banner.remove();
+    }
+}
+
+function urgentDueState(u) {
+    const today = todayStrLocal();
+    const d = normalizeDate(u.assign_type === 'RECURRING' ? u.recur_end : u.due_date);
+    if (!d) return 'normal';
+    if (d < today) return 'over';
+    if (d === today) return 'soon';
+    return 'normal';
+}
+
+function urgentTaskCard(u) {
+    const photos = urgentPhotos[u.urgent_id] || [];
+    const requirePhoto = String(u.require_photo||'NO').toUpperCase() === 'YES';
+    const canDone = !requirePhoto || photos.length > 0;
+    const ds = urgentDueState(u);
+    const isOver = ds === 'over';
+    const dueText = u.assign_type === 'RECURRING'
+        ? `🔁 ${formatDateThai(u.recur_start)} → ${formatDateThai(u.recur_end)}`
+        : `⏰ ${formatDateThai(u.due_date)}${u.due_time ? ' • '+u.due_time : ''}`;
+    const isDone = u.status === 'DONE';
+    const isCancel = u.status === 'CANCELLED';
+
+    return `<div class="u-card p-${u.priority||'NORMAL'} ${isOver?'is-overdue':''}">
+        <div class="u-card-head">
+            <span class="u-pri p-${u.priority||'NORMAL'}">${u.priority==='HIGH'?'🔴 ด่วน':u.priority==='LOW'?'🟢 ทั่วไป':'🟡 ปกติ'}</span>
+            <span class="u-due ${ds==='over'?'is-over':ds==='soon'?'is-soon':''}">${dueText}</span>
+            ${u.zone?`<span class="u-zone">📍 ${escapeHtml(u.zone)}</span>`:''}
+        </div>
+        <div class="u-name">${escapeHtml(u.task_name||'-')}</div>
+        ${u.task_description?`<div class="u-desc">${escapeHtml(u.task_description)}</div>`:''}
+        ${requirePhoto && !isDone ? `<div class="u-photo-req">📷 ต้องแนบรูปก่อนกดเสร็จ</div>` : ''}
+        ${!isDone && !isCancel ? `
+            <div class="u-photos">
+                ${photos.filter(s => s.startsWith('http')).map(s => `<img src="${s}">`).join('')}
+                <div class="u-add-photo" onclick="openUrgentCamera('${u.urgent_id}')">+</div>
+            </div>
+            <div class="u-actions">
+                <button class="u-btn-done" onclick="markUrgentDoneStaff('${u.urgent_id}')" ${canDone?'':'disabled'}>
+                    ✓ ${canDone ? 'ทำเสร็จแล้ว' : (requirePhoto ? 'ต้องแนบรูปก่อน' : 'ทำเสร็จแล้ว')}
+                </button>
+            </div>
+        ` : `
+            <div class="u-actions">
+                <div class="u-status-tag st-${u.status}">${isDone ? '✓ เสร็จเรียบร้อยแล้ว' : '✕ ยกเลิก'}</div>
+            </div>
+        `}
+    </div>`;
+}
+
+function escapeHtml(s) {
+    return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+function formatDateThai(s) {
+    if (!s) return '—';
+    const d = normalizeDate(s);
+    if (!d || d.length < 10) return s;
+    const [y,m,dd] = d.split('-');
+    const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    return parseInt(dd)+' '+months[parseInt(m)-1]+' '+(parseInt(y)+543);
+}
+
+function renderUrgent() {
+    const container = document.getElementById('urgent-container');
+    const empty = document.getElementById('urgent-empty');
+    if (!container) return;
+
+    // แยก: รอทำ vs ทำแล้ววันนี้ (ของฉัน)
+    const today = todayStrLocal();
+    const mine = (urgentTasks||[]).filter(isUrgentForMe).filter(isUrgentActiveToday);
+    const pending = mine.filter(u => u.status !== 'DONE' && u.status !== 'CANCELLED');
+    const doneToday = mine.filter(u => u.status === 'DONE' && (u.completed_at||'').slice(0,10) === today);
+
+    if (!pending.length && !doneToday.length) {
+        container.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+    }
+    empty.classList.add('hidden');
+
+    // sort: OVERDUE > SOON > NORMAL, ในแต่ละกลุ่ม sort by due
+    const stateRank = { over: 0, soon: 1, normal: 2 };
+    pending.sort((a, b) => {
+        const ra = stateRank[urgentDueState(a)] ?? 9;
+        const rb = stateRank[urgentDueState(b)] ?? 9;
+        if (ra !== rb) return ra - rb;
+        const ad = normalizeDate(a.assign_type==='RECURRING'?a.recur_end:a.due_date)||'9999';
+        const bd = normalizeDate(b.assign_type==='RECURRING'?b.recur_end:b.due_date)||'9999';
+        return ad.localeCompare(bd);
+    });
+
+    let html = '';
+    if (pending.length) {
+        html += `<h3 style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:4px 4px 10px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;background:#e53935;border-radius:50%;animation:pulseRed 2s infinite"></span> รอทำ (${pending.length})</h3>`;
+        html += pending.map(urgentTaskCard).join('');
+    }
+    if (doneToday.length) {
+        html += `<h3 style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 4px 10px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;background:#10b981;border-radius:50%"></span> เสร็จแล้ววันนี้ (${doneToday.length})</h3>`;
+        html += doneToday.map(urgentTaskCard).join('');
+    }
+    container.innerHTML = html;
+}
+
+// ── เปิดกล้องสำหรับงาน urgent ── (ใช้ flow เดียวกับ openCamera เดิม)
+function openUrgentCamera(urgentId) {
+    // เปิด file picker (ใช้ input ที่มีอยู่แล้วในหน้า)
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    input.onchange = async (ev) => {
+        const file = ev.target.files[0];
+        if (!file) return;
+        showToast('⏳ กำลังอัพโหลดรูป...');
+        try {
+            const fd = new FormData();
+            fd.append('image', file);
+            const r = await fetch('https://api.imgbb.com/1/upload?key='+IMGBB_KEY, { method:'POST', body: fd });
+            const d = await r.json();
+            if (d?.success) {
+                if (!urgentPhotos[urgentId]) urgentPhotos[urgentId] = [];
+                urgentPhotos[urgentId].push(d.data.url);
+                renderUrgent();
+                showToast('✅ เพิ่มรูปสำเร็จ');
+            } else {
+                showToast('❌ อัพโหลดล้มเหลว', 'error');
+            }
+        } catch(e) {
+            showToast('❌ อัพโหลดล้มเหลว', 'error');
+        }
+    };
+    input.click();
+}
+
+// ── กดเสร็จงาน urgent ──
+async function markUrgentDoneStaff(urgentId) {
+    const u = (urgentTasks||[]).find(x => x.urgent_id === urgentId);
+    if (!u) return;
+    const requirePhoto = String(u.require_photo||'NO').toUpperCase() === 'YES';
+    const photos = urgentPhotos[urgentId] || [];
+    if (requirePhoto && !photos.length) {
+        showToast('🚨 งานนี้ต้องแนบรูปก่อนกดเสร็จ', 'error');
+        return;
+    }
+    if (!confirm('ยืนยันว่างาน "' + (u.task_name||'') + '" เสร็จแล้ว?')) return;
+
+    showToast('⏳ กำลังบันทึก...');
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({
+                action: 'MARK_URGENT_DONE',
+                urgent_id: urgentId,
+                actor: userEmpId,
+                actor_name: userName,
+                photo_url: photos.join(','),
+                note: ''
+            })
+        });
+        // อัปเดต local state ทันที (เพราะ mode:no-cors ไม่อ่าน response ได้)
+        u.status = 'DONE';
+        u.completed_by = userName;
+        u.completed_at = new Date().toISOString().slice(0,19).replace('T',' ');
+        u.photo_url = photos.join(',');
+        delete urgentPhotos[urgentId];
+        renderUrgent();
+        updateUrgentBadge();
+        showToast('✅ บันทึกว่างานเสร็จแล้ว');
+        // refresh fresh จาก backend หลัง 1.5 วินาที (เพื่อ sync timestamp จริง)
+        setTimeout(fetchData, 1500);
+    } catch(e) {
+        showToast('❌ บันทึกล้มเหลว', 'error');
+    }
+}
 </script>
 </body>
 </html>
