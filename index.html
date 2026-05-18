@@ -666,6 +666,7 @@
                 localStorage.setItem('user_role', String(getSmartVal(user, 'role', 'บทบาท') || "User")); 
                 localStorage.setItem('user_pos',  String(getSmartVal(user, 'ตำแหน่ง', 'position') || "Staff"));
                 localStorage.setItem('user_name', String(getSmartVal(user, 'ชื่อเล่น', 'Nickname') || "Staff"));
+                localStorage.setItem('user_id',   String(getSmartVal(user, 'รหัสพนักงาน', 'Employee_ID', 'ID') || id));
                 showToast(`✨ ยินดีต้อนรับคุณ ${localStorage.getItem('user_name')}`);
                 setTimeout(() => window.location.href = 'Owner_Dashboard.html', 1000);
             } else { showToast("❌ ข้อมูลไม่ถูกต้อง", "error"); btn.disabled = false; btn.innerText = "เข้าสู่ระบบ"; }
