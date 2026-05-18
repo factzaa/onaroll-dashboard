@@ -350,8 +350,14 @@ window.onload = async function() {
 // ══ HELPERS (logic เดิมทุกบรรทัด) ══
 function getVal(item, key) {
     if (!item) return '';
-    const target = Object.keys(item).find(k => k.trim() === key.trim());
-    return target ? item[target] : '';
+    // exact match ก่อน
+    if (item[key] !== undefined && item[key] !== '') return item[key];
+    // fuzzy match — trim + normalize
+    const normKey = key.trim().normalize('NFC').toLowerCase().replace(/\s+/g,'');
+    const found = Object.keys(item).find(k =>
+        k.trim().normalize('NFC').toLowerCase().replace(/\s+/g,'') === normKey
+    );
+    return found ? item[found] : '';
 }
 
 function parseDate(d) {
@@ -388,19 +394,53 @@ async function fetchAllData(id) {
             fetch(`${API_URL}?action=GET_MY_HISTORY&empId=${id}&t=${Date.now()}`).then(r=>r.json()),
             fetch(`${API_URL}?action=GET_MY_PETITIONS&empId=${id}&t=${Date.now()}`).then(r=>r.json())
         ]);
-        attendance = Array.isArray(resAtt) ? resAtt : (resAtt.data||[]);
-        petitions  = Array.isArray(resPet) ? resPet : (resPet.data||[]);
+
+        // debug — log ดูว่า API ส่งอะไรกลับมา
+        console.log('[Portal] GET_MY_HISTORY response:', resAtt);
+        console.log('[Portal] GET_MY_PETITIONS response:', resPet);
+
+        // รองรับทั้ง array โดยตรง, {data:[...]}, {records:[...]}, {attendance:[...]}
+        attendance = Array.isArray(resAtt)
+            ? resAtt
+            : (resAtt?.data || resAtt?.records || resAtt?.attendance || []);
+
+        petitions  = Array.isArray(resPet)
+            ? resPet
+            : (resPet?.data || resPet?.records || resPet?.petitions || []);
+
+        console.log('[Portal] attendance count:', attendance.length);
+        console.log('[Portal] petitions count:', petitions.length);
+
+        // ถ้า attendance ว่างแต่มีข้อมูลใน response ให้ลองดึง keys ดู
+        if (!attendance.length && resAtt && typeof resAtt === 'object' && !Array.isArray(resAtt)) {
+            const keys = Object.keys(resAtt);
+            console.log('[Portal] Response keys:', keys);
+            // ลอง key แรกที่เป็น array
+            const arrKey = keys.find(k => Array.isArray(resAtt[k]));
+            if (arrKey) attendance = resAtt[arrKey];
+        }
+
         updateStats();
         renderDashboard();
         renderAttendance();
         renderPetitions();
-    } catch(e) { showError('การเชื่อมต่อฐานข้อมูลขัดข้อง'); }
+    } catch(e) {
+        console.error('[Portal] fetchAllData error:', e);
+        showError('การเชื่อมต่อฐานข้อมูลขัดข้อง: ' + e.message);
+    }
 }
 
 // ══ STATS ══
 function getFilteredAtt() {
-    const s = new Date(document.getElementById('start-date').value).setHours(0,0,0,0);
-    const e = new Date(document.getElementById('end-date').value).setHours(23,59,59,999);
+    const startEl = document.getElementById('start-date');
+    const endEl   = document.getElementById('end-date');
+    // fallback: ถ้ายังไม่มีค่าให้ใช้เดือนปัจจุบัน
+    const startVal = startEl?.value || firstDay;
+    const endVal   = endEl?.value   || today;
+    const s = new Date(startVal).setHours(0,0,0,0);
+    const e = new Date(endVal).setHours(23,59,59,999);
+    // ถ้า parse ไม่ได้ (NaN) → คืน array ทั้งหมด
+    if (isNaN(s) || isNaN(e)) return attendance;
     return attendance.filter(item => {
         const d = parseDate(getVal(item,'วันที่'));
         return d && d.getTime() >= s && d.getTime() <= e;
