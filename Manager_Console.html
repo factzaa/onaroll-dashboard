@@ -286,8 +286,8 @@ var NAV_ADMIN = [
     {src:'Manager_Console_Inner.html', title:'Audit & คำร้อง', icon:'🛡️', sub:'Audit Control', badge:'Core'},
   ]},
   {s:'รายงาน', items:[
-    {src:'Sales Tracking.html', title:'ยอดขาย', icon:'💰', sub:'Sales Report'},
-    {src:'Expenses.html', title:'รายจ่าย', icon:'🧾', sub:'Expenses'},
+    {src:'Sales Tracking.html', title:'บันทึกยอดขาย', icon:'💰', sub:'Sales Report'},
+    {src:'Expenses.html', title:'บันทึกรายจ่าย', icon:'🧾', sub:'Expenses'},
   ]},
   {s:'จัดการพนักงาน', items:[
     {src:'HR Management.html', title:'จัดการพนักงาน', icon:'👥', sub:'HR Database'},
@@ -306,8 +306,8 @@ var NAV_MANAGER = [
     {src:'Manager_Console_Inner.html', title:'Audit & คำร้อง', icon:'🛡️', sub:'Audit Control', badge:'Core'},
   ]},
   {s:'รายงาน', items:[
-    {src:'Sales Tracking.html', title:'ยอดขาย', icon:'💰', sub:'Sales Report'},
-    {src:'Expenses.html', title:'รายจ่าย', icon:'🧾', sub:'Expenses'},
+    {src:'Sales Tracking.html', title:'บันทึกยอดขาย', icon:'💰', sub:'Sales Report'},
+    {src:'Expenses.html', title:'บันทึกรายจ่าย', icon:'🧾', sub:'Expenses'},
   ]},
   {s:'จัดการพนักงาน', items:[
     {src:'Weekly Scheduler.html', title:'จัด Job', icon:'📅', sub:'Scheduler'},
@@ -323,7 +323,7 @@ var NAV = userRole === 'admin' ? NAV_ADMIN : NAV_MANAGER;
 var QUICK_ADMIN = [
   {src:'Manager_Console_Inner.html', title:'Audit & คำร้อง', icon:'🛡️', sub:'Core'},
   {src:'Daily Checklist System.html', title:'Checklist', icon:'✅', sub:'Daily Tasks'},
-  {src:'Sales Tracking.html', title:'ยอดขาย', icon:'💰', sub:'Sales'},
+  {src:'Sales Tracking.html', title:'บันทึกยอดขาย', icon:'💰', sub:'Sales'},
   {src:'HR Management.html', title:'HR', icon:'👥', sub:'จัดการพนักงาน'},
   {src:'Weekly Scheduler.html', title:'จัด Job', icon:'📅', sub:'Scheduler'},
   {src:'OR_Payroll_System.html', title:'เงินเดือน', icon:'💵', sub:'Payroll'},
@@ -331,7 +331,7 @@ var QUICK_ADMIN = [
 var QUICK_MANAGER = [
   {src:'Manager_Console_Inner.html', title:'Audit & คำร้อง', icon:'🛡️', sub:'Core'},
   {src:'Daily Checklist System.html', title:'Checklist', icon:'✅', sub:'Daily Tasks'},
-  {src:'Sales Tracking.html', title:'ยอดขาย', icon:'💰', sub:'Sales'},
+  {src:'Sales Tracking.html', title:'บันทึกยอดขาย', icon:'💰', sub:'Sales'},
   {src:'Weekly Scheduler.html', title:'จัด Job', icon:'📅', sub:'Scheduler'},
 ];
 var QUICK = userRole === 'admin' ? QUICK_ADMIN : QUICK_MANAGER;
@@ -341,28 +341,28 @@ var BNAV_ADMIN = [
   {key:'home', icon:'🏠', label:'หน้าแรก'},
   {key:'Manager_Console_Inner.html', icon:'🛡️', label:'Audit'},
   {key:'Daily Checklist System.html', icon:'✅', label:'Checklist'},
-  {key:'Sales Tracking.html', icon:'💰', label:'ยอดขาย'},
+  {key:'Sales Tracking.html', icon:'💰', label:'บันทึกยอดขาย'},
   {key:'more', icon:'⋯', label:'เพิ่มเติม'},
 ];
 var BNAV_MANAGER = [
   {key:'home', icon:'🏠', label:'หน้าแรก'},
   {key:'Manager_Console_Inner.html', icon:'🛡️', label:'Audit'},
   {key:'Daily Checklist System.html', icon:'✅', label:'Checklist'},
-  {key:'Sales Tracking.html', icon:'💰', label:'ยอดขาย'},
+  {key:'Sales Tracking.html', icon:'💰', label:'บันทึกยอดขาย'},
   {key:'more', icon:'⋯', label:'เพิ่มเติม'},
 ];
 var BNAV = userRole === 'admin' ? BNAV_ADMIN : BNAV_MANAGER;
 
 // More menu
 var MORE_ADMIN = [
-  {src:'Expenses.html', icon:'🧾', label:'รายจ่าย'},
+  {src:'Expenses.html', icon:'🧾', label:'บันทึกรายจ่าย'},
   {src:'HR Management.html', icon:'👥', label:'HR'},
   {src:'Weekly Scheduler.html', icon:'📅', label:'จัด Job'},
   {src:'OR_Payroll_System.html', icon:'💵', label:'เงินเดือน'},
   {src:'SOP Master and Training.html', icon:'📖', label:'SOP'},
 ];
 var MORE_MANAGER = [
-  {src:'Expenses.html', icon:'🧾', label:'รายจ่าย'},
+  {src:'Expenses.html', icon:'🧾', label:'บันทึกรายจ่าย'},
   {src:'Weekly Scheduler.html', icon:'📅', label:'จัด Job'},
   {src:'SOP Master and Training.html', icon:'📖', label:'SOP'},
 ];
