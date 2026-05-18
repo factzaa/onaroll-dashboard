@@ -415,7 +415,7 @@ function renderDashboard(items, start, end) {
     }).join('')+'</div>';
 }
 
-// ══ AUDIT SYNC — ใช้ GET_MANAGER_DASHBOARD เพื่อได้ nickname จริง ══
+// ══ AUDIT SYNC — ใช้ GET_MANAGER_DASHBOARD (ได้ nickname) + GET_CALC_SUMMARY (ได้ lateCount ถูก) ══
 async function syncData() {
     var start = document.getElementById('a-start').value;
     var end   = document.getElementById('a-end').value;
@@ -423,13 +423,41 @@ async function syncData() {
     gload(true,'กำลัง Sync ข้อมูล...');
     document.getElementById('btn-sync').classList.add('loading');
     try {
-        // GET_MANAGER_DASHBOARD ส่ง {dashboard:[{empId,name,nickname,workDays,lateCount,ot}]}
-        var r = await fetch(API+'?action=GET_MANAGER_DASHBOARD&start='+start+'&end='+end+'&t='+Date.now());
-        var d = await r.json();
+        // 1) ยิงพร้อมกัน 2 endpoint
+        //    - GET_MANAGER_DASHBOARD → empId, name, nickname (และ workDays/lateCount/ot ที่ผิด threshold)
+        //    - GET_CALC_SUMMARY      → empId, name, workDays, lateCount, ot (จาก Manager_Dashboard_Calc ที่ถูกต้อง)
+        var qs = '&start='+start+'&end='+end+'&t='+Date.now();
+        var [rDash, rCalc] = await Promise.all([
+            fetch(API+'?action=GET_MANAGER_DASHBOARD'+qs),
+            fetch(API+'?action=GET_CALC_SUMMARY'+qs)
+        ]);
+        var d    = await rDash.json();
+        var calc = await rCalc.json();
         console.log('[Inner] GET_MANAGER_DASHBOARD (audit):', d);
+        console.log('[Inner] GET_CALC_SUMMARY (audit):', calc);
+
         var items = d.dashboard || d.summaryRecords || (Array.isArray(d)?d:[]);
+
+        // 2) สร้าง map จาก GET_CALC_SUMMARY ตาม empId
+        var calcMap = {};
+        (Array.isArray(calc)?calc:[]).forEach(function(c){
+            var id = String(c.empId||'').trim().toUpperCase();
+            if (id) calcMap[id] = c;
+        });
+
+        // 3) override ค่าที่ถูกต้องทับลงใน items (ใช้สำหรับทั้งแสดงผล + บันทึก)
+        items.forEach(function(it){
+            var id = String(it.empId||'').trim().toUpperCase();
+            var c  = calcMap[id];
+            if (c) {
+                it.lateCount = parseInt(c.lateCount) || 0;
+                it.workDays  = parseInt(c.workDays)  || it.workDays || 0;
+                it.ot        = parseFloat(c.ot)      || parseFloat(it.ot) || 0;
+            }
+        });
+
         renderAudit(items);
-    } catch(e) { alert('เชื่อมต่อไม่สำเร็จ: '+e.message); }
+    } catch(e) { alert('เชื่อมต่อไม่สำเร็จ: '+e.message); console.error(e); }
     gload(false);
     document.getElementById('btn-sync').classList.remove('loading');
 }
