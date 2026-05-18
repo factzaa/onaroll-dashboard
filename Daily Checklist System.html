@@ -609,7 +609,7 @@ input,textarea,select{font-size:16px!important}
                 <div class="task-capsule ${borderClass} font-black mb-3">
                     <div class="flex-1 pr-2 font-black">
                         <div class="flex items-center gap-2 mb-1">
-                            ${isPhotoRequired ? `<span class="bg-rose-500 text-white text-[7px] px-2 py-0.5 rounded-full uppercase">Photo Required</span>` : `<span class="bg-slate-100 text-slate-400 text-[7px] px-2 py-0.5 rounded-full uppercase font-black">Standard Task</span>`}
+                            ${isPhotoRequired ? `<span class="bg-rose-500 text-white text-[7px] px-2 py-0.5 rounded-full uppercase">📷 ต้องแนบรูป</span>` : `<span class="bg-slate-100 text-slate-400 text-[7px] px-2 py-0.5 rounded-full uppercase font-black">Standard</span>`}
                         </div>
                         <h4 class="font-black text-slate-700 text-sm leading-tight font-black">${t.task_name || t.รายการงาน}</h4>
                         ${isFix ? `<p class="text-[10px] text-orange-600 italic font-bold mt-1 font-black">🚩 "${latest.comment}"</p>` : ''}
@@ -620,8 +620,8 @@ input,textarea,select{font-size:16px!important}
                             </button>
                         </div>
                     </div>
-                    <button onclick="${isReady ? `submitNormalTask('${rawId}', '${t.task_name || t.รายการงาน}', '${t.time_block || t.Group}', '${t.zone || t.โซน}')` : `showToast('🚨 งานนี้จำเป็นต้องแนบรูป', 'error')`}" 
-                        class="confirm-btn ${isReady ? 'btn-ready' : 'btn-not-ready'} font-black">
+                    <button onclick="${isReady ? `submitNormalTask('${rawId}', '${t.task_name || t.รายการงาน}', '${t.time_block || t.Group}', '${t.zone || t.โซน}')` : `showToast('🚨 งานนี้จำเป็นต้องแนบรูปก่อน', 'error')`}" 
+                        class="confirm-btn ${isReady ? 'btn-ready' : 'btn-not-ready'} font-black" title="${isReady ? 'กดเพื่อบันทึกว่าเสร็จแล้ว' : 'ต้องแนบรูปก่อน'}">
                         <svg class="w-7 h-7 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="4"/></svg>
                     </button>
                 </div>`;
@@ -634,7 +634,7 @@ input,textarea,select{font-size:16px!important}
             if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.5'; }
             showToast("⏳ บันทึกงาน...");
 
-            const payload = { action: 'SUBMIT_CHECKLIST', staffName: userName, position: userPos, items: [{ id, taskName: name, timeBlock: block, zone, photoUrl: photos.join(','), staffNote: "-" }] };
+            const payload = { action: 'SUBMIT_CHECKLIST', staffName: userName, position: userPos, items: [{ id, taskName: name, timeBlock: block, zone, status: 'Completed', photoUrl: photos.join(','), staffNote: "-" }] };
             try {
                 await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
             } catch(e) { console.warn('submit error (no-cors):', e.message); }
