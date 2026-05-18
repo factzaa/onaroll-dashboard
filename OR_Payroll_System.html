@@ -826,11 +826,35 @@ function applyPayrollData() {
 }
 window.refreshAppState=refreshData;
 
+// 🕑 ─ Local date helpers (กัน toISOString ขยับวันเพราะ UTC+7) ─
+const fmtLocalDate  = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const fmtLocalMonth = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+
+// 📅 ─ คำนวณรอบ 21 → 20 ให้ถูกต้องทั้งก่อน/หลังวันที่ 20 ของเดือน ─
+function getPayrollCycleDates(now) {
+  const y=now.getFullYear(), m=now.getMonth(), day=now.getDate();
+  let startD, endD;
+  if (day <= 20) {
+    // อยู่ในรอบ: 21 เดือนก่อน → 20 เดือนนี้
+    const sm = m===0?11:m-1, sy = m===0?y-1:y;
+    startD = new Date(sy, sm, 21);
+    endD   = new Date(y,  m,  20);
+  } else {
+    // อยู่ในรอบ: 21 เดือนนี้ → 20 เดือนหน้า
+    const em = m===11?0:m+1, ey = m===11?y+1:y;
+    startD = new Date(y,  m,  21);
+    endD   = new Date(ey, em, 20);
+  }
+  return { start: fmtLocalDate(startD), end: fmtLocalDate(endD), endDateObj: endD };
+}
+
 window.addEventListener('load', async()=>{
-  const now=new Date();
-  document.getElementById('month-selector').value=now.toISOString().slice(0,7);
-  document.getElementById('date-start').value=new Date(now.getFullYear(),now.getMonth()-1,21).toISOString().slice(0,10);
-  document.getElementById('date-end').value=new Date(now.getFullYear(),now.getMonth(),20).toISOString().slice(0,10);
+  const now = new Date();
+  const cyc = getPayrollCycleDates(now);
+  // เดือนของ "วันที่จ่าย" = เดือนของ end date (เช่น รอบ 21 เม.ย. → 20 พ.ค. = รอบจ่ายเดือน พ.ค.)
+  document.getElementById('month-selector').value = fmtLocalMonth(cyc.endDateObj);
+  document.getElementById('date-start').value     = cyc.start;
+  document.getElementById('date-end').value       = cyc.end;
 
   showLoading(true);
   const empT=await fetchSheet('Employees');
