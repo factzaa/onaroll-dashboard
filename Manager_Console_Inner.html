@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Audit & คำร้อง</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:#f0f4f8;color:#1a2332;font-family:'Kanit',sans-serif;padding-bottom:24px}
+:root{
+  --navy:#1a2b5e;--navy2:#243272;--blue:#2979d4;--blue-l:#e8f0fb;
+  --green:#059669;--green-l:rgba(5,150,105,.1);--green-b:rgba(5,150,105,.25);
+  --red:#dc2626;--red-l:rgba(220,38,38,.08);
+  --amber:#d97706;--amber-l:rgba(217,119,6,.1);--amber-b:rgba(217,119,6,.25);
+  --purple:#7c3aed;--purple-l:rgba(124,58,237,.1);
+  --bg:#f0f4f8;--white:#fff;
+  --border:rgba(26,43,94,.08);--border2:rgba(26,43,94,.14);
+  --muted:#7b8db0;--light:#a8b9d4;
+  --shadow:0 1px 4px rgba(26,43,94,.08),0 3px 10px rgba(26,43,94,.06);
+  --shadow-md:0 4px 20px rgba(26,43,94,.12);
+  --r:16px;--r-sm:12px;--r-full:9999px;
+}
+
+/* ── CYCLE HEADER ── */
+.cycle-bar{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cycle-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px}
+.cycle-value{font-size:14px;font-weight:700;color:#fff}
+.cycle-badge{padding:3px 10px;border-radius:var(--r-full);background:rgba(255,255,255,.15);color:#fff;font-size:10px;font-weight:700;border:1px solid rgba(255,255,255,.2)}
+.cycle-nav{display:flex;gap:6px;margin-left:auto}
+.cycle-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-family:'Kanit',sans-serif;font-size:12px;font-weight:700;padding:5px 12px;cursor:pointer;transition:all .15s}
+.cycle-btn:active{background:rgba(255,255,255,.25)}
+
+/* ── CONTENT ── */
+.page-wrap{max-width:620px;margin:0 auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+
+/* ── TAB ── */
+.tab-bar{display:flex;gap:5px;background:var(--white);border:1px solid var(--border);border-radius:var(--r-full);padding:4px;box-shadow:var(--shadow)}
+.tab-pill{flex:1;padding:9px 8px;border-radius:var(--r-full);border:none;font-family:'Kanit',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--muted);background:transparent;text-transform:uppercase;letter-spacing:.3px;position:relative}
+.tab-pill.active{background:var(--navy);color:#fff}
+.tab-badge{display:none;position:absolute;top:3px;right:6px;width:16px;height:16px;background:var(--red);color:#fff;font-size:8px;font-weight:700;border-radius:50%;align-items:center;justify-content:center;border:2px solid var(--white)}
+.tab-badge.show{display:flex}
+
+/* ── SECTION ── */
+.section{display:flex;flex-direction:column;gap:10px}
+.section.hidden{display:none}
+
+/* ── FILTER ── */
+.filter-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+.date-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.date-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px}
+.date-inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:9px 12px;font-family:'Kanit',sans-serif;font-size:13px;font-weight:600;color:var(--navy);outline:none;transition:border-color .2s}
+.date-inp:focus{border-color:var(--blue);background:var(--white)}
+
+/* Cycle quick-select pills */
+.cycle-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.cpill{padding:5px 12px;border-radius:var(--r-full);border:1px solid var(--border2);background:var(--bg);font-family:'Kanit',sans-serif;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.cpill:active,.cpill.active{background:var(--navy);color:#fff;border-color:transparent}
+
+.btn-sync{width:100%;padding:13px;border:none;border-radius:var(--r-sm);background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(26,43,94,.2);transition:all .18s}
+.btn-sync:active{transform:scale(.97)}
+.btn-sync.loading svg{animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── SUMMARY STRIP ── */
+.summary-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sum-box{background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;text-align:center;box-shadow:var(--shadow)}
+.sum-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px}
+.sum-val{font-size:20px;font-weight:800;color:var(--navy)}
+.sum-val.ok{color:var(--green)}
+.sum-val.warn{color:var(--amber)}
+.sum-val.bad{color:var(--red)}
+
+/* ── EMP CARD ── */
+.emp-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--purple);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.emp-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.emp-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#6d28d9);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0}
+.emp-name{font-size:15px;font-weight:700;color:var(--navy)}
+.emp-id{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
+.emp-pills{display:flex;gap:5px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+.ep{padding:2px 8px;border-radius:var(--r-full);font-size:10px;font-weight:700;white-space:nowrap}
+.ep-days{background:rgba(26,43,94,.08);color:var(--navy)}
+.ep-late{background:var(--red-l);color:var(--red)}
+.ep-ot{color:var(--purple);font-size:10px;font-weight:700;margin-top:3px}
+
+.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.inp-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:3px}
+.inp-field{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:9px 11px;font-family:'Kanit',sans-serif;font-size:13px;font-weight:600;color:var(--navy);outline:none;transition:border-color .2s}
+.inp-field:focus{border-color:var(--blue);background:var(--white)}
+.inp-field::placeholder{color:var(--light);font-weight:400}
+
+/* ── SAVE FLOAT ── */
+#save-area{display:none;position:sticky;bottom:0;background:var(--bg);padding:12px 0 0;z-index:40}
+.btn-save{width:100%;padding:15px;border:none;border-radius:var(--r);background:linear-gradient(135deg,var(--green),#047857);color:#fff;font-family:'Kanit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 20px rgba(5,150,105,.3);transition:all .18s}
+.btn-save:active{transform:scale(.98)}
+
+/* ── PETITION ── */
+.pet-card{background:var(--white);border:1px solid var(--border);border-left:4px solid var(--amber);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+.pet-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.pet-type{display:inline-block;padding:2px 9px;border-radius:var(--r-full);background:var(--amber-l);color:var(--amber);font-size:10px;font-weight:700;border:1px solid var(--amber-b);margin-bottom:5px}
+.pet-name{font-size:14px;font-weight:700;color:var(--navy)}
+.pet-id{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
+.pet-date{font-size:10px;color:var(--muted);white-space:nowrap;margin-left:8px}
+.pet-reason{background:var(--bg);border-radius:var(--r-sm);padding:9px 12px;font-size:12px;color:#475569;font-style:italic;line-height:1.6;margin-bottom:10px}
+.pet-actions{display:flex;gap:8px}
+.btn-reject{flex:1;padding:10px;border-radius:var(--r-sm);border:1.5px solid rgba(220,38,38,.25);background:var(--red-l);color:var(--red);font-family:'Kanit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-reject:active{background:rgba(220,38,38,.18);transform:scale(.97)}
+.btn-approve{flex:1.5;padding:10px;border-radius:var(--r-sm);border:none;background:var(--navy);color:#fff;font-family:'Kanit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(26,43,94,.2);transition:all .15s}
+.btn-approve:active{background:var(--blue);transform:scale(.97)}
+
+/* ── NOTE MODAL ── */
+#note-modal{display:none;position:fixed;inset:0;z-index:150;background:rgba(10,15,30,.65);backdrop-filter:blur(5px);align-items:flex-end;justify-content:center}
+#note-modal.open{display:flex}
+.note-sheet{background:var(--white);border-radius:22px 22px 0 0;width:100%;max-width:500px;padding:12px 18px 36px;animation:sheetUp .25s cubic-bezier(.22,1,.36,1)}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.note-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
+.note-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:10px}
+.note-inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:11px 13px;font-family:'Kanit',sans-serif;font-size:14px;color:var(--navy);outline:none;resize:none;min-height:80px;margin-bottom:10px;transition:border-color .2s}
+.note-inp:focus{border-color:var(--blue)}
+.note-btns{display:flex;gap:8px}
+.btn-note-cancel{flex:1;padding:11px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg);color:var(--muted);font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.btn-note-ok{flex:2;padding:11px;border-radius:var(--r-sm);border:none;background:var(--navy);color:#fff;font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(26,43,94,.2)}
+
+/* ── EMPTY / LOADING ── */
+.empty-state{text-align:center;padding:44px 20px;color:var(--light);font-size:12px}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.4}
+.loading-wrap{text-align:center;padding:44px 20px}
+.spinner{width:28px;height:28px;border:3px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+.loading-txt{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+
+/* ── GLOBAL LOADER ── */
+#global-loader{display:none;position:fixed;inset:0;z-index:300;background:rgba(240,244,248,.85);backdrop-filter:blur(8px);flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#global-loader.show{display:flex}
+.loader-ring{width:44px;height:44px;border-radius:50%;border:4px solid var(--border2);border-top-color:var(--navy);animation:spin .7s linear infinite}
+.loader-txt{font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px}
+</style>
+</head>
+<body>
+
+<!-- CYCLE BAR -->
+<div class="cycle-bar">
+  <div>
+    <div class="cycle-label">รอบเงินเดือน</div>
+    <div class="cycle-value" id="cycle-display">—</div>
+  </div>
+  <div class="cycle-badge" id="cycle-badge">—</div>
+  <div class="cycle-nav">
+    <button class="cycle-btn" onclick="prevCycle()">‹ ก่อนหน้า</button>
+    <button class="cycle-btn" onclick="resetCycle()">รอบนี้</button>
+    <button class="cycle-btn" onclick="nextCycle()">ถัดไป ›</button>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- TAB -->
+  <div class="tab-bar">
+    <button class="tab-pill active" id="tab-audit" onclick="switchTab('audit')">📊 Audit & สรุปผล</button>
+    <button class="tab-pill" id="tab-petitions" onclick="switchTab('petitions')">
+      📋 คำร้องรออนุมัติ
+      <span class="tab-badge" id="badge-petitions">0</span>
+    </button>
+  </div>
+
+  <!-- AUDIT -->
+  <div class="section" id="section-audit">
+    <div class="filter-card">
+      <!-- Quick cycle pills -->
+      <div class="cycle-pills" id="quick-pills"></div>
+      <div class="date-grid">
+        <div><label class="date-lbl" for="start-date">วันที่เริ่ม</label><input type="date" id="start-date" class="date-inp"></div>
+        <div><label class="date-lbl" for="end-date">วันที่สิ้นสุด</label><input type="date" id="end-date" class="date-inp"></div>
+      </div>
+      <button class="btn-sync" id="btn-sync" onclick="syncData()">
+        <svg id="sync-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Sync ข้อมูลจาก Google Sheets
+      </button>
+    </div>
+
+    <!-- Summary strip -->
+    <div class="summary-strip" id="summary-strip" style="display:none">
+      <div class="sum-box"><span class="sum-lbl">พนักงาน</span><span class="sum-val" id="sum-emp">—</span></div>
+      <div class="sum-box"><span class="sum-lbl">วันรวม</span><span class="sum-val ok" id="sum-days">—</span></div>
+      <div class="sum-box"><span class="sum-lbl">สายรวม</span><span class="sum-val warn" id="sum-late">—</span></div>
+      <div class="sum-box"><span class="sum-lbl">OT รวม</span><span class="sum-val" id="sum-ot" style="color:var(--purple)">—</span></div>
+    </div>
+
+    <div id="audit-board">
+      <div class="empty-state"><div class="empty-icon">🗄️</div>กดปุ่ม Sync เพื่อดึงสรุปผลจาก Sheet</div>
+    </div>
+
+    <div id="save-area">
+      <button class="btn-save" onclick="submitAuditAll()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        บันทึก Audit ทั้งหมดลง Sheet
+      </button>
+    </div>
+  </div>
+
+  <!-- PETITIONS -->
+  <div class="section hidden" id="section-petitions">
+    <div id="petition-list">
+      <div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">กำลังโหลด...</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- NOTE MODAL -->
+<div id="note-modal">
+  <div class="note-sheet">
+    <div class="note-handle"></div>
+    <div class="note-title" id="note-title">ระบุหมายเหตุ</div>
+    <textarea class="note-inp" id="note-inp" placeholder="ระบุหมายเหตุการอนุมัติ..."></textarea>
+    <div class="note-btns">
+      <button class="btn-note-cancel" onclick="closeNote()">ยกเลิก</button>
+      <button class="btn-note-ok" id="note-ok-btn">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADER -->
+<div id="global-loader">
+  <div class="loader-ring"></div>
+  <div class="loader-txt" id="loader-txt">กำลังดึงข้อมูล...</div>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbxvProkNuSUhJSGgO2M94x_ybX_S-9ZtRx75RsBKIMQgmuSw23P_-7z8XPAflKMq6XR9g/exec';
+
+// ══ รอบเงินเดือน 21-20 ══
+function getPayrollCycle(d) {
+    var y=d.getFullYear(), m=d.getMonth(), day=d.getDate(), start, end;
+    if (day <= 20) {
+        var sm = m===0 ? 11 : m-1;
+        var sy = m===0 ? y-1 : y;
+        start = new Date(sy, sm, 21);
+        end   = new Date(y, m, 20);
+    } else {
+        var em = m===11 ? 0 : m+1;
+        var ey = m===11 ? y+1 : y;
+        start = new Date(y, m, 21);
+        end   = new Date(ey, em, 20);
+    }
+    return {
+        start: start.toISOString().slice(0,10),
+        end:   end.toISOString().slice(0,10),
+        label: fmtDate(start) + ' – ' + fmtDate(end)
+    };
+}
+
+// เลื่อนรอบ ±N เดือน
+function shiftCycle(base, months) {
+    var d = new Date(base);
+    d.setMonth(d.getMonth() + months);
+    return getPayrollCycle(d);
+}
+
+function fmtDate(d) {
+    var thMonths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    return d.getDate()+' '+thMonths[d.getMonth()]+' '+(d.getFullYear()+543);
+}
+
+function fmt(d) { return d.toISOString().slice(0,10); }
+
+// ══ STATE ══
+var now = new Date();
+var currentCycle = getPayrollCycle(now);
+var cycleOffset  = 0; // 0=รอบนี้, -1=ก่อนหน้า, +1=ถัดไป
+
+function setCycle(c) {
+    currentCycle = c;
+    document.getElementById('start-date').value  = c.start;
+    document.getElementById('end-date').value    = c.end;
+    document.getElementById('cycle-display').textContent = c.label;
+    // badge บอกรอบ
+    var s = new Date(c.start);
+    var thM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    document.getElementById('cycle-badge').textContent = 'รอบ '+thM[s.getMonth()]+' '+(s.getFullYear()+543);
+    buildQuickPills();
+}
+
+function prevCycle()  { cycleOffset--; setCycle(shiftCycle(currentCycle.start, -1)); }
+function nextCycle()  { cycleOffset++; setCycle(shiftCycle(currentCycle.end, 1)); }
+function resetCycle() { cycleOffset=0; setCycle(getPayrollCycle(now)); }
+
+// ══ Quick pills (รอบ 3 เดือนล่าสุด) ══
+function buildQuickPills() {
+    var pills = [];
+    for (var i=2; i>=0; i--) {
+        var c = shiftCycle(new Date(), -(i>0 ? i : 0));
+        if (i===1) c = shiftCycle(new Date(now.getFullYear(), now.getMonth()-1, 15), 0);
+        if (i===2) c = shiftCycle(new Date(now.getFullYear(), now.getMonth()-2, 15), 0);
+        pills.push(c);
+    }
+    document.getElementById('quick-pills').innerHTML = pills.map((c,i)=>{
+        var isActive = c.start===currentCycle.start;
+        var s=new Date(c.start);
+        var thM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+        var lbl = 'รอบ '+thM[s.getMonth()];
+        return '<button class="cpill'+(isActive?' active':'')+'" onclick="selectPill(\''+c.start+'\',\''+c.end+'\')">'+lbl+'</button>';
+    }).join('');
+}
+
+function selectPill(start, end) {
+    document.getElementById('start-date').value = start;
+    document.getElementById('end-date').value   = end;
+    currentCycle = {start,end,label:''};
+    buildQuickPills();
+    document.querySelectorAll('.cpill').forEach(p=>{
+        p.classList.toggle('active', p.onclick&&p.getAttribute('onclick').includes(start));
+    });
+}
+
+// ══ TAB ══
+function switchTab(tab) {
+    document.getElementById('section-audit').classList.toggle('hidden', tab!=='audit');
+    document.getElementById('section-petitions').classList.toggle('hidden', tab!=='petitions');
+    document.querySelectorAll('.tab-pill').forEach(b=>b.classList.toggle('active', b.id.includes(tab)));
+    if (tab==='petitions') fetchPetitions();
+}
+
+// ══ SYNC ══
+async function syncData() {
+    var start = document.getElementById('start-date').value;
+    var end   = document.getElementById('end-date').value;
+    if (!start||!end) { alert('กรุณาเลือกวันที่'); return; }
+    toggleLoader(true, 'กำลังดึงข้อมูลจาก Sheet...');
+    document.getElementById('btn-sync').classList.add('loading');
+    try {
+        var r = await fetch(API_URL+'?action=GET_CALC_SUMMARY&start='+start+'&end='+end);
+        var data = await r.json();
+        renderAudit(Array.isArray(data)?data:[]);
+        fetchPetitions();
+    } catch(e) { alert('เชื่อมต่อไม่สำเร็จ: '+e.message); }
+    finally { toggleLoader(false); document.getElementById('btn-sync').classList.remove('loading'); }
+}
+
+// ══ RENDER AUDIT ══
+function renderAudit(items) {
+    var board = document.getElementById('audit-board');
+    var strip = document.getElementById('summary-strip');
+    if (!items.length) {
+        board.innerHTML='<div class="empty-state"><div class="empty-icon">🔍</div>ไม่พบข้อมูลพนักงานในรอบนี้</div>';
+        document.getElementById('save-area').style.display='none';
+        strip.style.display='none';
+        return;
+    }
+
+    // Summary
+    strip.style.display='grid';
+    var totalDays = items.reduce((s,e)=>s+(parseInt(e.workDays)||0),0);
+    var totalLate = items.reduce((s,e)=>s+(parseInt(e.lateCount)||0),0);
+    var totalOT   = items.reduce((s,e)=>s+(parseFloat(e.ot)||0),0);
+    document.getElementById('sum-emp').textContent  = items.length;
+    document.getElementById('sum-days').textContent = totalDays;
+    document.getElementById('sum-late').textContent = totalLate;
+    document.getElementById('sum-ot').textContent   = totalOT.toFixed(1);
+
+    board.innerHTML = items.map(function(emp) {
+        var initial = emp.name ? emp.name.charAt(0) : '?';
+        var lateNum = parseInt(emp.lateCount)||0;
+        return '<div class="emp-card" data-id="'+emp.empId+'" data-name="'+emp.name+'" data-days="'+emp.workDays+'" data-late="'+emp.lateCount+'" data-ot="'+emp.ot+'">'
+            +'<div class="emp-header">'
+            +'<div class="emp-av">'+initial+'</div>'
+            +'<div style="flex:1;min-width:0"><div class="emp-name">'+emp.name+'</div><div class="emp-id">'+emp.empId+'</div></div>'
+            +'<div><div class="emp-pills"><span class="ep ep-days">มา '+emp.workDays+' วัน</span><span class="ep ep-late">สาย '+(lateNum)+' ครั้ง</span></div>'
+            +'<div class="ep-ot" style="text-align:right">OT '+emp.ot+' ชม.</div></div>'
+            +'</div>'
+            +'<div class="input-grid">'
+            +'<div><label class="inp-lbl">Audit Short</label><input type="text" class="inp-field input-audit-short" placeholder="—"></div>'
+            +'<div><label class="inp-lbl">เงินเบิก</label><input type="text" class="inp-field input-withdraw" placeholder="—"></div>'
+            +'<div><label class="inp-lbl">หักสินค้าอื่นๆ</label><input type="text" class="inp-field input-deduction" placeholder="—"></div>'
+            +'<div><label class="inp-lbl">ขาดหน้าเครื่อง</label><input type="text" class="inp-field input-counter" placeholder="—"></div>'
+            +'</div></div>';
+    }).join('');
+    document.getElementById('save-area').style.display='block';
+}
+
+// ══ SUBMIT AUDIT ══
+async function submitAuditAll() {
+    if (!confirm('ยืนยันบันทึก Audit ทั้งหมดลง Sheet?')) return;
+    var start = document.getElementById('start-date').value;
+    var end   = document.getElementById('end-date').value;
+    var payload = Array.from(document.querySelectorAll('.emp-card')).map(function(card) {
+        return {
+            empId:          card.dataset.id,
+            name:           card.dataset.name,
+            workDays:       card.dataset.days,
+            lateCount:      card.dataset.late,
+            ot:             card.dataset.ot,
+            auditShort:     card.querySelector('.input-audit-short').value||'-',
+            withdrawAmount: card.querySelector('.input-withdraw').value||'-',
+            otherDeduction: card.querySelector('.input-deduction').value||'-',
+            counterShort:   card.querySelector('.input-counter').value||'-'
+        };
+    });
+    toggleLoader(true, 'กำลังบันทึก...');
+    try {
+        var r = await fetch(API_URL, {method:'POST', body:JSON.stringify({action:'SAVE_BULK_SUMMARY', cycle:start+' ถึง '+end, payload})});
+        var d = await r.json();
+        if (d.success) alert('✅ บันทึก Audit สำเร็จแล้ว!');
+    } catch(e) { alert('❌ เกิดข้อผิดพลาด: '+e.message); }
+    finally { toggleLoader(false); }
+}
+
+// ══ PETITIONS ══
+async function fetchPetitions() {
+    var el = document.getElementById('petition-list');
+    el.innerHTML='<div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">กำลังโหลด...</div></div>';
+    try {
+        var r = await fetch(API_URL+'?action=GET_MANAGER_DASHBOARD');
+        var d = await r.json();
+        renderPetitions(d.pendingPetitions||[]);
+    } catch(e) { el.innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div>โหลดไม่สำเร็จ</div>'; }
+}
+
+function renderPetitions(items) {
+    var el = document.getElementById('petition-list');
+    var badge = document.getElementById('badge-petitions');
+    badge.textContent = items.length;
+    badge.classList.toggle('show', items.length>0);
+    if (!items.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>ไม่มีคำร้องรออนุมัติ</div>'; return; }
+    el.innerHTML = items.map(function(p) {
+        return '<div class="pet-card">'
+            +'<div class="pet-header"><div>'
+            +'<div class="pet-type">'+(p.Type||'Petition')+'</div>'
+            +'<div class="pet-name">'+p.Name+'</div>'
+            +'<div class="pet-id">'+(p.Employee_ID||p.empId||'')+'</div>'
+            +'</div><div class="pet-date">📅 '+p.Date+'</div></div>'
+            +'<div class="pet-reason">"'+(p.Reason||p.reason||'—')+'"</div>'
+            +'<div class="pet-actions">'
+            +'<button class="btn-reject" onclick="approvePetition(\''+p.rowIndex+'\',\'Rejected\')">❌ ไม่อนุมัติ</button>'
+            +'<button class="btn-approve" onclick="approvePetition(\''+p.rowIndex+'\',\'Approved\')">✅ อนุมัติ</button>'
+            +'</div></div>';
+    }).join('');
+}
+
+// ══ PETITION APPROVE (modal แทน prompt) ══
+var _pending = null;
+function approvePetition(rowIndex, status) {
+    _pending = {rowIndex, status};
+    document.getElementById('note-title').textContent = status==='Approved'?'✅ อนุมัติคำร้อง':'❌ ไม่อนุมัติคำร้อง';
+    document.getElementById('note-inp').value='';
+    document.getElementById('note-modal').classList.add('open');
+    document.getElementById('note-ok-btn').onclick = doApprove;
+    setTimeout(()=>document.getElementById('note-inp').focus(),300);
+}
+function closeNote() { document.getElementById('note-modal').classList.remove('open'); _pending=null; }
+async function doApprove() {
+    if (!_pending) return;
+    var note = document.getElementById('note-inp').value.trim()||'-';
+    closeNote(); toggleLoader(true,'กำลังอัปเดต...');
+    try {
+        await fetch(API_URL, {method:'POST', body:JSON.stringify({action:'APPROVE_PETITION', rowIndex:_pending.rowIndex, status:_pending.status, managerNote:note})});
+        await fetchPetitions();
+    } catch(e) { alert('Error: '+e.message); }
+    finally { toggleLoader(false); }
+}
+
+// ══ LOADER ══
+function toggleLoader(show, txt) {
+    document.getElementById('global-loader').classList.toggle('show', show);
+    if (txt) document.getElementById('loader-txt').textContent=txt;
+}
+
+// ══ INIT ══
+window.onload = function() {
+    setCycle(getPayrollCycle(now));
+    fetchPetitions();
+};
+</script>
+</body>
+</html>
