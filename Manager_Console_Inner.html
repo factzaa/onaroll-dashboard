@@ -2,88 +2,103 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Audit & คำร้อง</title>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{min-height:100%;background:#f0f4f8;color:#1a2332;font-family:'Kanit',sans-serif;padding-bottom:24px}
+html,body{min-height:100%;background:#f0f4f8;font-family:'Kanit',sans-serif;color:#1a2332;padding-bottom:24px}
 :root{
   --navy:#1a2b5e;--navy2:#243272;--blue:#2979d4;--blue-l:#e8f0fb;
   --green:#059669;--green-l:rgba(5,150,105,.1);--green-b:rgba(5,150,105,.25);
-  --red:#dc2626;--red-l:rgba(220,38,38,.08);
+  --red:#dc2626;--red-l:rgba(220,38,38,.08);--red-b:rgba(220,38,38,.2);
   --amber:#d97706;--amber-l:rgba(217,119,6,.1);--amber-b:rgba(217,119,6,.25);
-  --purple:#7c3aed;--purple-l:rgba(124,58,237,.1);
+  --purple:#7c3aed;--purple-l:rgba(124,58,237,.1);--purple-b:rgba(124,58,237,.25);
   --bg:#f0f4f8;--white:#fff;
   --border:rgba(26,43,94,.08);--border2:rgba(26,43,94,.14);
   --muted:#7b8db0;--light:#a8b9d4;
   --shadow:0 1px 4px rgba(26,43,94,.08),0 3px 10px rgba(26,43,94,.06);
-  --shadow-md:0 4px 20px rgba(26,43,94,.12);
   --r:16px;--r-sm:12px;--r-full:9999px;
 }
 
-/* ── CYCLE HEADER ── */
+/* ── CYCLE BAR ── */
 .cycle-bar{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.cycle-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px}
-.cycle-value{font-size:14px;font-weight:700;color:#fff}
-.cycle-badge{padding:3px 10px;border-radius:var(--r-full);background:rgba(255,255,255,.15);color:#fff;font-size:10px;font-weight:700;border:1px solid rgba(255,255,255,.2)}
-.cycle-nav{display:flex;gap:6px;margin-left:auto}
-.cycle-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-family:'Kanit',sans-serif;font-size:12px;font-weight:700;padding:5px 12px;cursor:pointer;transition:all .15s}
-.cycle-btn:active{background:rgba(255,255,255,.25)}
+.cycle-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.cycle-val{font-size:14px;font-weight:800;color:#fff}
+.cycle-badge{padding:3px 10px;border-radius:var(--r-full);background:rgba(255,255,255,.15);color:#fff;font-size:10px;font-weight:700;border:1px solid rgba(255,255,255,.2);white-space:nowrap}
+.cycle-nav{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.c-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-family:'Kanit',sans-serif;font-size:11px;font-weight:700;padding:5px 12px;cursor:pointer;transition:background .15s;white-space:nowrap}
+.c-btn:active,.c-btn.act{background:rgba(255,255,255,.25)}
 
-/* ── CONTENT ── */
-.page-wrap{max-width:620px;margin:0 auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+/* ── PAGE ── */
+.wrap{max-width:640px;margin:0 auto;padding:14px;display:flex;flex-direction:column;gap:12px}
 
-/* ── TAB ── */
+/* ── TABS ── */
 .tab-bar{display:flex;gap:5px;background:var(--white);border:1px solid var(--border);border-radius:var(--r-full);padding:4px;box-shadow:var(--shadow)}
-.tab-pill{flex:1;padding:9px 8px;border-radius:var(--r-full);border:none;font-family:'Kanit',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--muted);background:transparent;text-transform:uppercase;letter-spacing:.3px;position:relative}
+.tab-pill{flex:1;padding:9px 6px;border-radius:var(--r-full);border:none;font-family:'Kanit',sans-serif;font-size:11px;font-weight:700;cursor:pointer;color:var(--muted);background:transparent;transition:all .2s;text-align:center;position:relative}
 .tab-pill.active{background:var(--navy);color:#fff}
-.tab-badge{display:none;position:absolute;top:3px;right:6px;width:16px;height:16px;background:var(--red);color:#fff;font-size:8px;font-weight:700;border-radius:50%;align-items:center;justify-content:center;border:2px solid var(--white)}
+.tab-badge{display:none;position:absolute;top:2px;right:4px;width:15px;height:15px;background:var(--red);color:#fff;font-size:8px;font-weight:700;border-radius:50%;align-items:center;justify-content:center;border:2px solid var(--white)}
 .tab-badge.show{display:flex}
 
 /* ── SECTION ── */
-.section{display:flex;flex-direction:column;gap:10px}
-.section.hidden{display:none}
+.sec{display:flex;flex-direction:column;gap:10px}
+.sec.hidden{display:none}
 
-/* ── FILTER ── */
-.filter-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+/* ── CARD ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:6px}
+
+/* ── PILLS (quick cycle) ── */
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.cpill{padding:5px 12px;border-radius:var(--r-full);border:1px solid var(--border2);background:var(--bg);font-family:'Kanit',sans-serif;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.cpill.active{background:var(--navy);color:#fff;border-color:transparent}
+
+/* ── FILTER GRID ── */
 .date-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.date-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px}
+.f-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px}
 .date-inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:9px 12px;font-family:'Kanit',sans-serif;font-size:13px;font-weight:600;color:var(--navy);outline:none;transition:border-color .2s}
 .date-inp:focus{border-color:var(--blue);background:var(--white)}
 
-/* Cycle quick-select pills */
-.cycle-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.cpill{padding:5px 12px;border-radius:var(--r-full);border:1px solid var(--border2);background:var(--bg);font-family:'Kanit',sans-serif;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
-.cpill:active,.cpill.active{background:var(--navy);color:#fff;border-color:transparent}
-
+/* ── SYNC BTN ── */
 .btn-sync{width:100%;padding:13px;border:none;border-radius:var(--r-sm);background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(26,43,94,.2);transition:all .18s}
 .btn-sync:active{transform:scale(.97)}
 .btn-sync.loading svg{animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── SUMMARY STRIP ── */
-.summary-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.sum-box{background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;text-align:center;box-shadow:var(--shadow)}
-.sum-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px}
-.sum-val{font-size:20px;font-weight:800;color:var(--navy)}
-.sum-val.ok{color:var(--green)}
-.sum-val.warn{color:var(--amber)}
-.sum-val.bad{color:var(--red)}
+.sum-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sum-box{background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;text-align:center;box-shadow:var(--shadow)}
+.sum-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:3px}
+.sum-val{font-size:18px;font-weight:800;color:var(--navy)}
+.ok{color:var(--green)}.warn{color:var(--amber)}.bad{color:var(--red)}
 
-/* ── EMP CARD ── */
-.emp-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--purple);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
-.emp-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.emp-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#6d28d9);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0}
-.emp-name{font-size:15px;font-weight:700;color:var(--navy)}
-.emp-id{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
-.emp-pills{display:flex;gap:5px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
-.ep{padding:2px 8px;border-radius:var(--r-full);font-size:10px;font-weight:700;white-space:nowrap}
-.ep-days{background:rgba(26,43,94,.08);color:var(--navy)}
-.ep-late{background:var(--red-l);color:var(--red)}
-.ep-ot{color:var(--purple);font-size:10px;font-weight:700;margin-top:3px}
+/* ── DASHBOARD CARDS (from Summary_Records) ── */
+.dash-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.rec-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+.rec-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.rec-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy2));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0}
+.rec-name{font-size:14px;font-weight:700;color:var(--navy)}
+.rec-id{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.rec-pills{display:flex;gap:5px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+.rp{padding:2px 8px;border-radius:var(--r-full);font-size:10px;font-weight:700}
+.rp-day{background:var(--blue-l);color:var(--blue)}
+.rp-late{background:var(--red-l);color:var(--red);border:1px solid var(--red-b)}
+.rp-ot{background:var(--purple-l);color:var(--purple)}
+.rec-notes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.rn-box{background:var(--bg);border-radius:var(--r-sm);padding:8px;border:1px solid var(--border)}
+.rn-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:3px}
+.rn-val{font-size:12px;font-weight:700;color:var(--navy);word-break:break-all}
+.rn-val.none{color:var(--light);font-weight:400}
+.rec-cycle{font-size:10px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
 
-.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* ── EMP AUDIT CARD (กรอก) ── */
+.emp-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--purple);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+.emp-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.emp-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#6d28d9);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0}
+.emp-name{font-size:14px;font-weight:700;color:var(--navy)}
+.emp-id{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
+.inp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .inp-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:3px}
 .inp-field{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:9px 11px;font-family:'Kanit',sans-serif;font-size:13px;font-weight:600;color:var(--navy);outline:none;transition:border-color .2s}
 .inp-field:focus{border-color:var(--blue);background:var(--white)}
@@ -95,44 +110,42 @@ html,body{min-height:100%;background:#f0f4f8;color:#1a2332;font-family:'Kanit',s
 .btn-save:active{transform:scale(.98)}
 
 /* ── PETITION ── */
-.pet-card{background:var(--white);border:1px solid var(--border);border-left:4px solid var(--amber);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
-.pet-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.pet-card{background:var(--white);border:1px solid var(--border);border-left:4px solid var(--amber);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);animation:slideUp .25s ease both}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .pet-type{display:inline-block;padding:2px 9px;border-radius:var(--r-full);background:var(--amber-l);color:var(--amber);font-size:10px;font-weight:700;border:1px solid var(--amber-b);margin-bottom:5px}
 .pet-name{font-size:14px;font-weight:700;color:var(--navy)}
-.pet-id{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
-.pet-date{font-size:10px;color:var(--muted);white-space:nowrap;margin-left:8px}
+.pet-id{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
+.pet-status-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
 .pet-reason{background:var(--bg);border-radius:var(--r-sm);padding:9px 12px;font-size:12px;color:#475569;font-style:italic;line-height:1.6;margin-bottom:10px}
 .pet-actions{display:flex;gap:8px}
-.btn-reject{flex:1;padding:10px;border-radius:var(--r-sm);border:1.5px solid rgba(220,38,38,.25);background:var(--red-l);color:var(--red);font-family:'Kanit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
-.btn-reject:active{background:rgba(220,38,38,.18);transform:scale(.97)}
-.btn-approve{flex:1.5;padding:10px;border-radius:var(--r-sm);border:none;background:var(--navy);color:#fff;font-family:'Kanit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(26,43,94,.2);transition:all .15s}
-.btn-approve:active{background:var(--blue);transform:scale(.97)}
+.btn-reject{flex:1;padding:10px;border-radius:var(--r-sm);border:1.5px solid var(--red-b);background:var(--red-l);color:var(--red);font-family:'Kanit',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
+.btn-approve{flex:1.5;padding:10px;border-radius:var(--r-sm);border:none;background:var(--navy);color:#fff;font-family:'Kanit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(26,43,94,.2)}
 
 /* ── NOTE MODAL ── */
-#note-modal{display:none;position:fixed;inset:0;z-index:150;background:rgba(10,15,30,.65);backdrop-filter:blur(5px);align-items:flex-end;justify-content:center}
+#note-modal{display:none;position:fixed;inset:0;z-index:200;background:rgba(10,15,30,.65);align-items:flex-end;justify-content:center}
 #note-modal.open{display:flex}
-.note-sheet{background:var(--white);border-radius:22px 22px 0 0;width:100%;max-width:500px;padding:12px 18px 36px;animation:sheetUp .25s cubic-bezier(.22,1,.36,1)}
-@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.note-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
-.note-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:10px}
-.note-inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:11px 13px;font-family:'Kanit',sans-serif;font-size:14px;color:var(--navy);outline:none;resize:none;min-height:80px;margin-bottom:10px;transition:border-color .2s}
+.note-sheet{background:var(--white);border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:12px 18px 36px;animation:sheetUp .25s cubic-bezier(.22,1,.36,1)}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+.note-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 14px}
+.note-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px}
+.note-inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;font-family:'Kanit',sans-serif;font-size:14px;color:var(--navy);outline:none;resize:none;min-height:72px;margin-bottom:10px}
 .note-inp:focus{border-color:var(--blue)}
 .note-btns{display:flex;gap:8px}
-.btn-note-cancel{flex:1;padding:11px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg);color:var(--muted);font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
-.btn-note-ok{flex:2;padding:11px;border-radius:var(--r-sm);border:none;background:var(--navy);color:#fff;font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(26,43,94,.2)}
+.note-cancel{flex:1;padding:11px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg);color:var(--muted);font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.note-ok{flex:2;padding:11px;border-radius:var(--r-sm);border:none;background:var(--navy);color:#fff;font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
 
 /* ── EMPTY / LOADING ── */
-.empty-state{text-align:center;padding:44px 20px;color:var(--light);font-size:12px}
+.empty{text-align:center;padding:44px 20px;color:var(--light);font-size:12px}
 .empty-icon{font-size:36px;margin-bottom:10px;opacity:.4}
 .loading-wrap{text-align:center;padding:44px 20px}
-.spinner{width:28px;height:28px;border:3px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+.spinner{width:26px;height:26px;border:3px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
 .loading-txt{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
 
 /* ── GLOBAL LOADER ── */
-#global-loader{display:none;position:fixed;inset:0;z-index:300;background:rgba(240,244,248,.85);backdrop-filter:blur(8px);flex-direction:column;align-items:center;justify-content:center;gap:14px}
-#global-loader.show{display:flex}
-.loader-ring{width:44px;height:44px;border-radius:50%;border:4px solid var(--border2);border-top-color:var(--navy);animation:spin .7s linear infinite}
-.loader-txt{font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px}
+#gloader{display:none;position:fixed;inset:0;z-index:300;background:rgba(240,244,248,.85);flex-direction:column;align-items:center;justify-content:center;gap:12px}
+#gloader.show{display:flex}
+.g-ring{width:40px;height:40px;border-radius:50%;border:4px solid var(--border2);border-top-color:var(--navy);animation:spin .7s linear infinite}
+.g-txt{font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px}
 </style>
 </head>
 <body>
@@ -140,55 +153,74 @@ html,body{min-height:100%;background:#f0f4f8;color:#1a2332;font-family:'Kanit',s
 <!-- CYCLE BAR -->
 <div class="cycle-bar">
   <div>
-    <div class="cycle-label">รอบเงินเดือน</div>
-    <div class="cycle-value" id="cycle-display">—</div>
+    <div class="cycle-lbl">รอบเงินเดือน</div>
+    <div class="cycle-val" id="cycle-display">—</div>
   </div>
   <div class="cycle-badge" id="cycle-badge">—</div>
   <div class="cycle-nav">
-    <button class="cycle-btn" onclick="prevCycle()">‹ ก่อนหน้า</button>
-    <button class="cycle-btn" onclick="resetCycle()">รอบนี้</button>
-    <button class="cycle-btn" onclick="nextCycle()">ถัดไป ›</button>
+    <button class="c-btn" onclick="prevCycle()">‹ ก่อนหน้า</button>
+    <button class="c-btn" onclick="resetCycle()">รอบนี้</button>
+    <button class="c-btn" onclick="nextCycle()">ถัดไป ›</button>
   </div>
 </div>
 
-<div class="page-wrap">
+<div class="wrap">
 
-  <!-- TAB -->
+  <!-- TABS -->
   <div class="tab-bar">
-    <button class="tab-pill active" id="tab-audit" onclick="switchTab('audit')">📊 Audit & สรุปผล</button>
+    <button class="tab-pill active" id="tab-dashboard" onclick="switchTab('dashboard')">📊 สรุปผลที่บันทึกแล้ว</button>
+    <button class="tab-pill" id="tab-audit" onclick="switchTab('audit')">✏️ Audit & บันทึก</button>
     <button class="tab-pill" id="tab-petitions" onclick="switchTab('petitions')">
-      📋 คำร้องรออนุมัติ
-      <span class="tab-badge" id="badge-petitions">0</span>
+      📋 คำร้อง<span class="tab-badge" id="badge-pet">0</span>
     </button>
   </div>
 
-  <!-- AUDIT -->
-  <div class="section" id="section-audit">
-    <div class="filter-card">
-      <!-- Quick cycle pills -->
-      <div class="cycle-pills" id="quick-pills"></div>
+  <!-- ═══ DASHBOARD — แสดงข้อมูลจาก Summary_Records ═══ -->
+  <div class="sec" id="sec-dashboard">
+    <div class="card" style="padding:12px">
+      <div class="pill-row" id="dash-pills"></div>
       <div class="date-grid">
-        <div><label class="date-lbl" for="start-date">วันที่เริ่ม</label><input type="date" id="start-date" class="date-inp"></div>
-        <div><label class="date-lbl" for="end-date">วันที่สิ้นสุด</label><input type="date" id="end-date" class="date-inp"></div>
+        <div><label class="f-lbl">ตั้งแต่วันที่</label><input type="date" id="d-start" class="date-inp"></div>
+        <div><label class="f-lbl">ถึงวันที่</label><input type="date" id="d-end" class="date-inp"></div>
+      </div>
+      <button class="btn-sync" id="btn-dash-sync" onclick="fetchDashboard()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        โหลดข้อมูลที่บันทึกแล้ว
+      </button>
+    </div>
+    <div class="sum-strip" id="dash-summary" style="display:none">
+      <div class="sum-box"><span class="sum-lbl">รอบที่ค้นพบ</span><span class="sum-val" id="ds-cycles">—</span></div>
+      <div class="sum-box"><span class="sum-lbl">พนักงาน</span><span class="sum-val ok" id="ds-emps">—</span></div>
+      <div class="sum-box"><span class="sum-lbl">สายรวม</span><span class="sum-val warn" id="ds-late">—</span></div>
+      <div class="sum-box"><span class="sum-lbl">OT รวม</span><span class="sum-val" id="ds-ot" style="color:var(--purple)">—</span></div>
+    </div>
+    <div id="dash-board">
+      <div class="empty"><div class="empty-icon">🗄️</div>กดปุ่มโหลดข้อมูลเพื่อดูรายการที่บันทึกแล้ว</div>
+    </div>
+  </div>
+
+  <!-- ═══ AUDIT — กรอกข้อมูลใหม่ ═══ -->
+  <div class="sec hidden" id="sec-audit">
+    <div class="card" style="padding:12px">
+      <div class="pill-row" id="audit-pills"></div>
+      <div class="date-grid">
+        <div><label class="f-lbl">วันที่เริ่ม</label><input type="date" id="a-start" class="date-inp"></div>
+        <div><label class="f-lbl">วันที่สิ้นสุด</label><input type="date" id="a-end" class="date-inp"></div>
       </div>
       <button class="btn-sync" id="btn-sync" onclick="syncData()">
-        <svg id="sync-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg id="sync-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Sync ข้อมูลจาก Google Sheets
       </button>
     </div>
-
-    <!-- Summary strip -->
-    <div class="summary-strip" id="summary-strip" style="display:none">
-      <div class="sum-box"><span class="sum-lbl">พนักงาน</span><span class="sum-val" id="sum-emp">—</span></div>
-      <div class="sum-box"><span class="sum-lbl">วันรวม</span><span class="sum-val ok" id="sum-days">—</span></div>
-      <div class="sum-box"><span class="sum-lbl">สายรวม</span><span class="sum-val warn" id="sum-late">—</span></div>
-      <div class="sum-box"><span class="sum-lbl">OT รวม</span><span class="sum-val" id="sum-ot" style="color:var(--purple)">—</span></div>
+    <div class="sum-strip" id="audit-summary" style="display:none">
+      <div class="sum-box"><span class="sum-lbl">พนักงาน</span><span class="sum-val" id="s-emp">—</span></div>
+      <div class="sum-box"><span class="sum-lbl">วันรวม</span><span class="sum-val ok" id="s-days">—</span></div>
+      <div class="sum-box"><span class="sum-lbl">สายรวม</span><span class="sum-val warn" id="s-late">—</span></div>
+      <div class="sum-box"><span class="sum-lbl">OT รวม</span><span class="sum-val" id="s-ot" style="color:var(--purple)">—</span></div>
     </div>
-
     <div id="audit-board">
-      <div class="empty-state"><div class="empty-icon">🗄️</div>กดปุ่ม Sync เพื่อดึงสรุปผลจาก Sheet</div>
+      <div class="empty"><div class="empty-icon">🗄️</div>กดปุ่ม Sync เพื่อดึงข้อมูลสรุป</div>
     </div>
-
     <div id="save-area">
       <button class="btn-save" onclick="submitAuditAll()">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -197,9 +229,9 @@ html,body{min-height:100%;background:#f0f4f8;color:#1a2332;font-family:'Kanit',s
     </div>
   </div>
 
-  <!-- PETITIONS -->
-  <div class="section hidden" id="section-petitions">
-    <div id="petition-list">
+  <!-- ═══ PETITIONS ═══ -->
+  <div class="sec hidden" id="sec-petitions">
+    <div id="pet-list">
       <div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">กำลังโหลด...</div></div>
     </div>
   </div>
@@ -211,257 +243,358 @@ html,body{min-height:100%;background:#f0f4f8;color:#1a2332;font-family:'Kanit',s
   <div class="note-sheet">
     <div class="note-handle"></div>
     <div class="note-title" id="note-title">ระบุหมายเหตุ</div>
-    <textarea class="note-inp" id="note-inp" placeholder="ระบุหมายเหตุการอนุมัติ..."></textarea>
+    <textarea class="note-inp" id="note-inp" placeholder="ระบุหมายเหตุ (ถ้ามี)..."></textarea>
     <div class="note-btns">
-      <button class="btn-note-cancel" onclick="closeNote()">ยกเลิก</button>
-      <button class="btn-note-ok" id="note-ok-btn">ยืนยัน</button>
+      <button class="note-cancel" onclick="closeNote()">ยกเลิก</button>
+      <button class="note-ok" id="note-ok-btn">ยืนยัน</button>
     </div>
   </div>
 </div>
 
-<!-- LOADER -->
-<div id="global-loader">
-  <div class="loader-ring"></div>
-  <div class="loader-txt" id="loader-txt">กำลังดึงข้อมูล...</div>
-</div>
+<!-- GLOBAL LOADER -->
+<div id="gloader"><div class="g-ring"></div><div class="g-txt" id="g-txt">กำลังดำเนินการ...</div></div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbxvProkNuSUhJSGgO2M94x_ybX_S-9ZtRx75RsBKIMQgmuSw23P_-7z8XPAflKMq6XR9g/exec';
+const API = 'https://script.google.com/macros/s/AKfycbxvProkNuSUhJSGgO2M94x_ybX_S-9ZtRx75RsBKIMQgmuSw23P_-7z8XPAflKMq6XR9g/exec';
 
-// ══ รอบเงินเดือน 21-20 ══
+// ══ LOCAL DATE FORMAT (ป้องกัน UTC offset ขยับวัน) ══
+function localFmt(d) {
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function localFmtTH(d) {
+    var thM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    return d.getDate()+' '+thM[d.getMonth()]+' '+(d.getFullYear()+543);
+}
+
+// ══ รอบเงินเดือน 21-20 (ใช้ localFmt ไม่ใช้ toISOString) ══
 function getPayrollCycle(d) {
     var y=d.getFullYear(), m=d.getMonth(), day=d.getDate(), start, end;
     if (day <= 20) {
-        var sm = m===0 ? 11 : m-1;
-        var sy = m===0 ? y-1 : y;
-        start = new Date(sy, sm, 21);
-        end   = new Date(y, m, 20);
+        var sm=m===0?11:m-1, sy=m===0?y-1:y;
+        start=new Date(sy,sm,21); end=new Date(y,m,20);
     } else {
-        var em = m===11 ? 0 : m+1;
-        var ey = m===11 ? y+1 : y;
-        start = new Date(y, m, 21);
-        end   = new Date(ey, em, 20);
+        var em=m===11?0:m+1, ey=m===11?y+1:y;
+        start=new Date(y,m,21); end=new Date(ey,em,20);
     }
-    return {
-        start: start.toISOString().slice(0,10),
-        end:   end.toISOString().slice(0,10),
-        label: fmtDate(start) + ' – ' + fmtDate(end)
-    };
+    return { start:localFmt(start), end:localFmt(end),
+             label:localFmtTH(start)+' – '+localFmtTH(end) };
 }
-
-// เลื่อนรอบ ±N เดือน
-function shiftCycle(base, months) {
-    var d = new Date(base);
-    d.setMonth(d.getMonth() + months);
+function shiftCycle(startStr, months) {
+    var d = new Date(startStr+'T12:00:00'); // noon ป้องกัน DST
+    d.setMonth(d.getMonth()+months);
     return getPayrollCycle(d);
 }
-
-function fmtDate(d) {
-    var thMonths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-    return d.getDate()+' '+thMonths[d.getMonth()]+' '+(d.getFullYear()+543);
-}
-
-function fmt(d) { return d.toISOString().slice(0,10); }
 
 // ══ STATE ══
 var now = new Date();
 var currentCycle = getPayrollCycle(now);
-var cycleOffset  = 0; // 0=รอบนี้, -1=ก่อนหน้า, +1=ถัดไป
 
 function setCycle(c) {
     currentCycle = c;
-    document.getElementById('start-date').value  = c.start;
-    document.getElementById('end-date').value    = c.end;
     document.getElementById('cycle-display').textContent = c.label;
-    // badge บอกรอบ
-    var s = new Date(c.start);
+    var s = new Date(c.start+'T12:00:00');
     var thM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
     document.getElementById('cycle-badge').textContent = 'รอบ '+thM[s.getMonth()]+' '+(s.getFullYear()+543);
-    buildQuickPills();
+    // sync ทั้ง 2 date inputs
+    ['a-start','d-start'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=c.start; });
+    ['a-end','d-end'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=c.end; });
+    buildPills();
 }
+function prevCycle()  { setCycle(shiftCycle(currentCycle.start,-1)); }
+function nextCycle()  { setCycle(shiftCycle(currentCycle.end, 1)); }
+function resetCycle() { setCycle(getPayrollCycle(now)); }
 
-function prevCycle()  { cycleOffset--; setCycle(shiftCycle(currentCycle.start, -1)); }
-function nextCycle()  { cycleOffset++; setCycle(shiftCycle(currentCycle.end, 1)); }
-function resetCycle() { cycleOffset=0; setCycle(getPayrollCycle(now)); }
-
-// ══ Quick pills (รอบ 3 เดือนล่าสุด) ══
-function buildQuickPills() {
-    var pills = [];
+// ══ QUICK PILLS ══
+function buildPills() {
+    var thM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    var cycles = [];
     for (var i=2; i>=0; i--) {
-        var c = shiftCycle(new Date(), -(i>0 ? i : 0));
-        if (i===1) c = shiftCycle(new Date(now.getFullYear(), now.getMonth()-1, 15), 0);
-        if (i===2) c = shiftCycle(new Date(now.getFullYear(), now.getMonth()-2, 15), 0);
-        pills.push(c);
+        var d = new Date(now.getFullYear(), now.getMonth()-i, 15);
+        cycles.push(getPayrollCycle(d));
     }
-    document.getElementById('quick-pills').innerHTML = pills.map((c,i)=>{
-        var isActive = c.start===currentCycle.start;
-        var s=new Date(c.start);
-        var thM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-        var lbl = 'รอบ '+thM[s.getMonth()];
-        return '<button class="cpill'+(isActive?' active':'')+'" onclick="selectPill(\''+c.start+'\',\''+c.end+'\')">'+lbl+'</button>';
-    }).join('');
-}
-
-function selectPill(start, end) {
-    document.getElementById('start-date').value = start;
-    document.getElementById('end-date').value   = end;
-    currentCycle = {start,end,label:''};
-    buildQuickPills();
-    document.querySelectorAll('.cpill').forEach(p=>{
-        p.classList.toggle('active', p.onclick&&p.getAttribute('onclick').includes(start));
+    ['audit-pills','dash-pills'].forEach(function(pid) {
+        var el = document.getElementById(pid);
+        if (!el) return;
+        el.innerHTML = cycles.map(function(c) {
+            var s = new Date(c.start+'T12:00:00');
+            var lbl = 'รอบ '+thM[s.getMonth()];
+            var isAct = c.start===currentCycle.start;
+            return '<button class="cpill'+(isAct?' active':'')+'" onclick="pickCycle(\''+c.start+'\',\''+c.end+'\')">' + lbl + '</button>';
+        }).join('');
     });
+}
+function pickCycle(start, end) {
+    var s = new Date(start+'T12:00:00');
+    var e = new Date(end+'T12:00:00');
+    var c = { start:start, end:end, label:localFmtTH(s)+' – '+localFmtTH(e) };
+    setCycle(c);
 }
 
 // ══ TAB ══
-function switchTab(tab) {
-    document.getElementById('section-audit').classList.toggle('hidden', tab!=='audit');
-    document.getElementById('section-petitions').classList.toggle('hidden', tab!=='petitions');
-    document.querySelectorAll('.tab-pill').forEach(b=>b.classList.toggle('active', b.id.includes(tab)));
-    if (tab==='petitions') fetchPetitions();
+var _tab = 'dashboard';
+function switchTab(t) {
+    _tab = t;
+    ['dashboard','audit','petitions'].forEach(function(s) {
+        document.getElementById('sec-'+s).classList.toggle('hidden', s!==t);
+        var p = document.getElementById('tab-'+s);
+        if (p) p.classList.toggle('active', s===t);
+    });
+    if (t==='petitions') fetchPetitions();
 }
 
-// ══ SYNC ══
+// ══ DASHBOARD — ดึงข้อมูลจาก Summary_Records ══
+// Summary_Records columns: A=Record_ID, B=Cycle, C=Employee_ID, D=Name, E=Work_Days, F=Late_Count, G=Total_OT, H=Short_Note, I=Withdraw_Note, J=Other_Note, K=Timestamp
+async function fetchDashboard() {
+    var start = document.getElementById('d-start').value;
+    var end   = document.getElementById('d-end').value;
+    if (!start||!end) { alert('กรุณาเลือกช่วงวันที่'); return; }
+    gload(true,'กำลังโหลดข้อมูล...');
+    try {
+        // ดึง Summary_Records ผ่าน action GET_MANAGER_DASHBOARD ซึ่งรวม summary
+        // หรือใช้ GET_CALC_SUMMARY แล้วกรองรอบที่ตรงกัน
+        // ** ใช้ action GET_EMPLOYEES เพื่อ list empId แล้ว query Summary_Records โดยตรง
+        // Backend ไม่มี action ดึง Summary_Records โดยตรง → ใช้ GET_MANAGER_DASHBOARD ที่มี summary
+        var r = await fetch(API+'?action=GET_MANAGER_DASHBOARD&start='+start+'&end='+end+'&t='+Date.now());
+        var d = await r.json();
+        console.log('[Inner] GET_MANAGER_DASHBOARD:', d);
+        renderDashboard(d, start, end);
+    } catch(e) {
+        alert('โหลดข้อมูลไม่สำเร็จ: '+e.message);
+        console.error(e);
+    }
+    gload(false);
+}
+
+function renderDashboard(data, start, end) {
+    var board = document.getElementById('dash-board');
+    var strip = document.getElementById('dash-summary');
+
+    // ลอง parse summary records
+    var records = data.summaryRecords || data.summary || data.records || [];
+    var emps    = data.employees || data.empList || [];
+
+    if (!records.length && !emps.length) {
+        board.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>ไม่พบข้อมูลที่บันทึกในช่วงนี้<br><small>ลองกด Sync ใน Audit & บันทึก แล้วบันทึกก่อน</small></div>';
+        strip.style.display = 'none';
+        return;
+    }
+
+    // ถ้าได้ empList มาให้แสดงแบบ summary
+    var items = emps.length ? emps : records;
+    var totalLate = items.reduce(function(s,e){ return s+(parseInt(e.lateCount||e.late_count||e.Late_Count||0)||0); },0);
+    var totalOT   = items.reduce(function(s,e){ return s+(parseFloat(e.ot||e.otHours||e.Total_OT||0)||0); },0);
+
+    strip.style.display='grid';
+    document.getElementById('ds-cycles').textContent = 1;
+    document.getElementById('ds-emps').textContent   = items.length;
+    document.getElementById('ds-late').textContent   = totalLate+' ครั้ง';
+    document.getElementById('ds-ot').textContent     = totalOT.toFixed(1)+' ชม.';
+
+    board.innerHTML = '<div class="dash-grid">'+items.map(function(emp) {
+        var id   = emp.empId||emp.Employee_ID||emp.id||'—';
+        var name = emp.name||emp.Name||emp.nickname||'—';
+        var days = emp.workDays||emp.Work_Days||emp.daysWorked||0;
+        var late = emp.lateCount||emp.Late_Count||emp.lateCount||0;
+        var ot   = parseFloat(emp.ot||emp.Total_OT||emp.otHours||0)||0;
+        var shortNote    = emp.Short_Note   ||emp.auditShort   ||emp.shortNote   ||'—';
+        var withdrawNote = emp.Withdraw_Note||emp.withdrawAmount||emp.withdraw    ||'—';
+        var otherNote    = emp.Other_Note   ||emp.otherNote    ||emp.counterShort||'—';
+        var cycle  = emp.Cycle||emp.cycle||start+' ถึง '+end;
+        var initials = name.charAt(0);
+        return '<div class="rec-card">'
+            +'<div class="rec-header">'
+            +'<div class="rec-av">'+initials+'</div>'
+            +'<div style="flex:1"><div class="rec-name">'+name+'</div><div class="rec-id">'+id+'</div></div>'
+            +'<div class="rec-pills">'
+            +'<span class="rp rp-day">มา '+days+' วัน</span>'
+            +(parseInt(late)>0?'<span class="rp rp-late">สาย '+late+'</span>':'')
+            +(ot>0?'<span class="rp rp-ot">OT '+ot.toFixed(1)+'</span>':'')
+            +'</div></div>'
+            +'<div class="rec-notes">'
+            +'<div class="rn-box"><span class="rn-lbl">Short Note</span><span class="rn-val'+(shortNote==='—'?' none':'')+'">'+(shortNote||'—')+'</span></div>'
+            +'<div class="rn-box"><span class="rn-lbl">เงินเบิก</span><span class="rn-val'+(withdrawNote==='—'?' none':'')+'">'+(withdrawNote||'—')+'</span></div>'
+            +'<div class="rn-box"><span class="rn-lbl">หมายเหตุอื่น</span><span class="rn-val'+(otherNote==='—'?' none':'')+'">'+(otherNote||'—')+'</span></div>'
+            +'</div>'
+            +'<div class="rec-cycle">📅 รอบ: '+cycle+'</div>'
+            +'</div>';
+    }).join('')+'</div>';
+}
+
+// ══ AUDIT SYNC ══
 async function syncData() {
-    var start = document.getElementById('start-date').value;
-    var end   = document.getElementById('end-date').value;
-    if (!start||!end) { alert('กรุณาเลือกวันที่'); return; }
-    toggleLoader(true, 'กำลังดึงข้อมูลจาก Sheet...');
+    var start = document.getElementById('a-start').value;
+    var end   = document.getElementById('a-end').value;
+    if (!start||!end) { alert('กรุณาเลือกช่วงวันที่'); return; }
+    gload(true,'กำลัง Sync ข้อมูล...');
     document.getElementById('btn-sync').classList.add('loading');
     try {
-        var r = await fetch(API_URL+'?action=GET_CALC_SUMMARY&start='+start+'&end='+end);
-        var data = await r.json();
-        renderAudit(Array.isArray(data)?data:[]);
-        fetchPetitions();
+        var r = await fetch(API+'?action=GET_CALC_SUMMARY&start='+start+'&end='+end+'&t='+Date.now());
+        var d = await r.json();
+        console.log('[Inner] GET_CALC_SUMMARY:', d);
+        renderAudit(Array.isArray(d)?d:[]);
     } catch(e) { alert('เชื่อมต่อไม่สำเร็จ: '+e.message); }
-    finally { toggleLoader(false); document.getElementById('btn-sync').classList.remove('loading'); }
+    gload(false);
+    document.getElementById('btn-sync').classList.remove('loading');
 }
 
-// ══ RENDER AUDIT ══
 function renderAudit(items) {
     var board = document.getElementById('audit-board');
-    var strip = document.getElementById('summary-strip');
+    var strip = document.getElementById('audit-summary');
     if (!items.length) {
-        board.innerHTML='<div class="empty-state"><div class="empty-icon">🔍</div>ไม่พบข้อมูลพนักงานในรอบนี้</div>';
+        board.innerHTML='<div class="empty"><div class="empty-icon">🔍</div>ไม่พบข้อมูลในรอบนี้</div>';
         document.getElementById('save-area').style.display='none';
         strip.style.display='none';
         return;
     }
-
-    // Summary
     strip.style.display='grid';
-    var totalDays = items.reduce((s,e)=>s+(parseInt(e.workDays)||0),0);
-    var totalLate = items.reduce((s,e)=>s+(parseInt(e.lateCount)||0),0);
-    var totalOT   = items.reduce((s,e)=>s+(parseFloat(e.ot)||0),0);
-    document.getElementById('sum-emp').textContent  = items.length;
-    document.getElementById('sum-days').textContent = totalDays;
-    document.getElementById('sum-late').textContent = totalLate;
-    document.getElementById('sum-ot').textContent   = totalOT.toFixed(1);
+    var td=0,tl=0,to=0;
+    items.forEach(function(e){ td+=parseInt(e.workDays)||0; tl+=parseInt(e.lateCount)||0; to+=parseFloat(e.ot)||0; });
+    document.getElementById('s-emp').textContent  = items.length;
+    document.getElementById('s-days').textContent = td;
+    document.getElementById('s-late').textContent = tl;
+    document.getElementById('s-ot').textContent   = to.toFixed(1);
 
     board.innerHTML = items.map(function(emp) {
-        var initial = emp.name ? emp.name.charAt(0) : '?';
-        var lateNum = parseInt(emp.lateCount)||0;
-        return '<div class="emp-card" data-id="'+emp.empId+'" data-name="'+emp.name+'" data-days="'+emp.workDays+'" data-late="'+emp.lateCount+'" data-ot="'+emp.ot+'">'
+        var init = (emp.name||emp.empId||'?').charAt(0);
+        var lateN = parseInt(emp.lateCount)||0;
+        return '<div class="emp-card" data-id="'+emp.empId+'" data-name="'+emp.name+'" data-nick="'+(emp.nickname||emp.name)+'" data-days="'+emp.workDays+'" data-late="'+emp.lateCount+'" data-ot="'+emp.ot+'">'
             +'<div class="emp-header">'
-            +'<div class="emp-av">'+initial+'</div>'
-            +'<div style="flex:1;min-width:0"><div class="emp-name">'+emp.name+'</div><div class="emp-id">'+emp.empId+'</div></div>'
-            +'<div><div class="emp-pills"><span class="ep ep-days">มา '+emp.workDays+' วัน</span><span class="ep ep-late">สาย '+(lateNum)+' ครั้ง</span></div>'
-            +'<div class="ep-ot" style="text-align:right">OT '+emp.ot+' ชม.</div></div>'
+            +'<div class="emp-av">'+init+'</div>'
+            +'<div style="flex:1"><div class="emp-name">'+(emp.name||'—')+'</div><div class="emp-id">'+(emp.empId||'—')+'</div></div>'
+            +'<div style="text-align:right">'
+            +'<div style="display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap">'
+            +'<span style="padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:var(--blue-l);color:var(--blue)">มา '+emp.workDays+' วัน</span>'
+            +(lateN>0?'<span style="padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:var(--red-l);color:var(--red)">สาย '+lateN+' ครั้ง</span>':'')
             +'</div>'
-            +'<div class="input-grid">'
-            +'<div><label class="inp-lbl">Audit Short</label><input type="text" class="inp-field input-audit-short" placeholder="—"></div>'
-            +'<div><label class="inp-lbl">เงินเบิก</label><input type="text" class="inp-field input-withdraw" placeholder="—"></div>'
-            +'<div><label class="inp-lbl">หักสินค้าอื่นๆ</label><input type="text" class="inp-field input-deduction" placeholder="—"></div>'
-            +'<div><label class="inp-lbl">ขาดหน้าเครื่อง</label><input type="text" class="inp-field input-counter" placeholder="—"></div>'
+            +'<div style="font-size:10px;color:var(--purple);font-weight:700;margin-top:3px;text-align:right">OT '+(parseFloat(emp.ot)||0).toFixed(1)+' ชม.</div>'
+            +'</div>'
+            +'</div>'
+            +'<div class="inp-grid">'
+            +'<div><label class="inp-lbl">Audit Short Note</label><input type="text" class="inp-field inp-short" placeholder="หมายเหตุสั้น"></div>'
+            +'<div><label class="inp-lbl">เงินเบิก (บาท)</label><input type="number" class="inp-field inp-withdraw" placeholder="0" min="0"></div>'
+            +'<div><label class="inp-lbl">หักสินค้าอื่นๆ (บาท)</label><input type="number" class="inp-field inp-other" placeholder="0" min="0"></div>'
+            +'<div><label class="inp-lbl">ขาดหน้าเครื่อง (บาท)</label><input type="number" class="inp-field inp-counter" placeholder="0" min="0"></div>'
             +'</div></div>';
     }).join('');
     document.getElementById('save-area').style.display='block';
 }
 
-// ══ SUBMIT AUDIT ══
+// ══ SUBMIT AUDIT — payload ตรง Summary_Records columns ══
+// Backend SAVE_BULK_SUMMARY appendRow:
+// [month, cycle, empId, name, nickname, salaryType, baseRate, daysWorked, otRate, otHours, lateCount, lateDeduction, advancePay, otherEarn, otherEarnNote, otherDed, otherDedNote, total, timestamp]
 async function submitAuditAll() {
     if (!confirm('ยืนยันบันทึก Audit ทั้งหมดลง Sheet?')) return;
-    var start = document.getElementById('start-date').value;
-    var end   = document.getElementById('end-date').value;
+    var start = document.getElementById('a-start').value;
+    var end   = document.getElementById('a-end').value;
+    var cycleStr = start+' ถึง '+end;
+    var s = new Date(start+'T12:00:00');
+    var thM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    var monthLabel = thM[s.getMonth()]+' '+(s.getFullYear()+543);
+
     var payload = Array.from(document.querySelectorAll('.emp-card')).map(function(card) {
+        var shortNote    = card.querySelector('.inp-short').value.trim()    || '-';
+        var withdrawAmt  = parseFloat(card.querySelector('.inp-withdraw').value) || 0;
+        var otherDed     = parseFloat(card.querySelector('.inp-other').value)    || 0;
+        var counterShort = parseFloat(card.querySelector('.inp-counter').value)  || 0;
+        var ot           = parseFloat(card.dataset.ot) || 0;
         return {
-            empId:          card.dataset.id,
-            name:           card.dataset.name,
-            workDays:       card.dataset.days,
-            lateCount:      card.dataset.late,
-            ot:             card.dataset.ot,
-            auditShort:     card.querySelector('.input-audit-short').value||'-',
-            withdrawAmount: card.querySelector('.input-withdraw').value||'-',
-            otherDeduction: card.querySelector('.input-deduction').value||'-',
-            counterShort:   card.querySelector('.input-counter').value||'-'
+            // ── ตรง columns ใน Summary_Records ──
+            month:         monthLabel,          // A → เดือน
+            cycle:         cycleStr,            // B → Cycle
+            empId:         card.dataset.id,     // C → Employee_ID
+            name:          card.dataset.name,   // D → Name
+            nickname:      card.dataset.nick,   // E → nickname
+            salaryType:    '-',                 // F
+            baseRate:      0,                   // G
+            daysWorked:    parseInt(card.dataset.days)||0,  // H → Work_Days
+            otRate:        0,                   // I
+            otHours:       ot,                  // J → Total_OT
+            lateCount:     parseInt(card.dataset.late)||0,  // K → Late_Count
+            lateDeduction: 0,                   // L
+            advancePay:    withdrawAmt,         // M → Withdraw_Note
+            otherEarn:     0,                   // N
+            otherEarnNote: shortNote,           // O → Short_Note
+            otherDed:      otherDed + counterShort,  // P → หักรวม
+            otherDedNote:  [
+                shortNote!=='-'?'note:'+shortNote:'',
+                counterShort>0?'ขาดหน้าเครื่อง:'+counterShort:''
+            ].filter(Boolean).join(' / ') || '-',  // Q
+            total:         0,                   // R
+            netTotal:      0                    // fallback
         };
     });
-    toggleLoader(true, 'กำลังบันทึก...');
+
+    gload(true,'กำลังบันทึก...');
     try {
-        var r = await fetch(API_URL, {method:'POST', body:JSON.stringify({action:'SAVE_BULK_SUMMARY', cycle:start+' ถึง '+end, payload})});
-        var d = await r.json();
-        if (d.success) alert('✅ บันทึก Audit สำเร็จแล้ว!');
-    } catch(e) { alert('❌ เกิดข้อผิดพลาด: '+e.message); }
-    finally { toggleLoader(false); }
+        await fetch(API, {
+            method:'POST',
+            body: JSON.stringify({action:'SAVE_BULK_SUMMARY', cycle:cycleStr, payload:payload})
+        });
+        alert('✅ บันทึก Audit สำเร็จแล้ว!');
+        // refresh dashboard
+        document.getElementById('d-start').value = start;
+        document.getElementById('d-end').value   = end;
+        switchTab('dashboard');
+        fetchDashboard();
+    } catch(e) { alert('❌ บันทึกไม่สำเร็จ: '+e.message); }
+    gload(false);
 }
 
 // ══ PETITIONS ══
 async function fetchPetitions() {
-    var el = document.getElementById('petition-list');
-    el.innerHTML='<div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">กำลังโหลด...</div></div>';
+    var el = document.getElementById('pet-list');
+    el.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">กำลังโหลด...</div></div>';
     try {
-        var r = await fetch(API_URL+'?action=GET_MANAGER_DASHBOARD');
+        var r = await fetch(API+'?action=GET_MANAGER_DASHBOARD&t='+Date.now());
         var d = await r.json();
         renderPetitions(d.pendingPetitions||[]);
-    } catch(e) { el.innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div>โหลดไม่สำเร็จ</div>'; }
+    } catch(e) { el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>โหลดไม่สำเร็จ</div>'; }
 }
-
 function renderPetitions(items) {
-    var el = document.getElementById('petition-list');
-    var badge = document.getElementById('badge-petitions');
+    var el = document.getElementById('pet-list');
+    var badge = document.getElementById('badge-pet');
     badge.textContent = items.length;
     badge.classList.toggle('show', items.length>0);
-    if (!items.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>ไม่มีคำร้องรออนุมัติ</div>'; return; }
-    el.innerHTML = items.map(function(p) {
-        return '<div class="pet-card">'
-            +'<div class="pet-header"><div>'
+    if (!items.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>ไม่มีคำร้องรออนุมัติ</div>'; return; }
+    el.innerHTML = items.map(function(p,i) {
+        return '<div class="pet-card" style="animation-delay:'+i*0.05+'s">'
+            +'<div class="pet-status-row"><div>'
             +'<div class="pet-type">'+(p.Type||'Petition')+'</div>'
-            +'<div class="pet-name">'+p.Name+'</div>'
+            +'<div class="pet-name">'+(p.Name||'—')+'</div>'
             +'<div class="pet-id">'+(p.Employee_ID||p.empId||'')+'</div>'
-            +'</div><div class="pet-date">📅 '+p.Date+'</div></div>'
+            +'</div><div style="font-size:10px;color:var(--muted);white-space:nowrap;margin-left:8px">📅 '+(p.Date||'—')+'</div></div>'
             +'<div class="pet-reason">"'+(p.Reason||p.reason||'—')+'"</div>'
             +'<div class="pet-actions">'
-            +'<button class="btn-reject" onclick="approvePetition(\''+p.rowIndex+'\',\'Rejected\')">❌ ไม่อนุมัติ</button>'
-            +'<button class="btn-approve" onclick="approvePetition(\''+p.rowIndex+'\',\'Approved\')">✅ อนุมัติ</button>'
+            +'<button class="btn-reject" onclick="doApprove(\''+p.rowIndex+'\',\'Rejected\')">❌ ไม่อนุมัติ</button>'
+            +'<button class="btn-approve" onclick="doApprove(\''+p.rowIndex+'\',\'Approved\')">✅ อนุมัติ</button>'
             +'</div></div>';
     }).join('');
 }
-
-// ══ PETITION APPROVE (modal แทน prompt) ══
-var _pending = null;
-function approvePetition(rowIndex, status) {
-    _pending = {rowIndex, status};
+var _pend = null;
+function doApprove(rowIndex, status) {
+    _pend = {rowIndex, status};
     document.getElementById('note-title').textContent = status==='Approved'?'✅ อนุมัติคำร้อง':'❌ ไม่อนุมัติคำร้อง';
     document.getElementById('note-inp').value='';
     document.getElementById('note-modal').classList.add('open');
-    document.getElementById('note-ok-btn').onclick = doApprove;
-    setTimeout(()=>document.getElementById('note-inp').focus(),300);
+    document.getElementById('note-ok-btn').onclick = confirmApprove;
+    setTimeout(function(){ document.getElementById('note-inp').focus(); },300);
 }
-function closeNote() { document.getElementById('note-modal').classList.remove('open'); _pending=null; }
-async function doApprove() {
-    if (!_pending) return;
+function closeNote() { document.getElementById('note-modal').classList.remove('open'); _pend=null; }
+async function confirmApprove() {
+    if (!_pend) return;
     var note = document.getElementById('note-inp').value.trim()||'-';
-    closeNote(); toggleLoader(true,'กำลังอัปเดต...');
+    closeNote(); gload(true,'กำลังอัปเดต...');
     try {
-        await fetch(API_URL, {method:'POST', body:JSON.stringify({action:'APPROVE_PETITION', rowIndex:_pending.rowIndex, status:_pending.status, managerNote:note})});
+        await fetch(API,{method:'POST',body:JSON.stringify({action:'APPROVE_PETITION',rowIndex:_pend.rowIndex,status:_pend.status,managerNote:note})});
         await fetchPetitions();
-    } catch(e) { alert('Error: '+e.message); }
-    finally { toggleLoader(false); }
+    } catch(e){ alert('Error: '+e.message); }
+    gload(false);
 }
 
 // ══ LOADER ══
-function toggleLoader(show, txt) {
-    document.getElementById('global-loader').classList.toggle('show', show);
-    if (txt) document.getElementById('loader-txt').textContent=txt;
+function gload(show,txt) {
+    document.getElementById('gloader').classList.toggle('show',show);
+    if(txt) document.getElementById('g-txt').textContent=txt;
 }
 
 // ══ INIT ══
