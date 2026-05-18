@@ -500,9 +500,11 @@ async function fetchHistory(){
   try{
     const res=await fetch(`${APPS_SCRIPT_URL}?action=GET_PAYROLL_HISTORY&t=${Date.now()}`);
     historyData=await res.json();
-    // populate filters
-    const months=[...new Set(historyData.map(h=>h['เดือน']).filter(Boolean))].sort().reverse();
-    const empNames=[...new Set(historyData.map(h=>h['ชื่อเล่น']||h['ชื่อ-นามสกุล']).filter(Boolean))].sort();
+    // รองรับทั้ง column ชื่อไทย (B เก่า) และ English (A ปัจจุบัน)
+    const getMonth = h => h['เดือน'] || h['month'] || '';
+    const getNick  = h => h['ชื่อเล่น'] || h['nickname'] || h['ชื่อ-นามสกุล'] || h['name'] || '';
+    const months=[...new Set(historyData.map(h=>getMonth(h)).filter(Boolean))].sort().reverse();
+    const empNames=[...new Set(historyData.map(h=>getNick(h)).filter(Boolean))].sort();
     const mSel=document.getElementById('hist-month-filter');
     const eSel=document.getElementById('hist-emp-filter');
     mSel.innerHTML='<option value="">— ทุกเดือน —</option>'+months.map(m=>`<option value="${m}" ${m===selectedMonth?'selected':''}>${m}</option>`).join('');
@@ -515,24 +517,34 @@ async function fetchHistory(){
 function renderHistory(){
   const mf=document.getElementById('hist-month-filter')?.value||'';
   const ef=document.getElementById('hist-emp-filter')?.value||'';
-  let rows=historyData.filter(h=>(!mf||h['เดือน']===mf)&&(!ef||(h['ชื่อเล่น']===ef||h['ชื่อ-นามสกุล']===ef)));
+  // helper อ่าน field รองรับชื่อไทย/English
+  const gv = (h, th, en) => h[th] !== undefined ? h[th] : (h[en] !== undefined ? h[en] : '');
+  const getMonth = h => gv(h,'เดือน','month');
+  const getNick  = h => gv(h,'ชื่อเล่น','nickname') || gv(h,'ชื่อ-นามสกุล','name');
+  let rows=historyData.filter(h=>{
+    const m = getMonth(h); const n = getNick(h);
+    return (!mf||m===mf)&&(!ef||(n===ef));
+  });
   rows=[...rows].reverse();
   const tbody=document.getElementById('history-tbody');
   if(!tbody) return;
   if(!rows.length){tbody.innerHTML='<tr><td colspan="9" class="empty-state">ไม่มีข้อมูล</td></tr>';return;}
   tbody.innerHTML=rows.map(h=>{
-    const net=Number(h['ยอดจ่ายสุทธิ'])||0;
-    const basic=Number(h['ค่าจ้างพื้นฐาน'])||0;
-    const days=Number(h['จำนวนวันทำงาน'])||0;
-    const otH=Number(h['จำนวนชม. OT'])||0;
-    const otR=Number(h['เรท OT ต่อชม.'])||0;
-    const ot=otH*otR;
-    const ded=(Number(h['ยอดหักสาย/ขาด'])||0)+(Number(h['ยอดเงินเบิก'])||0)+(Number(h['ยอดหักอื่นๆ'])||0);
-    const ts=h['Timestamp']?new Date(h['Timestamp']).toLocaleString('th-TH',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+    const net  = Number(gv(h,'ยอดจ่ายสุทธิ','total'))||0;
+    const base = Number(gv(h,'ค่าจ้างพื้นฐาน','baseRate'))||0;
+    const days = Number(gv(h,'จำนวนวันทำงาน','daysWorked'))||0;
+    const otH  = Number(gv(h,'จำนวนชม. OT','otHours'))||0;
+    const otR  = Number(gv(h,'เรท OT ต่อชม.','otRate'))||0;
+    const ot   = otH*otR;
+    const ded  = (Number(gv(h,'ยอดหักสาย/ขาด','lateDeduction'))||0)+(Number(gv(h,'ยอดเงินเบิก','advancePay'))||0)+(Number(gv(h,'ยอดหักอื่นๆ','otherDed'))||0);
+    const nick = getNick(h);
+    const mon  = getMonth(h);
+    const cycle = gv(h,'รอบจ่าย','cycle');
+    const ts   = (h['Timestamp']||h['timestamp'])?new Date(h['Timestamp']||h['timestamp']).toLocaleString('th-TH',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
     return `<tr>
-      <td><div class="emp-cell"><div><div class="emp-name">${h['ชื่อเล่น']||h['ชื่อ-นามสกุล']}</div><div class="emp-id">${h['เดือน']||''}</div></div></div></td>
-      <td style="text-align:center"><span style="background:var(--blue-light);color:var(--blue);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600">${h['เดือน']||'—'}</span></td>
-      <td style="text-align:center;font-size:11px;color:var(--muted)">${h['รอบจ่าย']||'—'}</td>
+      <td><div class="emp-cell"><div><div class="emp-name">${nick}</div><div class="emp-id">${mon||''}</div></div></div></td>
+      <td style="text-align:center"><span style="background:var(--blue-light);color:var(--blue);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600">${mon||'—'}</span></td>
+      <td style="text-align:center;font-size:11px;color:var(--muted)">${cycle||'—'}</td>
       <td style="text-align:center"><span style="background:var(--surface2);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;color:var(--muted)">${h['ประเภทการจ้าง']||'—'}</span></td>
       <td style="text-align:right;font-weight:600">${fmt(basic)}</td>
       <td style="text-align:right;color:#6a4fcf">${ot>0?fmt(ot):'—'}</td>
@@ -546,10 +558,11 @@ function renderHistory(){
 function renderProfileList(){
   const list=document.getElementById('profile-emp-list');
   list.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:.5px;padding:4px 2px">เลือกพนักงาน</div>';
+  const gvh = (h,th,en) => h[th]!==undefined?h[th]:(h[en]!==undefined?h[en]:'');
   const totals={};
   employees.forEach(emp=>{
-    const empHist=historyData.filter(h=>String(h['รหัสพนักงาน'])===String(emp.id));
-    totals[emp.id]=empHist.reduce((s,h)=>s+(Number(h['ยอดจ่ายสุทธิ'])||0),0);
+    const empHist=historyData.filter(h=>String(gvh(h,'รหัสพนักงาน','empId'))===String(emp.id));
+    totals[emp.id]=empHist.reduce((s,h)=>s+(Number(gvh(h,'ยอดจ่ายสุทธิ','total'))||0),0);
   });
   employees.forEach(emp=>{
     const btn=document.createElement('button');
@@ -568,10 +581,12 @@ function renderProfileList(){
 }
 
 function renderProfileMain(emp, grandTotal){
-  const empHist=historyData.filter(h=>String(h['รหัสพนักงาน'])===String(emp.id)).sort((a,b)=>a['เดือน']>b['เดือน']?1:-1);
+  const gvh = (h,th,en) => h[th]!==undefined?h[th]:(h[en]!==undefined?h[en]:'');
+  const empHist=historyData.filter(h=>String(gvh(h,'รหัสพนักงาน','empId'))===String(emp.id))
+    .sort((a,b)=>(gvh(a,'เดือน','month')>gvh(b,'เดือน','month')?1:-1));
   const months=empHist.length;
   const avgPay=months>0?grandTotal/months:0;
-  const maxPay=empHist.reduce((mx,h)=>Math.max(mx,Number(h['ยอดจ่ายสุทธิ'])||0),0);
+  const maxPay=empHist.reduce((mx,h)=>Math.max(mx,Number(h['ยอดจ่ายสุทธิ']||h['total'])||0),0);
 
   const main=document.getElementById('profile-main');
   main.innerHTML=`
@@ -622,19 +637,23 @@ function renderProfileMain(emp, grandTotal){
           </thead>
           <tbody>
             ${empHist.slice().reverse().map(h=>{
-              const net=Number(h['ยอดจ่ายสุทธิ'])||0;
-              const basic=Number(h['ค่าจ้างพื้นฐาน'])||0;
-              const days=Number(h['จำนวนวันทำงาน'])||0;
-              const otH=Number(h['จำนวนชม. OT'])||0;
-              const otR=Number(h['เรท OT ต่อชม.'])||0;
-              const ot=otH*otR;
-              const ded=(Number(h['ยอดหักสาย/ขาด'])||0)+(Number(h['ยอดเงินเบิก'])||0)+(Number(h['ยอดหักอื่นๆ'])||0);
-              const pct=maxPay>0?Math.round(net/maxPay*100):0;
+              const gvh = (th,en) => h[th]!==undefined?h[th]:(h[en]!==undefined?h[en]:'');
+              const net  = Number(gvh('ยอดจ่ายสุทธิ','total'))||0;
+              const base = Number(gvh('ค่าจ้างพื้นฐาน','baseRate'))||0;
+              const days = Number(gvh('จำนวนวันทำงาน','daysWorked'))||0;
+              const otH  = Number(gvh('จำนวนชม. OT','otHours'))||0;
+              const otR  = Number(gvh('เรท OT ต่อชม.','otRate'))||0;
+              const ot   = otH*otR;
+              const ded  = (Number(gvh('ยอดหักสาย/ขาด','lateDeduction'))||0)+(Number(gvh('ยอดเงินเบิก','advancePay'))||0)+(Number(gvh('ยอดหักอื่นๆ','otherDed'))||0);
+              const mon  = gvh('เดือน','month');
+              const cyc  = gvh('รอบจ่าย','cycle');
+              const type = gvh('ประเภทการจ้าง','salaryType');
+              const pct  = maxPay>0?Math.round(net/maxPay*100):0;
               return `<tr>
-                <td style="font-weight:600">${h['เดือน']||'—'}</td>
-                <td style="font-size:11px;color:var(--light)">${h['รอบจ่าย']||'—'}</td>
-                <td style="text-align:center"><span style="background:var(--surface2);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600;color:var(--muted)">${h['ประเภทการจ้าง']||'—'}</span></td>
-                <td style="text-align:right">${fmt(basic)}</td>
+                <td style="font-weight:600">${mon||'—'}</td>
+                <td style="font-size:11px;color:var(--light)">${cyc||'—'}</td>
+                <td style="text-align:center"><span style="background:var(--surface2);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600;color:var(--muted)">${type||'—'}</span></td>
+                <td style="text-align:right">${fmt(base)}</td>
                 <td style="text-align:right;color:#6a4fcf">${ot>0?fmt(ot):'—'}</td>
                 <td style="text-align:right;color:var(--red)">${ded>0?'-'+fmt(ded):'—'}</td>
                 <td style="text-align:right;font-weight:700;color:var(--navy)">${fmt(net)}</td>
@@ -705,20 +724,33 @@ async function refreshPayrollBg() {
 function applyPayrollData() {
   employees.forEach(emp=>{
     const sum=summaryData.find(s=>String(s.empId)===String(emp.id))||{};
-    const log=historyData.filter(h=>h['เดือน']===selectedMonth&&String(h['รหัสพนักงาน'])===String(emp.id)).pop()||{};
+    const log=historyData.filter(h=>{
+      // รองรับทั้ง column ชื่อไทย (Spreadsheet B เก่า) และ English (Spreadsheet A ปัจจุบัน)
+      const mField = h['เดือน'] || h['month'] || '';
+      const idField = String(h['รหัสพนักงาน'] || h['empId'] || '');
+      return mField===selectedMonth && idField===String(emp.id);
+    }).pop()||{};
+
+    // helper: อ่าน field รองรับชื่อไทย/English
+    const g = (thKey, enKey, def='') => {
+      if (log[enKey] !== undefined && log[enKey] !== '') return log[enKey];
+      if (log[thKey] !== undefined && log[thKey] !== '') return log[thKey];
+      return def;
+    };
+
     localInputs[emp.id]={
-      salaryType: log['ประเภทการจ้าง']||'Daily',
-      baseRate: log['ค่าจ้างพื้นฐาน']!==undefined?Number(log['ค่าจ้างพื้นฐาน']):350,
-      otHours: log['จำนวนชม. OT']!==undefined?Number(log['จำนวนชม. OT']):(Number(sum.ot)||0),
-      otRate: log['เรท OT ต่อชม.']!==undefined?Number(log['เรท OT ต่อชม.']):25,
-      lateMins: log['จำนวนครั้งที่สาย']!==undefined?Number(log['จำนวนครั้งที่สาย']):(Number(sum.lateCount)||0),
-      lateDeduction: log['ยอดหักสาย/ขาด']!==undefined?Number(log['ยอดหักสาย/ขาด']):0,
-      advancePay: log['ยอดเงินเบิก']!==undefined?Number(log['ยอดเงินเบิก']):0,
-      otherEarn: log['เงินพิเศษ/โบนัส']!==undefined?Number(log['เงินพิเศษ/โบนัส']):0,
-      otherEarnNote: log['หมายเหตุเงินพิเศษ']||'',
-      otherDed: log['ยอดหักอื่นๆ']!==undefined?Number(log['ยอดหักอื่นๆ']):0,
-      otherDedNote: log['หมายเหตุเงินหัก']||'',
-      daysWorked: log['จำนวนวันทำงาน']!==undefined?Number(log['จำนวนวันทำงาน']):(Number(sum.workDays)||0)
+      salaryType:    g('ประเภทการจ้าง',    'salaryType',    'Daily'),
+      baseRate:      Number(g('ค่าจ้างพื้นฐาน',  'baseRate',      350)),
+      otHours:       Number(g('จำนวนชม. OT',    'otHours',       Number(sum.ot)||0)),
+      otRate:        Number(g('เรท OT ต่อชม.',   'otRate',        25)),
+      lateMins:      Number(g('จำนวนครั้งที่สาย','lateMins',      Number(sum.lateCount)||0)),
+      lateDeduction: Number(g('ยอดหักสาย/ขาด',   'lateDeduction', 0)),
+      advancePay:    Number(g('ยอดเงินเบิก',      'advancePay',    0)),
+      otherEarn:     Number(g('เงินพิเศษ/โบนัส', 'otherEarn',     0)),
+      otherEarnNote: g('หมายเหตุเงินพิเศษ',       'otherEarnNote', ''),
+      otherDed:      Number(g('ยอดหักอื่นๆ',      'otherDed',      0)),
+      otherDedNote:  g('หมายเหตุเงินหัก',         'otherDedNote',  ''),
+      daysWorked:    Number(g('จำนวนวันทำงาน',     'daysWorked',    Number(sum.workDays)||0))
     };
   });
   renderEntry();
