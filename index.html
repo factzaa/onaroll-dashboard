@@ -423,8 +423,8 @@
 
     <!-- ACTIONS -->
     <div class="action-row">
-        <button onclick="handleCheckAction('CHECK_IN')"  id="btn-clock-in"  class="btn-action btn-disabled">บันทึกเข้างาน</button>
-        <button onclick="handleCheckAction('CHECK_OUT')" id="btn-clock-out" class="btn-action btn-disabled">บันทึกออกงาน</button>
+        <button onclick="handleCheckAction('CHECK_IN')"  id="btn-clock-in"  class="btn-action">บันทึกเข้างาน</button>
+        <button onclick="handleCheckAction('CHECK_OUT')" id="btn-clock-out" class="btn-action">บันทึกออกงาน</button>
     </div>
 
 
@@ -499,28 +499,32 @@
         navigator.geolocation.getCurrentPosition(pos => { 
             userPos = pos.coords;
             const dist = calculateDistance(userPos.latitude, userPos.longitude, SHOP_LAT, SHOP_LON);
+            
+            // 🔓 ปลดล็อคปุ่มทั้งคู่เสมอ (ไม่ disable ตาม zone อีกต่อไป)
+            //    การเช็ค zone จะทำตอนกดปุ่มแทน (confirm() popup ถ้านอก zone)
+            document.getElementById('btn-clock-in').classList.remove('btn-disabled');
+            document.getElementById('btn-clock-out').classList.remove('btn-disabled');
+            
+            // แสดงสถานะ zone ที่ banner เพื่อให้ user รู้ตัว
             if (dist <= RADIUS_IN) {
                 dot.className = 'dot-in';
                 text.innerText = `✅ อยู่ในพื้นที่ร้าน (${Math.round(dist)}ม.)`;
                 banner.className = 'in-zone';
-                document.getElementById('btn-clock-in').classList.remove('btn-disabled');
-                document.getElementById('btn-clock-out').classList.remove('btn-disabled');
             } else if (dist <= RADIUS_LIMIT) {
                 dot.className = 'dot-out';
-                text.innerText = `⚠️ นอกรัศมีเช็คอิน (${Math.round(dist)}ม.)`;
+                text.innerText = `⚠️ นอกรัศมีปกติ (${Math.round(dist)}ม.) — กดได้แต่จะถูกบันทึก`;
                 banner.className = 'out-zone';
-                document.getElementById('btn-clock-in').classList.add('btn-disabled');
-                document.getElementById('btn-clock-out').classList.remove('btn-disabled');
             } else {
                 dot.className = 'dot-out';
-                text.innerText = `❌ นอกพื้นที่ทำงาน (${Math.round(dist)}ม.)`;
+                text.innerText = `⚠️ นอกพื้นที่ทำงาน (${Math.round(dist)}ม.) — กดได้แต่จะถูกบันทึก`;
                 banner.className = 'out-zone';
-                document.getElementById('btn-clock-in').classList.add('btn-disabled');
-                document.getElementById('btn-clock-out').classList.add('btn-disabled');
             }
         }, (err) => {
             navigator.geolocation.getCurrentPosition(p => { userPos = p.coords; }, null, { enableHighAccuracy: false });
             showToast("⚠️ กรุณาอนุญาตสิทธิ์พิกัด", "error");
+            // ❗ แม้หา GPS ไม่ได้ — ก็ยังกดปุ่มได้ (ปลดล็อค)
+            document.getElementById('btn-clock-in').classList.remove('btn-disabled');
+            document.getElementById('btn-clock-out').classList.remove('btn-disabled');
         }, { enableHighAccuracy: true, timeout: 5000 });
     }
 
