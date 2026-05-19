@@ -730,7 +730,9 @@ function renderProfileMain(emp, grandTotal){
     </div>`;
 }
 
-const PAYROLL_CACHE_KEY = 'or_payroll_cache';
+const PAYROLL_CACHE_KEY = 'or_payroll_cache_v2';
+const PAYROLL_CACHE_TTL_OLD_KEY = 'or_payroll_cache'; // เก่า → ลบทิ้ง
+try { localStorage.removeItem(PAYROLL_CACHE_TTL_OLD_KEY); } catch(e) {}
 const PAYROLL_CACHE_TTL = 5 * 60 * 1000;
 function savePayrollCache(sum, hist){ try{ localStorage.setItem(PAYROLL_CACHE_KEY, JSON.stringify({ts:Date.now(),sum,hist})); }catch(e){} }
 function loadPayrollCache(){ try{ const r=localStorage.getItem(PAYROLL_CACHE_KEY); if(!r) return null; const o=JSON.parse(r); return Date.now()-o.ts>PAYROLL_CACHE_TTL?null:o; }catch(e){return null;} }
@@ -816,20 +818,29 @@ function applyPayrollData() {
       return (v !== undefined && v !== null && v !== '' && v !== '-' && v !== '0') ? String(v) : def;
     };
 
-    // ── PRIORITY: Payroll_Records > Summary_Records > Manager_Dashboard_Calc > default
+    // ── PRIORITY แยก 2 ประเภท ──
+    //   A) Real-time calculated (daysWorked/otHours/lateMins): ใช้จาก sum (Manager_Dashboard_Calc) เสมอ
+    //      เหตุผล: ค่าเหล่านี้คำนวณจาก Attendance sheet real-time
+    //      ถ้าใช้ snapshot ใน Payroll_Records จะค้างค่าเก่า (เช่น เคยบันทึก 23 → วันต่อมา check-in เพิ่มเป็น 24 → ยังเห็น 23)
+    //   B) Manual input (baseRate/advancePay/etc.): priority Payroll_Records > Summary_Records > default
+    //      เหตุผล: ค่าเหล่านี้ user กรอกเอง — เก็บไว้ใช้ครั้งต่อไปจะได้ไม่ต้องกรอกใหม่
     localInputs[emp.id]={
+      // ── A) Manual input ──
       salaryType:    g('ประเภทการจ้าง',    'salaryType',    sStr('salaryType','Daily')),
       baseRate:      Number(g('ค่าจ้างพื้นฐาน',  'baseRate',      sNum('baseRate', 350))),
-      otHours:       Number(g('จำนวนชม. OT',    'otHours',       sNum('otHours',  Number(sum.ot)||0))),
       otRate:        Number(g('เรท OT ต่อชม.',   'otRate',        sNum('otRate',   25))),
-      lateMins:      Number(g('จำนวนครั้งที่สาย','lateMins',      sNum('lateMins', Number(sum.lateCount)||0))),
       lateDeduction: Number(g('ยอดหักสาย/ขาด',   'lateDeduction', sNum('lateDeduction',0))),
       advancePay:    Number(g('ยอดเงินเบิก',      'advancePay',    sNum('advancePay',   0))),
       otherEarn:     Number(g('เงินพิเศษ/โบนัส', 'otherEarn',     sNum('otherEarn',    0))),
       otherEarnNote: g('หมายเหตุเงินพิเศษ',       'otherEarnNote', sStr('otherEarnNote','')),
       otherDed:      Number(g('ยอดหักอื่นๆ',      'otherDed',      sNum('otherDed',     0))),
       otherDedNote:  g('หมายเหตุเงินหัก',         'otherDedNote',  sStr('otherDedNote', '')),
-      daysWorked:    Number(g('จำนวนวันทำงาน',     'daysWorked',    sNum('daysWorked', Number(sum.workDays)||0)))
+      
+      // ── B) Real-time calculated — ใช้จาก Manager_Dashboard_Calc เสมอ ──
+      //    (ไม่อ่านจาก Payroll_Records / Summary_Records เพราะ snapshot ค้าง)
+      daysWorked:    Number(sum.workDays)  || 0,
+      otHours:       Number(sum.ot)        || 0,
+      lateMins:      Number(sum.lateCount) || 0
     };
   });
   renderEntry();
