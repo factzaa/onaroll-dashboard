@@ -594,21 +594,118 @@ input,textarea,select{font-size:16px!important}
                 const isForMe = (userRole === 'admin' || userRole === 'manager') || 
                                (taskPos === "" || taskPos === "all" || taskPos === "ทั้งหมด" || taskPos.includes(userPosLower));
 
-                // ซ่อนงานที่ Completed แล้ว — แสดงเฉพาะที่รอทำหรือต้องแก้
-                return belongsToTab && isForMe && (!latest || latest.status === "Fix Required");
+                // 🔓 แสดงทั้งหมด — รวมงานที่คนอื่นทำไปแล้ว (จะ render เป็นการ์ดเทา)
+                //   createTaskCard จะตัดสินใจ state ตาม recordedBy
+                return belongsToTab && isForMe;
             });
 
             if (list.length === 0) { container.innerHTML = ""; document.getElementById('empty-state').classList.remove('or-hidden'); return; }
             document.getElementById('empty-state').classList.add('or-hidden');
+            
+            // 📊 Summary banner — แสดงสถานะ tab นี้ (ใครทำกี่งาน)
+            let pendingCount = 0, doneByMeCount = 0, doneByOtherCount = 0, fixCount = 0;
+            list.forEach(t => {
+                const sId = getSafeId(t.checklist_id || t.id);
+                const block = t.time_block || t.Group;
+                const rec = todayRecordsMap[sId + '__' + block] || todayRecordsMap[sId];
+                if (rec?.status === 'Completed') {
+                    if (rec.recordedBy?.trim() === userName.trim()) doneByMeCount++;
+                    else if (rec.recordedBy) doneByOtherCount++;
+                    else doneByMeCount++; // ถ้าไม่มี recordedBy (backend เก่า) → assume เป็นของเรา
+                } else if (rec?.status === 'Fix Required') {
+                    fixCount++;
+                } else {
+                    pendingCount++;
+                }
+            });
+            const totalDone = doneByMeCount + doneByOtherCount;
+            const summaryHtml = `
+                <div class="mb-4 mx-1" style="background:linear-gradient(135deg,#1e293b,#0f172a);border-radius:14px;padding:14px 16px;color:#fff;box-shadow:0 6px 16px rgba(0,0,0,.15)">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="text-[11px] font-bold uppercase tracking-wider" style="color:#94a3b8">งานช่วงนี้</div>
+                        <div class="text-[10px] font-bold" style="color:#64748b">รวม ${list.length} งาน</div>
+                    </div>
+                    <div class="flex items-center gap-2 text-[12px] font-bold flex-wrap">
+                        ${pendingCount > 0 ? `<span style="background:rgba(251,191,36,.2);color:#fbbf24;padding:4px 10px;border-radius:8px">🟡 ${pendingCount} ยังไม่ทำ</span>` : ''}
+                        ${doneByMeCount > 0 ? `<span style="background:rgba(16,185,129,.2);color:#34d399;padding:4px 10px;border-radius:8px">✅ คุณทำ ${doneByMeCount}</span>` : ''}
+                        ${doneByOtherCount > 0 ? `<span style="background:rgba(100,116,139,.2);color:#cbd5e1;padding:4px 10px;border-radius:8px">👥 เพื่อนทำ ${doneByOtherCount}</span>` : ''}
+                        ${fixCount > 0 ? `<span style="background:rgba(249,115,22,.2);color:#fb923c;padding:4px 10px;border-radius:8px">🚩 ${fixCount} ต้องแก้</span>` : ''}
+                        ${totalDone === list.length && totalDone > 0 ? `<span style="background:rgba(59,130,246,.2);color:#60a5fa;padding:4px 10px;border-radius:8px">🎉 เสร็จครบทุกงาน!</span>` : ''}
+                    </div>
+                </div>
+            `;
+            
             const grouped = list.reduce((acc, t) => { const z = normalize(t.zone || t.โซน || 'ทั่วไป'); if(!acc[z]) acc[z] = []; acc[z].push(t); return acc; }, {});
-            container.innerHTML = Object.keys(grouped).map(z => `<div class="mb-8 font-black"><h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-4 flex items-center gap-3 font-black"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full font-black"></span> ${z}</h3>${grouped[z].map(t => createTaskCard(t)).join('')}</div>`).join('');
+            container.innerHTML = summaryHtml + Object.keys(grouped).map(z => `<div class="mb-8 font-black"><h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-4 flex items-center gap-3 font-black"><span class="w-1.5 h-1.5 bg-blue-500 rounded-full font-black"></span> ${z}</h3>${grouped[z].map(t => createTaskCard(t)).join('')}</div>`).join('');
         }
 
         function createTaskCard(t) {
             const rawId = t.checklist_id || t.id;
             const safeId = getSafeId(rawId);
-            const latest = todayRecordsMap[safeId];
+            const taskName = t.task_name || t.รายการงาน;
+            const timeBlock = t.time_block || t.Group;
+            const zone = t.zone || t.โซน;
+            
+            // ── หา record ของ timeBlock นี้ (ลอง composite key ก่อน → fallback safeId) ──
+            const compositeKey = safeId + '__' + timeBlock;
+            const latest = todayRecordsMap[compositeKey] || todayRecordsMap[safeId];
+            
             const isFix = latest?.status === "Fix Required";
+            const isCompleted = latest?.status === "Completed";
+            const claimedBy = latest?.recordedBy || '';
+            const claimedAt = latest?.recordedAt || '';
+            const claimedPhoto = latest?.photoUrl || '';
+            
+            // เช็คว่าเป็น "ฉัน" หรือ "คนอื่น"
+            const isClaimedByMe = isCompleted && claimedBy && claimedBy.trim() === userName.trim();
+            const isClaimedByOther = isCompleted && claimedBy && !isClaimedByMe;
+            
+            // ── STATE: claimed by OTHER → render การ์ดเทาอ่านอย่างเดียว ──
+            if (isClaimedByOther) {
+                const photoThumbs = claimedPhoto
+                    ? claimedPhoto.split(',').filter(u => u.startsWith('http')).map(u => 
+                        `<img src="${u}" onclick="window.open('${u}','_blank')" class="w-10 h-10 rounded-xl object-cover border border-slate-300 cursor-pointer hover:scale-110 transition">`).join('')
+                    : '';
+                return `
+                    <div class="task-capsule font-black mb-3" id="card-${safeId}" style="background:#f8fafc;border:1.5px solid #e2e8f0;opacity:.85">
+                        <div class="flex-1 pr-2 font-black">
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="text-[7px] px-2 py-0.5 rounded-full uppercase" style="background:#10b981;color:#fff">✓ ทำแล้ว</span>
+                                <span class="text-[10px] text-slate-500 font-bold">👤 ${claimedBy}</span>
+                                <span class="text-[10px] text-slate-400">• ${claimedAt} น.</span>
+                            </div>
+                            <h4 class="font-bold text-slate-500 text-sm leading-tight" style="text-decoration:line-through;text-decoration-color:rgba(100,116,139,.4)">${taskName}</h4>
+                            <div class="flex flex-wrap gap-2 mt-3">${photoThumbs}</div>
+                        </div>
+                        <div class="confirm-btn flex items-center justify-center" style="background:#e2e8f0;color:#94a3b8;cursor:not-allowed">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3"/></svg>
+                        </div>
+                    </div>`;
+            }
+            
+            // ── STATE: claimed by ME → การ์ดเขียวอ่อน (โชว์ผลงานตัวเอง) ──
+            if (isClaimedByMe) {
+                const photoThumbs = claimedPhoto
+                    ? claimedPhoto.split(',').filter(u => u.startsWith('http')).map(u => 
+                        `<img src="${u}" onclick="window.open('${u}','_blank')" class="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-sm cursor-pointer">`).join('')
+                    : '';
+                return `
+                    <div class="task-capsule font-black mb-3" id="card-${safeId}" style="background:linear-gradient(135deg,#ecfdf5,#f0fdf4);border:1.5px solid #86efac">
+                        <div class="flex-1 pr-2 font-black">
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="text-[7px] px-2 py-0.5 rounded-full uppercase" style="background:#10b981;color:#fff">✓ คุณทำแล้ว</span>
+                                <span class="text-[10px] text-emerald-700 font-bold">เวลา ${claimedAt} น.</span>
+                            </div>
+                            <h4 class="font-black text-emerald-800 text-sm leading-tight">${taskName}</h4>
+                            <div class="flex flex-wrap gap-2 mt-3">${photoThumbs}</div>
+                        </div>
+                        <div class="confirm-btn flex items-center justify-center" style="background:#10b981;color:#fff">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="4"/></svg>
+                        </div>
+                    </div>`;
+            }
+            
+            // ── STATE: pending / fix-required → render ปกติ (รักษา btn-pending animation เดิม) ──
             const borderClass = isFix ? 'border-fix bg-orange-50/20' : 'border-slate-100 bg-white';
             const photos = pendingPhotos[safeId] || [];
             
@@ -628,7 +725,7 @@ input,textarea,select{font-size:16px!important}
                         <div class="flex items-center gap-2 mb-1">
                             ${isPhotoRequired ? `<span class="bg-rose-500 text-white text-[7px] px-2 py-0.5 rounded-full uppercase">📷 ต้องแนบรูป</span>` : `<span class="bg-slate-100 text-slate-400 text-[7px] px-2 py-0.5 rounded-full uppercase font-black">Standard</span>`}
                         </div>
-                        <h4 class="font-black text-slate-700 text-sm leading-tight font-black">${t.task_name || t.รายการงาน}</h4>
+                        <h4 class="font-black text-slate-700 text-sm leading-tight font-black">${taskName}</h4>
                         ${isFix ? `<p class="text-[10px] text-orange-600 italic font-bold mt-1 font-black">🚩 "${latest.comment}"</p>` : ''}
                         <div class="flex flex-wrap gap-2 mt-4 font-black">
                             ${photos.filter(src => src.startsWith('http')).map(src => `<img src="${src}" class="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-sm font-black">`).join('')}
@@ -637,7 +734,7 @@ input,textarea,select{font-size:16px!important}
                             </button>
                         </div>
                     </div>
-                    <button onclick="${isReady ? `submitNormalTask('${rawId}', '${t.task_name || t.รายการงาน}', '${t.time_block || t.Group}', '${t.zone || t.โซน}')` : `showToast('🚨 งานนี้จำเป็นต้องแนบรูปก่อน', 'error')`}" 
+                    <button onclick="${isReady ? `submitNormalTask('${rawId}', '${taskName}', '${timeBlock}', '${zone}')` : `showToast('🚨 งานนี้จำเป็นต้องแนบรูปก่อน', 'error')`}" 
                         class="confirm-btn ${btnClass} font-black" title="${btnTitle}">
                         <svg class="w-7 h-7 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="4"/></svg>
                     </button>
@@ -647,6 +744,31 @@ input,textarea,select{font-size:16px!important}
         async function submitNormalTask(id, name, block, zone) {
             const safeId = getSafeId(id);
             const photos = pendingPhotos[safeId] || [];
+            
+            // 🛡️ GUARD 1: เช็คซ้ำกับ todayRecordsMap (ข้อมูลในแอป)
+            const compositeKey = safeId + '__' + block;
+            const existing = todayRecordsMap[compositeKey] || todayRecordsMap[safeId];
+            if (existing && existing.status === 'Completed' && existing.recordedBy && existing.recordedBy.trim() !== userName.trim()) {
+                showClaimedByOtherModal(name, existing.recordedBy, existing.recordedAt);
+                return;
+            }
+            
+            // 🛡️ GUARD 2: Re-fetch ล่าสุดก่อนกด (กันคนอื่นเพิ่งกดไป)
+            try {
+                const fresh = await fetch(`${API_URL}?action=GET_TODAY_PROGRESS&t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json());
+                if (fresh && typeof fresh === 'object') {
+                    const f = fresh[compositeKey] || fresh[safeId];
+                    if (f && f.status === 'Completed' && f.recordedBy && f.recordedBy.trim() !== userName.trim()) {
+                        // อัปเดต map + re-render + แสดง modal
+                        todayRecordsMap = fresh;
+                        showClaimedByOtherModal(name, f.recordedBy, f.recordedAt);
+                        if (activeTab === 'Dashboard') renderDashboard();
+                        else if (activeTab === 'Urgent') renderUrgent();
+                        else renderChecklist();
+                        return;
+                    }
+                }
+            } catch(e) { console.warn('pre-check failed (continue anyway):', e.message); }
 
             // 🎬 ANIMATION: เปลี่ยนปุ่มเป็นน้ำเงินทันที (user เห็น feedback) แล้วการ์ดค่อย fade out
             const cardEl = document.getElementById('card-' + safeId);
@@ -669,6 +791,7 @@ input,textarea,select{font-size:16px!important}
             const tz = -now.getTimezoneOffset();
             const localISO = new Date(now.getTime() + tz*60000).toISOString().slice(0,19).replace('T',' ');
             const todayDate = new Date().toLocaleDateString('en-CA');
+            const hhmm = localISO.slice(11, 16); // "HH:mm"
             const newRecord = {
                 'Date': todayDate, 'วันที่': todayDate,
                 'Timestamp': localISO, 'เวลา': localISO,
@@ -683,10 +806,14 @@ input,textarea,select{font-size:16px!important}
                 'staffNote': '-', 'หมายเหตุ': '-'
             };
             fullHistory.push(newRecord);
-            todayRecordsMap[safeId] = {
+            // อัปเดตทั้ง safeId และ composite key
+            const localEntry = {
                 status: 'Completed', Status: 'Completed', สถานะ: 'Completed',
-                Timestamp: localISO, photoUrl: photos.join(',')
+                Timestamp: localISO, photoUrl: photos.join(','),
+                recordedBy: userName, recordedAt: hhmm, timeBlock: block
             };
+            todayRecordsMap[safeId] = localEntry;
+            todayRecordsMap[compositeKey] = localEntry;
             delete pendingPhotos[safeId];
 
             // 🎬 รอ 600ms ให้ user เห็นปุ่มเปลี่ยนเป็นน้ำเงิน + ติ๊ก แล้วการ์ด fade out
@@ -711,8 +838,54 @@ input,textarea,select{font-size:16px!important}
             }
 
             showToast("✅ บันทึกสำเร็จ!");
-            // sync จาก backend หลัง 2.5 วินาที
+            // sync จาก backend หลัง 2.5 วินาที (จะเห็น recordedBy ของจริงจาก server)
             setTimeout(() => fetchData(), 2500);
+        }
+        
+        // ── Modal: คนอื่นทำงานนี้ไปแล้ว ──────────────────────────────────
+        function showClaimedByOtherModal(taskName, claimedBy, claimedAt) {
+            const old = document.getElementById('claim-modal');
+            if (old) old.remove();
+            
+            const modal = document.createElement('div');
+            modal.id = 'claim-modal';
+            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Kanit,sans-serif';
+            modal.innerHTML = `
+                <div style="background:linear-gradient(135deg,#1e293b,#0f172a);border:2px solid #f59e0b;border-radius:20px;padding:28px 22px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(245,158,11,.35);text-align:center;animation:claimModalIn .3s">
+                    <div style="font-size:54px;margin-bottom:8px;animation:claimShake .6s">🤝</div>
+                    <div style="font-size:17px;font-weight:700;color:#fff;margin-bottom:6px;line-height:1.4">
+                        งานนี้มีคนทำไปแล้ว
+                    </div>
+                    <div style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:12px 14px;margin:14px 0">
+                        <div style="font-size:12px;color:#fcd34d;margin-bottom:4px">📋 ${taskName}</div>
+                        <div style="font-size:14px;color:#fff;font-weight:600">
+                            <span style="color:#fbbf24">👤 ${claimedBy}</span>
+                            <span style="opacity:.7;margin:0 6px">•</span>
+                            <span style="color:#fbbf24">${claimedAt} น.</span>
+                        </div>
+                    </div>
+                    <div style="font-size:11px;color:#94a3b8;margin-bottom:18px;line-height:1.5">
+                        💡 ระบบป้องกันการนับงานซ้ำ — ลองทำงานอื่นที่ยังไม่มีคนทำได้เลย
+                    </div>
+                    <button onclick="document.getElementById('claim-modal').remove()" 
+                        style="width:100%;padding:12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:11px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 16px rgba(245,158,11,.4)">
+                        เข้าใจแล้ว
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+        }
+        
+        // เพิ่ม keyframes สำหรับ modal (ครั้งเดียว)
+        if (!document.getElementById('claim-modal-style')) {
+            const s = document.createElement('style');
+            s.id = 'claim-modal-style';
+            s.textContent = `
+                @keyframes claimModalIn { from{transform:translateY(20px) scale(.95);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
+                @keyframes claimShake { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-10deg)} 75%{transform:rotate(10deg)} }
+            `;
+            document.head.appendChild(s);
         }
 
         function renderDashboard() {
@@ -848,6 +1021,7 @@ input,textarea,select{font-size:16px!important}
 
         function renderPerformanceChart(data) {
             const stats = data.reduce((acc, r) => { const name = normalize(getSmartVal(r, 'Staff_Name', 'พนักงาน') || "N/A"); acc[name] = (acc[name] || 0) + 1; return acc; }, {});
+            const totalCompleted = Object.values(stats).reduce((a,b) => a+b, 0);
             const ctx = document.getElementById('performanceChart')?.getContext('2d');
             if(!ctx) return;
             if(myChart) myChart.destroy();
@@ -857,7 +1031,17 @@ input,textarea,select{font-size:16px!important}
                     type: 'bar', data: { labels: Object.keys(stats), datasets: [{ data: Object.values(stats), backgroundColor: '#2563eb', borderRadius: 8, barThickness: 16 }] },
                     options: { 
                         indexAxis: 'y', responsive: true, maintainAspectRatio: false, 
-                        plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'right', offset: 4, color: '#1e293b', font: { weight: '900', size: 10 }, formatter: v => v + ' งาน' } },
+                        plugins: { 
+                            legend: { display: false }, 
+                            datalabels: { 
+                                anchor: 'end', align: 'right', offset: 4, 
+                                color: '#1e293b', font: { weight: '900', size: 10 }, 
+                                formatter: (v) => {
+                                    const pct = totalCompleted > 0 ? Math.round((v / totalCompleted) * 100) : 0;
+                                    return `${v} งาน (${pct}%)`;
+                                }
+                            } 
+                        },
                         scales: { x: { display: false, beginAtZero: true }, y: { grid: { display: false }, ticks: { font: { weight: '900', size: 10 } } } },
                         onClick: (event, elements, chart) => {
                             if (elements.length > 0) { setStaffFilter(chart.data.labels[elements[0].index]); }
