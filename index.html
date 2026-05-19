@@ -356,7 +356,7 @@
     </style>
 </head>
 <body>
-<div id="version-badge" style="position:fixed;top:8px;right:8px;background:rgba(16,185,129,.9);color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;z-index:9999;font-family:Kanit,sans-serif">v1.1.4 URL-fixed✓</div>
+<div id="version-badge" style="position:fixed;top:8px;right:8px;background:rgba(16,185,129,.9);color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;z-index:9999;font-family:Kanit,sans-serif">v1.1.5 hist-sync✓</div>
 
 <div class="page-wrap">
 
@@ -705,7 +705,8 @@
                 ? `${status} ${lateMinutes > 0 ? `(${lateMinutes} นาที)` : ""}\nเวลา: ${nowDate.toLocaleTimeString('th-TH')}`
                 : (otHours > 0 ? `OT: ${otHours} ชม.\nเวลา: ${nowDate.toLocaleTimeString('th-TH')}` : `เลิกงานปกติ\nเวลา: ${nowDate.toLocaleTimeString('th-TH')}`);
             document.getElementById('result-screen').classList.remove('hidden');
-            saveHistory({ type, nickname, time: nowDate.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false}), lateMinutes, otHours });
+            // ✅ ดึงประวัติใหม่จาก Sheet หลังบันทึกสำเร็จ (รอ 1.5s ให้ backend เขียนเสร็จ)
+            setTimeout(() => fetchHistoryFromSheet(id), 1500);
 
         } catch (e) { 
             console.error(e);
@@ -739,15 +740,46 @@
         } catch(e) { showToast("เชื่อมต่อข้อมูลล้มเหลว", "error"); btn.disabled = false; btn.innerText = "เข้าสู่ระบบ"; }
     }
 
-    // ── ประวัติการบันทึกวันนี้ ─────────────────────────────────────────────────
-    function todayKey() { return 'ci_hist_' + new Date().toLocaleDateString('en-CA'); }
+    // ── ประวัติการบันทึกวันนี้ — ดึงจาก Google Sheet (Source of Truth) ────────
+    // เลิกใช้ localStorage แล้ว — ลบของเก่าทิ้ง (one-time cleanup)
+    Object.keys(localStorage).filter(k => k.startsWith('ci_hist_')).forEach(k => localStorage.removeItem(k));
 
-    function saveHistory(entry) {
-        const key = todayKey();
-        const list = JSON.parse(localStorage.getItem(key) || '[]');
-        list.push(entry);
-        localStorage.setItem(key, JSON.stringify(list));
-        renderHistory(list);
+    async function fetchHistoryFromSheet(empId) {
+        if (!empId) { renderHistory([]); return; }
+        try {
+            const res = await fetch(`${API_URL}?action=GET_MY_HISTORY&empId=${encodeURIComponent(empId)}&t=${Date.now()}`, { cache: 'no-store' });
+            const data = await res.json();
+            if (!Array.isArray(data)) { renderHistory([]); return; }
+            
+            // กรองเฉพาะวันนี้ (timezone GMT+7)
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            const todayRecords = data.filter(r => {
+                const dateField = r['วันที่'] || r['Date'] || r['date'] || '';
+                const dateStr = dateField instanceof Date 
+                    ? new Date(dateField).toLocaleDateString('en-CA')
+                    : String(dateField).slice(0, 10);
+                return dateStr === todayStr;
+            });
+            
+            // แปลงให้เป็น format ที่ renderHistory ใช้
+            const list = todayRecords.map(r => ({
+                type: r['สถานะ'] || r['Status'] || r['action'] || '',
+                nickname: r['ชื่อเล่น'] || r['Nickname'] || r['nickname'] || '-',
+                time: (() => {
+                    const t = r['เวลาเช็คอิน'] || r['เวลา'] || r['Time'] || '';
+                    if (t instanceof Date) return new Date(t).toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit',hour12:false});
+                    return String(t).slice(0, 5); // "HH:mm" ตัด seconds ถ้ามี
+                })(),
+                lateMinutes: parseInt(r['สาย(นาที)'] || r['lateMinutes'] || 0, 10) || 0,
+                otHours: parseFloat(r['OT(ชม.)'] || r['otHours'] || 0) || 0,
+                location: r['พิกัด'] || r['location'] || ''
+            }));
+            
+            renderHistory(list);
+        } catch(e) {
+            console.warn('fetchHistory error:', e);
+            renderHistory([]);
+        }
     }
 
     function renderHistory(list) {
@@ -755,7 +787,10 @@
         if (!list || !list.length) { el.innerHTML = '<div class="hist-empty">ยังไม่มีรายการวันนี้</div>'; return; }
         el.innerHTML = [...list].reverse().map(h => {
             const isIn = h.type === 'CHECK_IN';
-            const zoneHtml = isIn ? '<span class="hist-zone ok">✔ ในพื้นที่</span>' : '';
+            const isInZone = h.location === 'IN_ZONE' || String(h.location).indexOf('OUT_OF_ZONE') !== 0;
+            const zoneHtml = isInZone 
+                ? '<span class="hist-zone ok">✔ ในพื้นที่</span>'
+                : '<span class="hist-zone" style="color:#fca5a5;background:rgba(239,68,68,.15)">⚠ นอกพื้นที่</span>';
             const lateHtml = h.lateMinutes > 0 ? `<span class="hist-late">สาย ${h.lateMinutes}น.</span>` : '';
             const otHtml   = h.otHours   > 0 ? `<span class="hist-late">OT ${h.otHours}ชม.</span>` : '';
             return `<div class="hist-row">
@@ -767,7 +802,24 @@
         }).join('');
     }
 
-    function loadHistory() { renderHistory(JSON.parse(localStorage.getItem(todayKey()) || '[]')); }
+    // เรียกตอนเริ่ม + เวลาพิมพ์ empId เสร็จ
+    function loadHistory() { 
+        const id = document.getElementById('emp-id')?.value?.trim()?.toUpperCase();
+        if (id) fetchHistoryFromSheet(id);
+        else renderHistory([]);
+    }
+
+    // อัปเดต empId เปลี่ยน → ดึงประวัติของคนนั้น (debounce)
+    let _empIdDebounce;
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('emp-id');
+        if (input) {
+            input.addEventListener('input', () => {
+                clearTimeout(_empIdDebounce);
+                _empIdDebounce = setTimeout(() => loadHistory(), 500);
+            });
+        }
+    });
 
     function showToast(m, t) {
         const el = document.getElementById('toast');
