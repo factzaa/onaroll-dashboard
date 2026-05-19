@@ -880,14 +880,36 @@ window.addEventListener('load', async()=>{
   showLoading(true);
   const empT=await fetchSheet('Employees');
   if(empT){
+    // 🔧 helper: ดึงค่า cell แบบ robust — รองรับทั้ง Number, Text, formatted value
+    //   Google Sheets API คืน { v: rawValue, f: formattedString }
+    //   - ถ้า cell format เป็น Number → v = 3250888512 (อาจ overflow precision)
+    //   - ถ้า cell format เป็น Text   → v = "3250888512" (ดี)
+    //   - ใช้ f (formatted string) ก่อน เพราะรักษา digit ครบ
+    const cellStr = (cell) => {
+      if (!cell) return '';
+      // ลำดับ: formatted string → raw value → ว่าง
+      const f = cell.f;
+      const v = cell.v;
+      if (f !== undefined && f !== null && f !== '') return String(f).trim();
+      if (v !== undefined && v !== null && v !== '') return String(v).trim();
+      return '';
+    };
+    
     employees=empT.rows.filter(r=>r.c&&r.c[0]?.v&&r.c[0].v!=='รหัสพนักงาน').map(r=>({
-      id:String(r.c[0]?.v||''),
-      name:r.c[1]?.v||'',
-      nickname:r.c[2]?.v||'',
-      bank:r.c[6]?.v||'',
-      acc:String(r.c[7]?.v||''),
-      image:r.c[15]?.v||''
+      id:       cellStr(r.c[0]),
+      name:     cellStr(r.c[1]),
+      nickname: cellStr(r.c[2]),
+      bank:     cellStr(r.c[6]),
+      acc:      cellStr(r.c[7]),
+      image:    cellStr(r.c[15])
     }));
+    
+    // 🐛 Debug: log พนักงานที่ไม่มีเลขบัญชี
+    const noAcc = employees.filter(e => !e.acc);
+    if (noAcc.length > 0) {
+      console.warn('[Payroll] พนักงานที่ไม่มีเลขบัญชี:', noAcc.map(e => `${e.id} ${e.nickname}`));
+    }
+    
     employees.forEach(emp=>{localInputs[emp.id]={salaryType:'Daily',baseRate:350,otHours:0,otRate:25,lateMins:0,lateDeduction:0,advancePay:0,otherEarn:0,otherEarnNote:'',otherDed:0,otherDedNote:'',daysWorked:0};});
   }
   showLoading(false);
