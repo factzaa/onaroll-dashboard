@@ -356,7 +356,7 @@
     </style>
 </head>
 <body>
-<div id="version-badge" style="position:fixed;top:8px;right:8px;background:rgba(16,185,129,.9);color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;z-index:9999;font-family:Kanit,sans-serif">v1.1.2 dedup✓</div>
+<div id="version-badge" style="position:fixed;top:8px;right:8px;background:rgba(16,185,129,.9);color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;z-index:9999;font-family:Kanit,sans-serif">v1.1.3 modal✓</div>
 
 <div class="page-wrap">
 
@@ -611,9 +611,8 @@
             if (stat.lastAction === type) {
                 const actionThai = type === 'CHECK_IN' ? 'เข้างาน' : 'ออกงาน';
                 const lastTime = type === 'CHECK_IN' ? stat.lastIn : stat.lastOut;
-                // ใช้ alert() เพื่อบังคับให้ user เห็นชัด (toast อาจหายเร็วเกิน)
-                alert(`⚠️ วันนี้คุณบันทึก${actionThai}ไปแล้วเมื่อ ${lastTime} น.\n\nไม่สามารถบันทึก${actionThai}ซ้ำได้`);
-                showToast(`⚠️ วันนี้คุณบันทึก${actionThai}ไปแล้วเมื่อ ${lastTime} น.`, "error");
+                // ใช้ custom modal in-page (alert() ถูก Chrome mobile block ได้)
+                showBlockModal(actionThai, lastTime);
                 return;
             }
         } catch(e) {
@@ -776,6 +775,51 @@
         el.className = t === 'error' ? 'show error' : 'show';
         clearTimeout(el._t);
         el._t = setTimeout(() => el.className = '', 4000);
+    }
+
+    // 🚫 Modal block in-page — กัน Chrome mobile block alert()
+    function showBlockModal(actionThai, lastTime) {
+        // ลบของเก่าออกถ้ามี
+        const old = document.getElementById('block-modal');
+        if (old) old.remove();
+        
+        const modal = document.createElement('div');
+        modal.id = 'block-modal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Kanit,sans-serif;animation:fadeInModal .25s';
+        modal.innerHTML = `
+            <div style="background:linear-gradient(135deg,#1f2937,#111827);border:2px solid #ef4444;border-radius:18px;padding:28px 22px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(239,68,68,.4);text-align:center;animation:slideUpModal .3s">
+                <div style="font-size:56px;margin-bottom:12px;animation:shake .6s">⚠️</div>
+                <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.4">
+                    บันทึก${actionThai}ซ้ำไม่ได้
+                </div>
+                <div style="font-size:14px;color:#fca5a5;line-height:1.6;margin-bottom:8px">
+                    วันนี้คุณบันทึก${actionThai}ไปแล้ว<br>
+                    เมื่อเวลา <span style="color:#fff;font-weight:700;font-size:22px;display:inline-block;margin:6px 0">${lastTime} น.</span>
+                </div>
+                <div style="font-size:11px;color:#94a3b8;margin-bottom:22px;background:rgba(0,0,0,.3);padding:8px 12px;border-radius:8px">
+                    💡 หากต้องการบันทึก${actionThai === 'เข้างาน' ? 'ออกงาน' : 'เข้างาน'} — กดปุ่ม "บันทึก${actionThai === 'เข้างาน' ? 'ออกงาน' : 'เข้างาน'}" แทน
+                </div>
+                <button onclick="document.getElementById('block-modal').remove()" 
+                    style="width:100%;padding:13px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;border-radius:11px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 16px rgba(220,38,38,.4)">
+                    เข้าใจแล้ว
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        // close on background click
+        modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    }
+
+    // เพิ่ม keyframes สำหรับ modal
+    if (!document.getElementById('block-modal-style')) {
+        const s = document.createElement('style');
+        s.id = 'block-modal-style';
+        s.textContent = `
+            @keyframes fadeInModal { from{opacity:0} to{opacity:1} }
+            @keyframes slideUpModal { from{transform:translateY(30px) scale(.95);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
+            @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+        `;
+        document.head.appendChild(s);
     }
 </script>
 </body>
