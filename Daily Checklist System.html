@@ -1617,15 +1617,38 @@ function urgentDueState(u) {
     return 'normal';
 }
 
+// 🕐 แปลง time value (จาก Google Sheets) เป็น "HH:mm"
+//    รองรับ: "09:00", "9:00", Date object, ISO string, "1899-12-30T..." (Sheets epoch)
+function formatTimeHHMM(val) {
+    if (!val || val === '-' || val === 'Pending') return '';
+    const s = String(val).trim();
+    // 1) ถ้าเป็น "HH:mm" หรือ "H:mm" อยู่แล้ว → คืนแบบ pad 2 digits
+    const direct = s.match(/^(\d{1,2}):(\d{2})/);
+    if (direct) return String(direct[1]).padStart(2, '0') + ':' + direct[2];
+    // 2) ISO string หรือ Date — ลอง parse
+    try {
+        const d = new Date(s);
+        if (!isNaN(d.getTime())) {
+            // ⚠️ ถ้าเป็น Sheets epoch (1899-12-30) — แสดงเฉพาะเวลา ไม่สนใจส่วนวันที่
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            return hh + ':' + mm;
+        }
+    } catch(e) {}
+    return '';
+}
+
 function urgentTaskCard(u) {
     const photos = urgentPhotos[u.urgent_id] || [];
     const requirePhoto = String(u.require_photo||'NO').toUpperCase() === 'YES';
     const canDone = !requirePhoto || photos.length > 0;
     const ds = urgentDueState(u);
     const isOver = ds === 'over';
+    // 🕐 แปลง due_time ที่อาจเป็น ISO/1899-epoch ให้เป็น "HH:mm"
+    const dueTimeText = formatTimeHHMM(u.due_time);
     const dueText = u.assign_type === 'RECURRING'
         ? `🔁 ${formatDateThai(u.recur_start)} → ${formatDateThai(u.recur_end)}`
-        : `⏰ ${formatDateThai(u.due_date)}${u.due_time ? ' • '+u.due_time : ''}`;
+        : `⏰ ${formatDateThai(u.due_date)}${dueTimeText ? ' • '+dueTimeText : ''}`;
     const isDone = u.status === 'DONE';
     const isCancel = u.status === 'CANCELLED';
 
