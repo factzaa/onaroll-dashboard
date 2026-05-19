@@ -356,6 +356,7 @@
     </style>
 </head>
 <body>
+<div id="version-badge" style="position:fixed;top:8px;right:8px;background:rgba(16,185,129,.9);color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;z-index:9999;font-family:Kanit,sans-serif">v1.1.2 dedup✓</div>
 
 <div class="page-wrap">
 
@@ -604,12 +605,15 @@
         try {
             const statusRes = await fetch(`${API_URL}?action=GET_TODAY_STATUS&empId=${encodeURIComponent(id)}&t=${Date.now()}`, { cache: 'no-store' });
             const stat = await statusRes.json();
-            
+            console.log('[GUARD2] today status:', stat);
+
             // ตรวจ Last action — ถ้าตรงกับที่กำลังจะกด → block
             if (stat.lastAction === type) {
                 const actionThai = type === 'CHECK_IN' ? 'เข้างาน' : 'ออกงาน';
                 const lastTime = type === 'CHECK_IN' ? stat.lastIn : stat.lastOut;
-                showToast(`⚠️ วันนี้คุณบันทึก${actionThai}ไปแล้วเมื่อ ${lastTime} น.\nไม่สามารถบันทึก${actionThai}ซ้ำได้`, "error");
+                // ใช้ alert() เพื่อบังคับให้ user เห็นชัด (toast อาจหายเร็วเกิน)
+                alert(`⚠️ วันนี้คุณบันทึก${actionThai}ไปแล้วเมื่อ ${lastTime} น.\n\nไม่สามารถบันทึก${actionThai}ซ้ำได้`);
+                showToast(`⚠️ วันนี้คุณบันทึก${actionThai}ไปแล้วเมื่อ ${lastTime} น.`, "error");
                 return;
             }
         } catch(e) {
