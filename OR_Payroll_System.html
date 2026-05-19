@@ -301,6 +301,10 @@ svg{display:inline-block;vertical-align:middle}
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
             รีเฟรช
           </button>
+          <button class="btn btn-outline" onclick="cleanDuplicates()" style="border-color:#fb923c;color:#c2410c" title="ลบ row ซ้ำที่ค้างจาก bug ก่อนหน้า — เก็บเฉพาะ row ล่าสุดของแต่ละพนักงาน/เดือน">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+            ลบข้อมูลซ้ำ
+          </button>
         </div>
       </div>
       <div class="table-wrap">
@@ -550,11 +554,52 @@ window.copyAcc=function(acc){
   navigator.clipboard.writeText(acc).then(()=>toast('คัดลอกเลขบัญชีแล้ว'));
 }
 
+async function cleanDuplicates(){
+  if (!confirm('🧹 ลบ row ซ้ำใน Payroll_Records?\n\nระบบจะเก็บเฉพาะ row ล่าสุดของพนักงานแต่ละคนในแต่ละเดือน\nrow เก่าที่ซ้ำกันจะถูกลบ\n\nยืนยันการลบ?')) return;
+  showLoading(true);
+  try{
+    const res = await fetch(`${APPS_SCRIPT_URL}?action=CLEAN_PAYROLL_DUPLICATES&t=${Date.now()}`);
+    const result = await res.json();
+    if (result.success) {
+      toast(`✅ ลบ ${result.removed||0} row ซ้ำ — เหลือ ${result.remaining||0} records`);
+      // รีเฟรชข้อมูล
+      await fetchHistory();
+      await refreshPayrollBg();
+    } else {
+      toast('ล้มเหลว: ' + (result.error || 'unknown'), 'error');
+    }
+  }catch(e){
+    console.error('[cleanDuplicates] ❌', e);
+    toast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+  }
+  showLoading(false);
+}
+window.cleanDuplicates = cleanDuplicates;
+
 async function fetchHistory(){
   showLoading(true);
   try{
     const res=await fetch(`${APPS_SCRIPT_URL}?action=GET_PAYROLL_HISTORY&t=${Date.now()}`);
-    historyData=await res.json();
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    
+    // 🛡️ Defensive: รองรับ response หลายรูปแบบ
+    //   - Array ตรง ๆ: [...]
+    //   - Object wrapped: { data: [...] } หรือ { success: true, data: [...] }
+    //   - Object error: { success: false, error: "..." }
+    if (Array.isArray(data)) {
+      historyData = data;
+    } else if (data && Array.isArray(data.data)) {
+      historyData = data.data;
+    } else if (data && data.success === false) {
+      throw new Error(data.error || data.message || 'Backend returned error');
+    } else {
+      console.warn('[fetchHistory] Unexpected response shape:', data);
+      historyData = [];
+    }
+    
+    console.log('[fetchHistory] loaded', historyData.length, 'rows');
+    
     // รองรับทั้ง column ชื่อไทย (B เก่า) และ English (A ปัจจุบัน)
     const getMonth = h => h['เดือน'] || h['month'] || '';
     const getNick  = h => h['ชื่อเล่น'] || h['nickname'] || h['ชื่อ-นามสกุล'] || h['name'] || '';
@@ -562,10 +607,27 @@ async function fetchHistory(){
     const empNames=[...new Set(historyData.map(h=>getNick(h)).filter(Boolean))].sort();
     const mSel=document.getElementById('hist-month-filter');
     const eSel=document.getElementById('hist-emp-filter');
-    mSel.innerHTML='<option value="">— ทุกเดือน —</option>'+months.map(m=>`<option value="${m}" ${m===selectedMonth?'selected':''}>${m}</option>`).join('');
-    eSel.innerHTML='<option value="">— ทุกคน —</option>'+empNames.map(n=>`<option value="${n}">${n}</option>`).join('');
+    if (mSel) mSel.innerHTML='<option value="">— ทุกเดือน —</option>'+months.map(m=>`<option value="${m}" ${m===selectedMonth?'selected':''}>${m}</option>`).join('');
+    if (eSel) eSel.innerHTML='<option value="">— ทุกคน —</option>'+empNames.map(n=>`<option value="${n}">${n}</option>`).join('');
     renderHistory();
-  }catch(e){toast('โหลดประวัติไม่สำเร็จ','error');}
+  }catch(e){
+    console.error('[fetchHistory] ❌ Failed:', e);
+    toast('โหลดประวัติไม่สำเร็จ: ' + (e.message || 'unknown error'),'error');
+    
+    // ── Fallback: ลองใช้ historyData ที่โหลดไว้แล้วใน background ──
+    if (Array.isArray(historyData) && historyData.length > 0) {
+      console.log('[fetchHistory] Using cached historyData:', historyData.length, 'rows');
+      const getMonth = h => h['เดือน'] || h['month'] || '';
+      const getNick  = h => h['ชื่อเล่น'] || h['nickname'] || h['ชื่อ-นามสกุล'] || h['name'] || '';
+      const months=[...new Set(historyData.map(h=>getMonth(h)).filter(Boolean))].sort().reverse();
+      const empNames=[...new Set(historyData.map(h=>getNick(h)).filter(Boolean))].sort();
+      const mSel=document.getElementById('hist-month-filter');
+      const eSel=document.getElementById('hist-emp-filter');
+      if (mSel) mSel.innerHTML='<option value="">— ทุกเดือน —</option>'+months.map(m=>`<option value="${m}" ${m===selectedMonth?'selected':''}>${m}</option>`).join('');
+      if (eSel) eSel.innerHTML='<option value="">— ทุกคน —</option>'+empNames.map(n=>`<option value="${n}">${n}</option>`).join('');
+      renderHistory();
+    }
+  }
   showLoading(false);
 }
 
