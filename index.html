@@ -598,15 +598,34 @@
             return;
         }
 
-        // 🛡️ GUARD 2: ป้องกันกดซ้ำใน 60 วินาทีหลัง action เดียวกันสำเร็จ
-        const lastKey = `last_${type}_${id}`;
-        const lastTime = parseInt(localStorage.getItem(lastKey) || '0', 10);
-        const now = Date.now();
-        const secsAgo = Math.floor((now - lastTime) / 1000);
-        if (lastTime && secsAgo < 60) {
-            const remain = 60 - secsAgo;
-            showToast(`⚠️ คุณเพิ่ง${type === 'CHECK_IN' ? 'เข้างาน' : 'ออกงาน'}ไปเมื่อ ${secsAgo} วินาทีก่อน\nรออีก ${remain} วินาทีก่อนกดซ้ำ`, "error");
-            return;
+        // 🛡️ GUARD 2: เช็คสถานะวันนี้จาก server ก่อนทำอะไร
+        //   - ถ้าเคย CHECK_IN วันนี้แล้ว + จะกด CHECK_IN อีก → ปฏิเสธ
+        //   - ถ้าเคย CHECK_OUT วันนี้แล้ว + จะกด CHECK_OUT อีก → ปฏิเสธ
+        try {
+            const statusRes = await fetch(`${API_URL}?action=GET_TODAY_STATUS&empId=${encodeURIComponent(id)}&t=${Date.now()}`, { cache: 'no-store' });
+            const stat = await statusRes.json();
+            
+            // ตรวจ Last action — ถ้าตรงกับที่กำลังจะกด → block
+            if (stat.lastAction === type) {
+                const actionThai = type === 'CHECK_IN' ? 'เข้างาน' : 'ออกงาน';
+                const lastTime = type === 'CHECK_IN' ? stat.lastIn : stat.lastOut;
+                showToast(`⚠️ วันนี้คุณบันทึก${actionThai}ไปแล้วเมื่อ ${lastTime} น.\nไม่สามารถบันทึก${actionThai}ซ้ำได้`, "error");
+                return;
+            }
+        } catch(e) {
+            console.warn('GET_TODAY_STATUS failed (continue anyway):', e);
+            // ถ้า network ล้ม → ปล่อยให้ backend dedup ทำหน้าที่เอง
+        }
+
+        // 🛡️ GUARD 3: ป้องกันกด CHECK_OUT ผิดช่วงเช้า
+        //   ถ้ากดออกงานก่อน 11:00 → confirm ก่อน (เผื่อกดผิดปุ่ม)
+        if (type === 'CHECK_OUT') {
+            const nowHour = new Date().getHours();
+            const MORNING_CHECKOUT_THRESHOLD = 11; // ก่อน 11:00 ถือว่าเช้า
+            if (nowHour < MORNING_CHECKOUT_THRESHOLD) {
+                const ok = confirm(`⚠️ ยังเช้าอยู่นะ! (${new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})} น.)\n\nคุณต้องการบันทึก "ออกงาน" จริงหรือไม่?\n\n• ถ้าคุณกดผิด → กดยกเลิก แล้วกดปุ่ม "บันทึกเข้างาน" สีน้ำเงินแทน\n• ถ้าจะออกจริง → กดตกลง`);
+                if (!ok) return;
+            }
         }
 
         if (type === 'CHECK_IN' && userPos) {
@@ -677,9 +696,6 @@
                 }) 
             });
 
-            // 🔒 บันทึกเวลาที่ทำสำเร็จ — กันกดซ้ำใน 60 วินาที
-            localStorage.setItem(lastKey, String(now));
-            
             document.getElementById('res-name').innerText = nickname;
             document.getElementById('res-status').innerText = type === 'CHECK_IN' ? 'บันทึกเข้างานสำเร็จ' : 'บันทึกออกงานสำเร็จ';
             document.getElementById('res-detail').innerText = type === 'CHECK_IN'
