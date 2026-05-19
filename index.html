@@ -607,7 +607,11 @@
 
         if (type === 'CHECK_IN' && userPos) {
             const dGuard = calculateDistance(userPos.latitude, userPos.longitude, SHOP_LAT, SHOP_LON);
-            if (dGuard > RADIUS_IN) return showToast(`❌ อยู่นอกพื้นที่ (${Math.round(dGuard)}ม.) — ไม่สามารถเช็คอินได้`, "error");
+            if (dGuard > RADIUS_IN) {
+                // 🔓 อนุญาตให้กดเข้างานนอกพื้นที่ได้ แต่ต้อง confirm ก่อน + log เป็น OUT_OF_ZONE
+                const ok = confirm(`⚠️ คุณอยู่นอกพื้นที่ทำงาน ${Math.round(dGuard)}ม.\n\nต้องการบันทึกเข้างานนอกพื้นที่ใช่หรือไม่?\n(การกระทำนี้จะถูกบันทึกไว้)`);
+                if (!ok) return;
+            }
         }
         const btn = type === 'CHECK_IN' ? document.getElementById('btn-clock-in') : document.getElementById('btn-clock-out');
         const otherBtn = type === 'CHECK_IN' ? document.getElementById('btn-clock-out') : document.getElementById('btn-clock-in');
