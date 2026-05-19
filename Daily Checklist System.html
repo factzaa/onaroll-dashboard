@@ -606,8 +606,7 @@ input,textarea,select{font-size:16px!important}
             let pendingCount = 0, doneByMeCount = 0, doneByOtherCount = 0, fixCount = 0;
             list.forEach(t => {
                 const sId = getSafeId(t.checklist_id || t.id);
-                const block = t.time_block || t.Group;
-                const rec = todayRecordsMap[sId + '__' + block] || todayRecordsMap[sId];
+                const rec = todayRecordsMap[sId];
                 if (rec?.status === 'Completed') {
                     if (rec.recordedBy?.trim() === userName.trim()) doneByMeCount++;
                     else if (rec.recordedBy) doneByOtherCount++;
@@ -646,9 +645,8 @@ input,textarea,select{font-size:16px!important}
             const timeBlock = t.time_block || t.Group;
             const zone = t.zone || t.โซน;
             
-            // ── หา record ของ timeBlock นี้ (ลอง composite key ก่อน → fallback safeId) ──
-            const compositeKey = safeId + '__' + timeBlock;
-            const latest = todayRecordsMap[compositeKey] || todayRecordsMap[safeId];
+            // ── หา record ของ task นี้ (1 safeId/วัน เพราะ master row ระบุ timeBlock แล้ว) ──
+            const latest = todayRecordsMap[safeId];
             
             const isFix = latest?.status === "Fix Required";
             const isCompleted = latest?.status === "Completed";
@@ -746,8 +744,7 @@ input,textarea,select{font-size:16px!important}
             const photos = pendingPhotos[safeId] || [];
             
             // 🛡️ GUARD 1: เช็คซ้ำกับ todayRecordsMap (ข้อมูลในแอป)
-            const compositeKey = safeId + '__' + block;
-            const existing = todayRecordsMap[compositeKey] || todayRecordsMap[safeId];
+            const existing = todayRecordsMap[safeId];
             if (existing && existing.status === 'Completed' && existing.recordedBy && existing.recordedBy.trim() !== userName.trim()) {
                 showClaimedByOtherModal(name, existing.recordedBy, existing.recordedAt);
                 return;
@@ -757,7 +754,7 @@ input,textarea,select{font-size:16px!important}
             try {
                 const fresh = await fetch(`${API_URL}?action=GET_TODAY_PROGRESS&t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json());
                 if (fresh && typeof fresh === 'object') {
-                    const f = fresh[compositeKey] || fresh[safeId];
+                    const f = fresh[safeId];
                     if (f && f.status === 'Completed' && f.recordedBy && f.recordedBy.trim() !== userName.trim()) {
                         // อัปเดต map + re-render + แสดง modal
                         todayRecordsMap = fresh;
@@ -806,14 +803,12 @@ input,textarea,select{font-size:16px!important}
                 'staffNote': '-', 'หมายเหตุ': '-'
             };
             fullHistory.push(newRecord);
-            // อัปเดตทั้ง safeId และ composite key
-            const localEntry = {
+            // อัปเดต todayRecordsMap (key = safeId เท่านั้น)
+            todayRecordsMap[safeId] = {
                 status: 'Completed', Status: 'Completed', สถานะ: 'Completed',
                 Timestamp: localISO, photoUrl: photos.join(','),
                 recordedBy: userName, recordedAt: hhmm, timeBlock: block
             };
-            todayRecordsMap[safeId] = localEntry;
-            todayRecordsMap[compositeKey] = localEntry;
             delete pendingPhotos[safeId];
 
             // 🎬 รอ 600ms ให้ user เห็นปุ่มเปลี่ยนเป็นน้ำเงิน + ติ๊ก แล้วการ์ด fade out
@@ -892,30 +887,48 @@ input,textarea,select{font-size:16px!important}
             try {
                 const selectedDate = document.getElementById('dash-date-picker').value;
                 if(!selectedDate) return;
-                const daily = fullHistory.filter(r => normalizeDate(getSmartVal(r, 'Date', 'วันที่')) === selectedDate);
+                
+                // ── นับ master tasks ที่ user คนปัจจุบันมีสิทธิ์ทำ ──
+                //   💡 Master ออกแบบให้ 1 row = 1 task slot ที่ต้องทำต่อวัน 
+                //   (ระบบใส่ time_block ต่างกันใน row ต่างกัน — ไม่ต้องคูณ timeBlock)
+                const _userPos  = normalize(userPos).toLowerCase();
+                const _userRole = (localStorage.getItem('user_role') || '').toLowerCase();
+                const isPrivileged = (_userRole === 'admin' || _userRole === 'manager' || _userRole === 'owner');
+                
+                const myMasterTasks = masterTasks.filter(t => {
+                    const taskStatus = normalize(getSmartVal(t, 'Status', 'สถานะ')).toLowerCase();
+                    if (taskStatus !== "" && taskStatus !== "active" && taskStatus !== "ใช้งาน") return false;
+                    const taskPos = normalize(getSmartVal(t, 'Position', 'ตำแหน่ง')).toLowerCase();
+                    return isPrivileged ||
+                           (taskPos === "" || taskPos === "all" || taskPos === "ทั้งหมด" || taskPos.includes(_userPos));
+                });
+                const activeMasterCount = myMasterTasks.length;
+                
+                // Set ของ safeId ที่ user คนนี้เกี่ยวข้อง (ใช้กรอง daily records)
+                const mySafeIdSet = new Set(myMasterTasks.map(t => getSafeId(t.checklist_id || t.id)));
+                
+                // ── filter records ของวันที่เลือก + เฉพาะที่เป็น task ของ user ──
+                const allDaily = fullHistory.filter(r => normalizeDate(getSmartVal(r, 'Date', 'วันที่')) === selectedDate);
+                const daily = isPrivileged 
+                    ? allDaily  // admin/owner เห็นทุกงาน
+                    : allDaily.filter(r => mySafeIdSet.has(getSafeId(getSmartVal(r, 'Checklist_ID', 'id'))));
+                
+                // ── นับ unique task (1 safeId = 1 slot ใน master) ──
+                //   ระบบ dedup กัน record ซ้ำของ task เดียวกันใน timeBlock เดียวกันอยู่แล้ว
+                //   ดังนั้น 1 safeId ใน daily = 1 งานที่เสร็จ
                 const latestToday = {};
                 daily.forEach(r => {
                     const safeId = getSafeId(getSmartVal(r, 'Checklist_ID', 'id'));
                     const timestamp = getSmartVal(r, 'Timestamp', 'เวลา');
-                    if(!latestToday[safeId] || (timestamp && new Date(timestamp) > new Date(getSmartVal(latestToday[safeId], 'Timestamp', 'เวลา')))) latestToday[safeId] = r;
+                    if(!latestToday[safeId] || (timestamp && new Date(timestamp) > new Date(getSmartVal(latestToday[safeId], 'Timestamp', 'เวลา')))) {
+                        latestToday[safeId] = r;
+                    }
                 });
                 
                 const done = Object.values(latestToday).filter(x => normalize(getSmartVal(x, 'Status', 'สถานะ')) === "Completed").length;
-                const fix = Object.values(latestToday).filter(x => normalize(getSmartVal(x, 'Status', 'สถานะ')) === "Fix Required").length;
+                const fix  = Object.values(latestToday).filter(x => normalize(getSmartVal(x, 'Status', 'สถานะ')) === "Fix Required").length;
                 
-                // นับเฉพาะงานที่ตรงกับ position ของ user (เหมือน renderChecklist บรรทัด 515-520)
-                const _userPos  = normalize(userPos).toLowerCase();
-                const _userRole = (localStorage.getItem('user_role') || '').toLowerCase();
-                const activeMasterCount = masterTasks.filter(t => {
-                    const taskStatus = normalize(getSmartVal(t, 'Status', 'สถานะ')).toLowerCase();
-                    if (taskStatus !== "" && taskStatus !== "active" && taskStatus !== "ใช้งาน") return false;
-                    // กรอง position — admin/manager เห็นทุกงาน, user เห็นเฉพาะของตัวเอง
-                    const taskPos = normalize(getSmartVal(t, 'Position', 'ตำแหน่ง')).toLowerCase();
-                    return (_userRole === 'admin' || _userRole === 'manager' || _userRole === 'owner') ||
-                           (taskPos === "" || taskPos === "all" || taskPos === "ทั้งหมด" || taskPos.includes(_userPos));
-                }).length;
-
-                const percent = activeMasterCount > 0 ? Math.round((done / activeMasterCount) * 100) : 0;
+                const percent = activeMasterCount > 0 ? Math.min(100, Math.round((done / activeMasterCount) * 100)) : 0;
                 
                 document.getElementById('header-percent').innerText = percent + "%";
                 document.getElementById('header-progress-bar').style.width = percent + "%";
