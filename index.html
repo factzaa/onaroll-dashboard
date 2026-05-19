@@ -354,16 +354,6 @@
         #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         #toast.error { background: rgba(239,68,68,.95); border-color: transparent; }
     </style>
-<link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1a2b5e">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="OnaRoll">
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
-  <script src="pwa-init.js" defer></script>
-  <!-- /PWA -->
 </head>
 <body>
 
@@ -433,8 +423,8 @@
 
     <!-- ACTIONS -->
     <div class="action-row">
-        <button onclick="handleCheckAction('CHECK_IN')"  id="btn-clock-in"  class="btn-action">บันทึกเข้างาน</button>
-        <button onclick="handleCheckAction('CHECK_OUT')" id="btn-clock-out" class="btn-action">บันทึกออกงาน</button>
+        <button onclick="handleCheckAction('CHECK_IN')"  id="btn-clock-in"  class="btn-action btn-disabled">บันทึกเข้างาน</button>
+        <button onclick="handleCheckAction('CHECK_OUT')" id="btn-clock-out" class="btn-action btn-disabled">บันทึกออกงาน</button>
     </div>
 
 
@@ -509,21 +499,24 @@
         navigator.geolocation.getCurrentPosition(pos => { 
             userPos = pos.coords;
             const dist = calculateDistance(userPos.latitude, userPos.longitude, SHOP_LAT, SHOP_LON);
-            // 🟢 ปุ่มเปิดเสมอ ไม่ว่าจะอยู่ในหรือนอกเขต — แสดง banner เป็น visual indicator แทน
-            document.getElementById('btn-clock-in').classList.remove('btn-disabled');
-            document.getElementById('btn-clock-out').classList.remove('btn-disabled');
             if (dist <= RADIUS_IN) {
                 dot.className = 'dot-in';
                 text.innerText = `✅ อยู่ในพื้นที่ร้าน (${Math.round(dist)}ม.)`;
                 banner.className = 'in-zone';
+                document.getElementById('btn-clock-in').classList.remove('btn-disabled');
+                document.getElementById('btn-clock-out').classList.remove('btn-disabled');
             } else if (dist <= RADIUS_LIMIT) {
                 dot.className = 'dot-out';
-                text.innerText = `⚠️ นอกรัศมีเช็คอิน (${Math.round(dist)}ม.) — กดบันทึกได้แต่จะถูกระบุว่านอกเขต`;
+                text.innerText = `⚠️ นอกรัศมีเช็คอิน (${Math.round(dist)}ม.)`;
                 banner.className = 'out-zone';
+                document.getElementById('btn-clock-in').classList.add('btn-disabled');
+                document.getElementById('btn-clock-out').classList.remove('btn-disabled');
             } else {
                 dot.className = 'dot-out';
-                text.innerText = `❌ นอกพื้นที่ทำงาน (${Math.round(dist)}ม.) — กดบันทึกได้แต่จะถูกระบุว่านอกเขต`;
+                text.innerText = `❌ นอกพื้นที่ทำงาน (${Math.round(dist)}ม.)`;
                 banner.className = 'out-zone';
+                document.getElementById('btn-clock-in').classList.add('btn-disabled');
+                document.getElementById('btn-clock-out').classList.add('btn-disabled');
             }
         }, (err) => {
             navigator.geolocation.getCurrentPosition(p => { userPos = p.coords; }, null, { enableHighAccuracy: false });
@@ -594,17 +587,37 @@
     async function handleCheckAction(type) {
         const id = document.getElementById('emp-id').value.trim().toUpperCase();
         if (!id || !capturedBlob) return showToast("⚠️ กรุณากรอก ID และสแกนหน้า", "error");
-        // 🟢 ไม่ block อีกแล้ว — ถ้าอยู่นอกเขต ขอ confirm ก่อน แล้วบันทึกพร้อม flag OUT_OF_ZONE
-        if (userPos) {
+
+        // 🛡️ GUARD 1: ป้องกันกดซ้ำขณะกำลังบันทึก
+        if (window._isSubmitting) {
+            showToast("⏳ กำลังบันทึก กรุณารอสักครู่...", "warn");
+            return;
+        }
+
+        // 🛡️ GUARD 2: ป้องกันกดซ้ำใน 60 วินาทีหลัง action เดียวกันสำเร็จ
+        const lastKey = `last_${type}_${id}`;
+        const lastTime = parseInt(localStorage.getItem(lastKey) || '0', 10);
+        const now = Date.now();
+        const secsAgo = Math.floor((now - lastTime) / 1000);
+        if (lastTime && secsAgo < 60) {
+            const remain = 60 - secsAgo;
+            showToast(`⚠️ คุณเพิ่ง${type === 'CHECK_IN' ? 'เข้างาน' : 'ออกงาน'}ไปเมื่อ ${secsAgo} วินาทีก่อน\nรออีก ${remain} วินาทีก่อนกดซ้ำ`, "error");
+            return;
+        }
+
+        if (type === 'CHECK_IN' && userPos) {
             const dGuard = calculateDistance(userPos.latitude, userPos.longitude, SHOP_LAT, SHOP_LON);
-            if (dGuard > RADIUS_IN) {
-                const actionLabel = type === 'CHECK_IN' ? 'เช็คอิน' : 'เช็คเอาท์';
-                const ok = confirm(`⚠️ คุณอยู่นอกพื้นที่ร้าน (${Math.round(dGuard)} เมตร)\n\nต้องการบันทึก${actionLabel}จากนอกเขตหรือไม่?\n\n(ระบบจะระบุในประวัติว่า "นอกพื้นที่")`);
-                if (!ok) return;
-            }
+            if (dGuard > RADIUS_IN) return showToast(`❌ อยู่นอกพื้นที่ (${Math.round(dGuard)}ม.) — ไม่สามารถเช็คอินได้`, "error");
         }
         const btn = type === 'CHECK_IN' ? document.getElementById('btn-clock-in') : document.getElementById('btn-clock-out');
-        const originalText = btn.innerText; btn.disabled = true; btn.innerText = "กำลังบันทึก..."; 
+        const otherBtn = type === 'CHECK_IN' ? document.getElementById('btn-clock-out') : document.getElementById('btn-clock-in');
+        const originalText = btn.innerText;
+
+        // 🔒 lock state
+        window._isSubmitting = true;
+        btn.disabled = true;
+        if (otherBtn) otherBtn.disabled = true;
+        btn.innerText = "กำลังบันทึก...";
 
         try {
             const resEmp = await fetch(`${API_URL}?action=GET_EMPLOYEES&t=${Date.now()}`);
@@ -612,23 +625,29 @@
             const emps = await resEmp.json();
             
             const emp = emps.find(e => String(getSmartVal(e, 'รหัสพนักงาน', 'Employee_ID') || "").toUpperCase() === id);
-            if (!emp) { showToast("❌ ไม่พบรหัสพนักงาน", "error"); btn.disabled = false; btn.innerText = originalText; return; }
+            if (!emp) { 
+                showToast("❌ ไม่พบรหัสพนักงาน", "error"); 
+                btn.disabled = false; if (otherBtn) otherBtn.disabled = false;
+                btn.innerText = originalText; 
+                window._isSubmitting = false;
+                return; 
+            }
 
-            const now = new Date();
+            const nowDate = new Date();
             let status = "ปกติ", lateMinutes = 0, otHours = 0;
             
             if (type === 'CHECK_IN') {
                 const sched = parseTime(getSmartVal(emp, 'เวลาเริ่มงาน', 'startTime', 'start_work_time'));
-                const workStart = new Date(now); workStart.setHours(sched.h, sched.m, 0, 0);
-                if (now.getTime() > workStart.getTime()) {
-                    lateMinutes = Math.floor((now.getTime() - workStart.getTime()) / 60000);
+                const workStart = new Date(nowDate); workStart.setHours(sched.h, sched.m, 0, 0);
+                if (nowDate.getTime() > workStart.getTime()) {
+                    lateMinutes = Math.floor((nowDate.getTime() - workStart.getTime()) / 60000);
                     if (lateMinutes > 0) status = "สาย";
                 }
             } else {
                 const sched = parseTime(getSmartVal(emp, 'เวลาเลิกงาน', 'endTime', 'end_work_time'));
-                const workEnd = new Date(now); workEnd.setHours(sched.h, sched.m, 0, 0);
-                if (now.getTime() > workEnd.getTime()) {
-                    otHours = parseFloat(((now.getTime() - workEnd.getTime()) / 3600000).toFixed(2));
+                const workEnd = new Date(nowDate); workEnd.setHours(sched.h, sched.m, 0, 0);
+                if (nowDate.getTime() > workEnd.getTime()) {
+                    otHours = parseFloat(((nowDate.getTime() - workEnd.getTime()) / 3600000).toFixed(2));
                 }
             }
 
@@ -645,30 +664,30 @@
                     action: type, empId: id, nickname: nickname, 
                     photo: imgData.data.url, status: status,
                     lateMinutes: lateMinutes, otHours: otHours,
+                    clientTimestamp: nowDate.toISOString(),  // 🔥 ส่ง timestamp ของ client เพื่อ dedup ฝั่ง backend
                     location: (() => { if (!userPos) return "ไม่ทราบพิกัด"; const d = calculateDistance(userPos.latitude, userPos.longitude, SHOP_LAT, SHOP_LON); return d <= RADIUS_IN ? "IN_ZONE" : `OUT_OF_ZONE,${Math.round(d)}m`; })()
                 }) 
             });
+
+            // 🔒 บันทึกเวลาที่ทำสำเร็จ — กันกดซ้ำใน 60 วินาที
+            localStorage.setItem(lastKey, String(now));
             
             document.getElementById('res-name').innerText = nickname;
             document.getElementById('res-status').innerText = type === 'CHECK_IN' ? 'บันทึกเข้างานสำเร็จ' : 'บันทึกออกงานสำเร็จ';
             document.getElementById('res-detail').innerText = type === 'CHECK_IN'
-                ? `${status} ${lateMinutes > 0 ? `(${lateMinutes} นาที)` : ""}\nเวลา: ${now.toLocaleTimeString('th-TH')}`
-                : (otHours > 0 ? `OT: ${otHours} ชม.\nเวลา: ${now.toLocaleTimeString('th-TH')}` : `เลิกงานปกติ\nเวลา: ${now.toLocaleTimeString('th-TH')}`);
+                ? `${status} ${lateMinutes > 0 ? `(${lateMinutes} นาที)` : ""}\nเวลา: ${nowDate.toLocaleTimeString('th-TH')}`
+                : (otHours > 0 ? `OT: ${otHours} ชม.\nเวลา: ${nowDate.toLocaleTimeString('th-TH')}` : `เลิกงานปกติ\nเวลา: ${nowDate.toLocaleTimeString('th-TH')}`);
             document.getElementById('result-screen').classList.remove('hidden');
-            // ── คำนวณ zone ตอนบันทึก เพื่อแสดงในประวัติ + ส่งให้ Sheet ──
-            const zoneInfo = (() => {
-                if (!userPos) return { inZone: false, label: 'ไม่ทราบพิกัด', distM: null };
-                const d = calculateDistance(userPos.latitude, userPos.longitude, SHOP_LAT, SHOP_LON);
-                return d <= RADIUS_IN
-                    ? { inZone: true,  label: 'IN_ZONE',                          distM: Math.round(d) }
-                    : { inZone: false, label: 'OUT_OF_ZONE,'+Math.round(d)+'m',   distM: Math.round(d) };
-            })();
-            saveHistory({ type, nickname, time: now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false}), lateMinutes, otHours, inZone: zoneInfo.inZone, distM: zoneInfo.distM });
+            saveHistory({ type, nickname, time: nowDate.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false}), lateMinutes, otHours });
 
         } catch (e) { 
             console.error(e);
             showToast("❌ การเชื่อมต่อล้มเหลว กรุณาลองใหม่", "error"); 
-            btn.disabled = false; btn.innerText = originalText;
+            btn.disabled = false; if (otherBtn) otherBtn.disabled = false;
+            btn.innerText = originalText;
+        } finally {
+            // ปลดล็อก isSubmitting หลัง 5 วินาที (กันกดเร็วต่อเนื่อง แต่ไม่ค้างถาวร)
+            setTimeout(() => { window._isSubmitting = false; }, 5000);
         }
     }
 
@@ -709,13 +728,7 @@
         if (!list || !list.length) { el.innerHTML = '<div class="hist-empty">ยังไม่มีรายการวันนี้</div>'; return; }
         el.innerHTML = [...list].reverse().map(h => {
             const isIn = h.type === 'CHECK_IN';
-            // 🟢 แสดง zone status ทั้ง CHECK_IN และ CHECK_OUT — เขียวถ้าในเขต, แดงถ้านอกเขต
-            let zoneHtml = '';
-            if (h.inZone === true) {
-                zoneHtml = '<span class="hist-zone ok">✔ ในพื้นที่</span>';
-            } else if (h.inZone === false) {
-                zoneHtml = '<span class="hist-zone no">⚠ นอกพื้นที่'+(h.distM?' ('+h.distM+'ม.)':'')+'</span>';
-            }
+            const zoneHtml = isIn ? '<span class="hist-zone ok">✔ ในพื้นที่</span>' : '';
             const lateHtml = h.lateMinutes > 0 ? `<span class="hist-late">สาย ${h.lateMinutes}น.</span>` : '';
             const otHtml   = h.otHours   > 0 ? `<span class="hist-late">OT ${h.otHours}ชม.</span>` : '';
             return `<div class="hist-row">
