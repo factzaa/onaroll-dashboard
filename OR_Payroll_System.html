@@ -886,7 +886,7 @@ window.addEventListener('load', async()=>{
     //   - ถ้า cell format เป็น Text   → v = "3250888512" (ดี)
     //   - ใช้ f (formatted string) ก่อน เพราะรักษา digit ครบ
     const cellStr = (cell) => {
-      if (!cell) return '';
+      if (cell === null || cell === undefined) return '';
       // ลำดับ: formatted string → raw value → ว่าง
       const f = cell.f;
       const v = cell.v;
@@ -895,19 +895,52 @@ window.addEventListener('load', async()=>{
       return '';
     };
     
-    employees=empT.rows.filter(r=>r.c&&r.c[0]?.v&&r.c[0].v!=='รหัสพนักงาน').map(r=>({
-      id:       cellStr(r.c[0]),
-      name:     cellStr(r.c[1]),
-      nickname: cellStr(r.c[2]),
-      bank:     cellStr(r.c[6]),
-      acc:      cellStr(r.c[7]),
-      image:    cellStr(r.c[15])
-    }));
+    // 🔍 หา column index แบบ dynamic จาก header row (กันชีทมีการปรับ column)
+    let bankIdx = 6, accIdx = 7, posIdx = 3, imgIdx = 15;
+    if (empT.cols && empT.cols.length) {
+      empT.cols.forEach((col, i) => {
+        const label = String(col.label || '').trim().toLowerCase();
+        if (label.includes('ธนาคาร') && !label.includes('เลข')) bankIdx = i;
+        else if (label.includes('เลขบัญชี') || label.includes('account')) accIdx = i;
+        else if (label.includes('ตำแหน่ง') || label.includes('position')) posIdx = i;
+        else if (label.includes('image') || label.includes('รูป') || label === 'photo') imgIdx = i;
+      });
+      console.log('[Payroll] Column indices:', { bank: bankIdx, acc: accIdx, pos: posIdx, img: imgIdx });
+    }
     
-    // 🐛 Debug: log พนักงานที่ไม่มีเลขบัญชี
+    employees=empT.rows.filter(r=>r.c&&r.c[0]?.v&&r.c[0].v!=='รหัสพนักงาน').map(r=>{
+      const emp = {
+        id:       cellStr(r.c[0]),
+        name:     cellStr(r.c[1]),
+        nickname: cellStr(r.c[2]),
+        bank:     cellStr(r.c[bankIdx]),
+        acc:      cellStr(r.c[accIdx]),
+        image:    cellStr(r.c[imgIdx])
+      };
+      // 🐛 Deep debug: ถ้า acc ว่าง — log structure ของ cell ออกมา (ใช้ console.error เพื่อให้เห็นชัด)
+      if (!emp.acc) {
+        const colsDump = r.c.map((c,i) => {
+          if (c === null) return `[${i}]=NULL`;
+          if (c === undefined) return `[${i}]=UNDEF`;
+          return `[${i}]={v:${JSON.stringify(c.v)},f:${JSON.stringify(c.f)}}`;
+        }).join('  ');
+        console.error(`[Payroll][${emp.id} ${emp.nickname}] ❌ acc ว่าง!`);
+        console.error(`  ↳ raw cell at index ${accIdx}:`, r.c[accIdx]);
+        console.error(`  ↳ ALL CELLS:`, colsDump);
+        
+        // 💾 เก็บ debug ไว้ใน window object เพื่อให้ user เปิดดูได้ง่ายๆ
+        window.__payrollDebug = window.__payrollDebug || [];
+        window.__payrollDebug.push({ id: emp.id, name: emp.nickname, accCell: r.c[accIdx], allCells: r.c });
+      }
+      return emp;
+    });
+    
+    // 🐛 Summary log
     const noAcc = employees.filter(e => !e.acc);
     if (noAcc.length > 0) {
       console.warn('[Payroll] พนักงานที่ไม่มีเลขบัญชี:', noAcc.map(e => `${e.id} ${e.nickname}`));
+    } else {
+      console.log('[Payroll] ✅ เลขบัญชีครบทุกคน:', employees.length, 'คน');
     }
     
     employees.forEach(emp=>{localInputs[emp.id]={salaryType:'Daily',baseRate:350,otHours:0,otRate:25,lateMins:0,lateDeduction:0,advancePay:0,otherEarn:0,otherEarnNote:'',otherDed:0,otherDedNote:'',daysWorked:0};});
