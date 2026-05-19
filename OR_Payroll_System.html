@@ -657,12 +657,15 @@ function renderHistory(){
     const nick = getNick(h);
     const mon  = getMonth(h);
     const cycle = gv(h,'รอบจ่าย','cycle');
+    // 💰 คำนวณค่าจ้างจริง: ถ้า Monthly = base ตรง ๆ, ถ้า Daily = base × days
+    const salaryType = String(gv(h,'ประเภทการจ้าง','salaryType')||'Daily');
+    const basic = salaryType === 'Monthly' ? base : base * days;
     const ts   = (h['Timestamp']||h['timestamp'])?new Date(h['Timestamp']||h['timestamp']).toLocaleString('th-TH',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
     return `<tr>
       <td><div class="emp-cell"><div><div class="emp-name">${nick}</div><div class="emp-id">${mon||''}</div></div></div></td>
       <td style="text-align:center"><span style="background:var(--blue-light);color:var(--blue);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600">${mon||'—'}</span></td>
       <td style="text-align:center;font-size:11px;color:var(--muted)">${cycle||'—'}</td>
-      <td style="text-align:center"><span style="background:var(--surface2);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;color:var(--muted)">${h['ประเภทการจ้าง']||'—'}</span></td>
+      <td style="text-align:center"><span style="background:var(--surface2);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;color:var(--muted)">${salaryType||'—'}</span></td>
       <td style="text-align:right;font-weight:600">${fmt(basic)}</td>
       <td style="text-align:right;color:#6a4fcf">${ot>0?fmt(ot):'—'}</td>
       <td style="text-align:right;color:var(--red)">${ded>0?'-'+fmt(ded):'—'}</td>
