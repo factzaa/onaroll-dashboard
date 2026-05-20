@@ -745,11 +745,50 @@ window.onload = () => {
   document.getElementById('form-date').value = new Date().toLocaleDateString('en-CA');
   document.getElementById('month-filter').value = new Date().toISOString().substring(0,7);
   renderCategoryDropdown();
-  setupSourcePicker();   // 💰 source picker click handler
-  updateUserBadge();     // 👤 แสดงข้อมูล user ใน topbar
-  updateReserveUI();     // 💰 initial reserve UI (ก่อน fetch — แสดง default)
+  setupSourcePicker();
+  updateUserBadge();
+  updateReserveUI();
   fetchData();
+  checkBackendVersion();  // 🏓 เช็คว่า backend deploy ใหม่หรือยัง
 };
+
+// 🏓 เช็ค backend version + features
+async function checkBackendVersion() {
+  try {
+    const res = await fetch(`${WRITE_URL}?action=PING&t=${Date.now()}`);
+    const data = await res.json();
+    console.log('[Backend PING]', data);
+    
+    const hasTopup = data && data.features && data.features.topup;
+    if (!hasTopup) {
+      // Backend เก่า — แสดง warning banner
+      showBackendWarning();
+    }
+  } catch(e) {
+    console.warn('[Backend PING] failed:', e.message);
+    showBackendWarning();
+  }
+}
+
+function showBackendWarning() {
+  const old = document.getElementById('backend-warning');
+  if (old) return;
+  const warn = document.createElement('div');
+  warn.id = 'backend-warning';
+  warn.style.cssText = 'background:linear-gradient(135deg,#fef2f2,#fee2e2);border:2px solid #dc2626;border-radius:12px;padding:14px 18px;margin-bottom:14px;color:#991b1b;font-size:13px;font-weight:600;display:flex;gap:10px;align-items:flex-start';
+  warn.innerHTML = `
+    <span style="font-size:22px;flex-shrink:0">⚠️</span>
+    <div style="flex:1">
+      <div style="font-weight:800;margin-bottom:4px;font-size:14px">Backend เก่ายังไม่อัปเดต!</div>
+      <div style="font-size:11px;line-height:1.6;color:#7c2d12">
+        ฟีเจอร์ <strong>แหล่งเบิกจ่าย / เบิกเติมเงิน / อนุมัติ</strong> จะไม่ทำงานจนกว่าจะ deploy Master_Backend.gs ใหม่<br>
+        วิธีแก้: Apps Script → Manage deployments → ✏️ → New version → Deploy
+      </div>
+    </div>
+  `;
+  const main = document.querySelector('.main');
+  if (main) main.insertBefore(warn, main.firstChild);
+}
 
 // 👤 แสดง user badge ใน topbar
 function updateUserBadge() {
