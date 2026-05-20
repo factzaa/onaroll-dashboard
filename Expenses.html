@@ -412,6 +412,18 @@ select.field-input{cursor:pointer}
 <!-- ══ MAIN ══ -->
 <div class="main">
 
+  <!-- 🔔 GLOBAL Approval Banner — เฉพาะ Owner เห็น (sticky บนทุก tab) -->
+  <div id="approval-panel" style="display:none;background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1.5px solid #dc2626;border-radius:16px;padding:16px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:20px">🔔</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:800;color:#991b1b">รายการรออนุมัติ</div>
+        <div style="font-size:10px;color:#dc2626;font-weight:600" id="approval-stat">0 รายการ · ฿0</div>
+      </div>
+    </div>
+    <div id="approval-list"></div>
+  </div>
+
   <!-- ─── ENTRY ─── -->
   <div class="section active" id="section-entry">
     <div class="section-header">
@@ -566,18 +578,6 @@ select.field-input{cursor:pointer}
         </button>
       </div>
     </div>
-    
-    <!-- 🔔 Approval Panel — เฉพาะ Owner -->
-    <div id="approval-panel" style="display:none;background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1.5px solid #dc2626;border-radius:16px;padding:16px;margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="font-size:20px">🔔</span>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:800;color:#991b1b">รายการรออนุมัติ</div>
-          <div style="font-size:10px;color:#dc2626;font-weight:600" id="approval-stat">0 รายการ · ฿0</div>
-        </div>
-      </div>
-      <div id="approval-list"></div>
-    </div>
 
     <div class="kpi-grid">
       <div class="kpi red">
@@ -657,15 +657,48 @@ let expenseData = [], trendChart = null, categoryChart = null, rawImageFile = nu
 let userCats = JSON.parse(localStorage.getItem('exp_premium_cats_v2')) || ["ค่าวัตถุดิบ","ค่าเช่าที่","ค่าน้ำไฟ","ค่าแรง","อื่นๆ"];
 
 // 👤 อ่าน user info จาก localStorage (ตั้งโดย Owner Dashboard / Login)
+//    Fallback: ถ้าอยู่ใน iframe ลองอ่านจาก parent window ด้วย
 function getCurrentUser() {
-  return {
-    name:     localStorage.getItem('user_name') || localStorage.getItem('userName') || '',
-    nickname: localStorage.getItem('user_nickname') || localStorage.getItem('userNick') || '',
-    role:     (localStorage.getItem('user_role') || '').toLowerCase().trim(),
-    id:       localStorage.getItem('user_id') || ''
-  };
+  // 1) ลองอ่านจาก localStorage ของตัวเอง
+  const ls = localStorage;
+  let name     = ls.getItem('user_name') || ls.getItem('userName') || '';
+  let nickname = ls.getItem('user_nickname') || ls.getItem('userNick') || '';
+  let role     = (ls.getItem('user_role') || '').toLowerCase().trim();
+  let id       = ls.getItem('user_id') || '';
+  
+  // 2) ถ้าไม่เจอ role ลองอ่านจาก parent window (กรณีอยู่ใน iframe)
+  if (!role) {
+    try {
+      const pls = window.parent && window.parent !== window ? window.parent.localStorage : null;
+      if (pls) {
+        if (!name)     name = pls.getItem('user_name') || pls.getItem('userName') || '';
+        if (!nickname) nickname = pls.getItem('user_nickname') || pls.getItem('userNick') || '';
+        if (!role)     role = (pls.getItem('user_role') || '').toLowerCase().trim();
+        if (!id)       id = pls.getItem('user_id') || '';
+      }
+    } catch(e) { /* cross-origin → ignore */ }
+  }
+  
+  // 3) Dev override — ?role=owner ใน URL เพื่อทดสอบ
+  try {
+    const urlRole = new URLSearchParams(window.location.search).get('role');
+    if (urlRole) role = urlRole.toLowerCase().trim();
+  } catch(e) {}
+  
+  return { name, nickname, role, id };
 }
 function isOwner() { return getCurrentUser().role === 'owner'; }
+
+// 🐛 Debug helper — เรียกใน console: window.debugUser()
+window.debugUser = () => {
+  const u = getCurrentUser();
+  console.table(u);
+  console.log('isOwner():', isOwner());
+  console.log('localStorage keys:', Object.keys(localStorage));
+  console.log('user_role:', localStorage.getItem('user_role'));
+  console.log('userRole:', localStorage.getItem('userRole'));
+  return u;
+};
 
 const CAT_COLORS = ['#e53935','#2979d4','#00897b','#f57c00','#7c3aed','#0288d1','#558b2f','#ad1457','#5d4037','#37474f'];
 
