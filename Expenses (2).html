@@ -1,0 +1,2283 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Expenses — OnaRoll</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Kanit',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh;padding-bottom:74px;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#1a2b5e;--blue:#2979d4;--blue-light:#e8f1fd;--blue-pale:#f0f6ff;
+  --surface:#fff;--surface2:#f7fafd;--bg:#f0f4f8;
+  --text:#1a2332;--muted:#5a7184;--light:#92a8bb;
+  --border:#dde6ef;
+  --success:#00897b;--success-bg:#e0f5f2;
+  --danger:#e53935;--danger-bg:#fdecea;
+  --warn:#f57c00;--warn-bg:#fff3e0;
+  --purple:#7c3aed;--purple-bg:#f5f3ff;
+  --r:12px;--r-sm:8px;
+  --shadow:0 2px 8px rgba(26,43,94,.08);
+  --shadow-md:0 6px 24px rgba(26,43,94,.13);
+}
+input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
+/* ══ TOPBAR ══ */
+.topbar{background:#fff;border-bottom:2px solid var(--blue);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:60;box-shadow:var(--shadow)}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--navy),var(--danger));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:700;color:var(--navy)}
+.topbar-sub{font-size:10px;color:var(--muted)}
+.tab-desktop{display:none}
+.btn-icon{width:36px;height:36px;border:1px solid var(--border);background:var(--surface2);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .2s}
+.btn-icon:active{background:var(--blue-light);color:var(--blue);transform:rotate(180deg)}
+
+/* ══ MAIN ══ */
+.main{max-width:700px;margin:0 auto;padding:16px 14px}
+
+/* ══ SECTIONS ══ */
+.section{display:none}.section.active{display:block}
+.section-header{margin-bottom:14px}
+.section-title{font-size:18px;font-weight:700;color:var(--navy)}
+.section-sub{font-size:11px;color:var(--muted);margin-top:2px;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
+
+/* ══ CARD ══ */
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+.card:last-child{margin-bottom:0}
+.card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px}
+.card-icon{width:26px;height:26px;border-radius:7px;background:var(--danger-bg);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.card-body{padding:16px}
+
+/* ══ FORM FIELDS ══ */
+.field-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field-group:last-child{margin-bottom:0}
+.field-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.field-label.red{color:var(--danger)}
+.field-input{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font-family:inherit;font-size:14px;color:var(--text);background:#fff;width:100%;transition:border-color .2s;-webkit-appearance:none;outline:none}
+.field-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(41,121,212,.1)}
+.field-input.red{color:var(--danger);font-size:18px;font-weight:700}
+.field-input.red:focus{border-color:var(--danger);box-shadow:0 0 0 3px rgba(229,57,53,.08)}
+.field-input[type="number"].red::placeholder{color:#ffcdd2;font-size:18px}
+select.field-input{cursor:pointer}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ══ AMOUNT HERO ══ */
+.amount-hero{background:linear-gradient(135deg,#b71c1c,var(--danger));border-radius:var(--r);padding:18px 20px;color:#fff;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ah-label{font-size:10px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.ah-amount{font-size:32px;font-weight:700;line-height:1}
+.ah-amount .sym{font-size:18px;opacity:.8;margin-right:2px}
+.ah-date input{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--r-sm);padding:8px 12px;font-family:inherit;font-size:14px;color:#fff;outline:none;-webkit-appearance:none}
+.ah-date input::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.7}
+
+/* ══ NEW CATEGORY BOX ══ */
+.new-cat-box{background:var(--danger-bg);border:1px solid #ffcdd2;border-radius:var(--r-sm);padding:12px;display:none;margin-top:8px}
+.new-cat-box.open{display:flex;align-items:center;gap:8px}
+.new-cat-input{flex:1;border:1.5px solid #ef9a9a;border-radius:var(--r-sm);padding:9px 12px;font-family:inherit;font-size:13px;color:var(--text);background:#fff;outline:none}
+.new-cat-input:focus{border-color:var(--danger)}
+.btn-add-cat{background:var(--danger);color:#fff;border:none;border-radius:var(--r-sm);padding:9px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+
+/* ══ IMAGE UPLOAD ══ */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--r-sm);padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:all .2s;background:var(--surface2);min-height:110px}
+.upload-zone:active{border-color:var(--blue);background:var(--blue-light)}
+.upload-zone .uz-icon{font-size:28px}
+.upload-zone .uz-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.img-preview{width:100%;border-radius:var(--r-sm);object-fit:contain;display:none;border:2px solid var(--border);max-height:200px}
+.img-preview.show{display:block}
+
+/* ══ SUBMIT ══ */
+.btn-submit{width:100%;background:var(--danger);color:#fff;border:none;border-radius:var(--r);padding:14px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(229,57,53,.3);transition:all .2s;margin-top:4px}
+.btn-submit:active{background:#c62828;transform:scale(.98)}
+.btn-submit:disabled{opacity:.5;pointer-events:none}
+
+/* ══ DASHBOARD ══ */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.red::before{background:var(--danger)}
+.kpi.blue::before{background:var(--blue)}
+.kpi.green::before{background:var(--success)}
+.kpi.purple::before{background:var(--purple)}
+.kpi-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.kpi-value{font-size:20px;font-weight:700}
+.kpi-value.red{color:var(--danger)}
+.kpi-value.blue{color:var(--blue)}
+.kpi-value.green{color:var(--success)}
+.kpi-value.purple{color:var(--purple)}
+.month-select{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;font-family:inherit;font-size:13px;font-weight:600;color:var(--text);background:#fff;-webkit-appearance:none;cursor:pointer;outline:none}
+.month-select:focus{border-color:var(--blue)}
+
+/* ══ CHART CARDS ══ */
+.charts-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px}
+.chart-box{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
+.chart-box-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.chart-wrap{height:200px;position:relative}
+
+/* ══ LOGS ══ */
+.log-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.log-item:last-child{border-bottom:none}
+.log-item:active{background:var(--danger-bg)}
+.log-cat-badge{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;background:#eef2f7;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.log-date-box{width:44px;height:44px;background:var(--danger-bg);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.log-day{font-size:16px;font-weight:700;color:var(--danger);line-height:1}
+.log-mon{font-size:9px;font-weight:600;color:var(--danger);opacity:.7;text-transform:uppercase}
+.log-info{flex:1;min-width:0}
+.log-item-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log-cat{font-size:11px;color:var(--muted);margin-top:2px}
+.log-amount{font-size:15px;font-weight:700;color:var(--danger);flex-shrink:0;text-align:right}
+.log-arrow{font-size:12px;color:var(--light);margin-left:4px}
+
+/* ══ MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,15,30,.85);backdrop-filter:blur(4px);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:var(--r) var(--r) 0 0;width:100%;max-width:520px;max-height:92vh;display:flex;flex-direction:column;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes lbFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes lbFadeOut{from{opacity:1}to{opacity:0}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.7)}50%{box-shadow:0 0 0 8px rgba(220,38,38,0)}}
+
+/* Approval cards */
+.approval-card{background:#fff;border:1.5px solid #fecaca;border-radius:12px;padding:12px;margin-bottom:8px;animation:slideUp .25s}
+.approval-card-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.approval-amount{font-size:20px;font-weight:900;color:#059669}
+.approval-meta{flex:1;min-width:0}
+.approval-staff{font-size:13px;font-weight:700;color:var(--text)}
+.approval-info{font-size:10px;color:var(--muted);margin-top:1px}
+.approval-actions{display:flex;gap:6px}
+.btn-approve{flex:1;padding:9px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 8px rgba(16,185,129,.25)}
+.btn-reject{flex:1;padding:9px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 8px rgba(220,38,38,.25)}
+.btn-approve:active,.btn-reject:active{transform:scale(.97)}
+
+/* Status badges */
+.tu-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
+.tu-badge.pending{background:#fef3c7;color:#92400e}
+.tu-badge.approved{background:#d1fae5;color:#065f46}
+.tu-badge.rejected{background:#fee2e2;color:#991b1b}
+
+/* Source Picker (แคชเชียร์ vs กระเป๋าสำรอง) */
+.source-picker{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.source-opt{position:relative;display:block;cursor:pointer;border:2px solid var(--border);border-radius:14px;padding:12px;background:var(--surface);transition:all .2s;user-select:none}
+.source-opt input{position:absolute;opacity:0;pointer-events:none}
+.source-opt.active{border-color:var(--blue);background:var(--blue-pale);box-shadow:0 4px 12px rgba(37,99,235,.15)}
+.source-opt.active[data-source="reserve"]{border-color:#f59e0b;background:#fffbeb;box-shadow:0 4px 12px rgba(245,158,11,.15)}
+.source-opt:hover{border-color:var(--blue-light);transform:translateY(-1px)}
+.source-content{display:flex;align-items:center;gap:10px}
+.source-icon{font-size:24px;flex-shrink:0}
+.source-text{flex:1;min-width:0}
+.source-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+.source-sub{font-size:10px;color:var(--muted);font-weight:500}
+.source-opt.active .source-name{color:var(--blue)}
+.source-opt.active[data-source="reserve"] .source-name{color:#b45309}
+
+/* Reserve Balance Card */
+.reserve-card{background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border:1.5px solid #f59e0b;border-radius:16px;padding:16px;margin-bottom:14px;position:relative;overflow:hidden}
+.reserve-card::before{content:"💰";position:absolute;top:-10px;right:-10px;font-size:90px;opacity:.1;transform:rotate(-15deg)}
+.reserve-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.reserve-title{font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.4px}
+.reserve-amount-row{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.reserve-amount{font-size:32px;font-weight:900;color:#92400e;font-variant-numeric:tabular-nums}
+.reserve-currency{font-size:14px;color:#b45309;font-weight:700}
+.reserve-progress{height:6px;background:rgba(146,64,14,.15);border-radius:6px;overflow:hidden;margin-bottom:6px;position:relative;z-index:1}
+.reserve-progress-bar{height:100%;background:linear-gradient(90deg,#f59e0b,#d97706);border-radius:6px;transition:width .5s ease-out}
+.reserve-progress-bar.low{background:linear-gradient(90deg,#ef4444,#dc2626)}
+.reserve-progress-bar.mid{background:linear-gradient(90deg,#f59e0b,#d97706)}
+.reserve-progress-bar.high{background:linear-gradient(90deg,#10b981,#059669)}
+.reserve-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;align-items:center;font-size:10px;color:#92400e;font-weight:600;position:relative;z-index:1;text-align:center}
+.reserve-stats strong{color:#7c2d12;font-weight:800;display:block;font-size:12px;margin-top:1px}
+
+/* Reserve action buttons */
+.reserve-actions{display:flex;gap:6px;position:relative;z-index:1}
+.reserve-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;border-radius:10px;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;background:rgba(255,255,255,.6);color:#92400e}
+.reserve-btn:hover{transform:translateY(-1px)}
+.reserve-btn:active{transform:translateY(0)}
+.reserve-btn-primary{flex:1;background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 4px 10px rgba(16,185,129,.3)}
+.reserve-btn-primary:hover{box-shadow:0 6px 14px rgba(16,185,129,.4)}
+.reserve-btn-secondary{flex:0 0 44px;background:rgba(146,64,14,.12);color:#7c2d12}
+.reserve-btn-secondary:hover{background:rgba(146,64,14,.2)}
+
+/* Topup Summary Card */
+.topup-summary-card{background:linear-gradient(135deg,#f5f3ff 0%,#ede9fe 100%);border:1.5px solid #c4b5fd;border-radius:14px;padding:14px 16px;margin-bottom:14px;cursor:pointer;transition:all .2s}
+.topup-summary-card:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(124,58,237,.15)}
+.tsc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.tsc-title{font-size:13px;font-weight:800;color:#5b21b6}
+.tsc-sub{font-size:10px;color:#7c3aed;font-weight:600;margin-top:1px}
+.tsc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tsc-stat{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.7);border-radius:10px;padding:8px 10px}
+.tsc-stat-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.tsc-stat-val{font-size:16px;font-weight:800;color:var(--text);line-height:1}
+.tsc-stat-lbl{font-size:9px;color:var(--muted);font-weight:600;margin-top:2px}
+
+/* Topup Dashboard Modal */
+.tu-dashboard{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:9998;display:none;align-items:flex-end;justify-content:center}
+.tu-dashboard.open{display:flex;animation:lbFadeIn .2s}
+.tu-dash-panel{background:var(--surface);border-radius:18px 18px 0 0;max-width:560px;width:100%;max-height:92vh;overflow-y:auto;padding:0;animation:slideUp .3s}
+@media(min-width:640px){.tu-dashboard{align-items:center}.tu-dash-panel{border-radius:18px;max-height:88vh}}
+.tu-dash-header{position:sticky;top:0;background:linear-gradient(135deg,#5b21b6 0%,#7c3aed 100%);color:#fff;padding:18px 20px;border-radius:18px 18px 0 0;z-index:1}
+@media(min-width:640px){.tu-dash-header{border-radius:18px 18px 0 0}}
+.tu-dash-body{padding:16px 18px 24px}
+.tu-dash-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer}
+
+/* KPI Grid (4-card) for dashboard */
+.tu-kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.tu-kpi{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px}
+.tu-kpi.amber{background:linear-gradient(135deg,#fffbeb,#fef3c7);border-color:#fcd34d}
+.tu-kpi.emerald{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#6ee7b7}
+.tu-kpi.red{background:linear-gradient(135deg,#fef2f2,#fee2e2);border-color:#fca5a5}
+.tu-kpi.violet{background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-color:#c4b5fd}
+.tu-kpi-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.tu-kpi.amber .tu-kpi-lbl{color:#92400e}
+.tu-kpi.emerald .tu-kpi-lbl{color:#065f46}
+.tu-kpi.red .tu-kpi-lbl{color:#991b1b}
+.tu-kpi.violet .tu-kpi-lbl{color:#5b21b6}
+.tu-kpi-val{font-size:18px;font-weight:900;color:var(--text)}
+.tu-kpi.amber .tu-kpi-val{color:#7c2d12}
+.tu-kpi.emerald .tu-kpi-val{color:#059669}
+.tu-kpi.red .tu-kpi-val{color:#dc2626}
+.tu-kpi.violet .tu-kpi-val{color:#5b21b6}
+.tu-kpi-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* Bar chart 30 days */
+.tu-chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px}
+.tu-chart-title{font-size:12px;font-weight:800;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.tu-bar-chart{display:flex;align-items:flex-end;gap:2px;height:100px;padding:0 2px}
+.tu-bar{flex:1;background:linear-gradient(180deg,#7c3aed,#5b21b6);border-radius:3px 3px 0 0;min-height:2px;position:relative;transition:all .2s;cursor:pointer}
+.tu-bar:hover{filter:brightness(1.15)}
+.tu-bar.empty{background:var(--border);opacity:.3}
+.tu-bar.rejected{background:linear-gradient(180deg,#fca5a5,#dc2626)}
+.tu-x-axis{display:flex;justify-content:space-between;font-size:8px;color:var(--muted);margin-top:4px;padding:0 2px;font-weight:600}
+
+/* Filter row */
+.tu-filter{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tu-filter input[type=date],.tu-filter input[type=month]{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:var(--surface)}
+.tu-filter-btn{padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;color:var(--text)}
+.tu-filter-btn.active{background:#5b21b6;color:#fff;border-color:#5b21b6}
+
+/* Activity list */
+.tu-activity{max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.tu-activity-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.tu-activity-item:last-child{border-bottom:none}
+.tu-act-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.tu-act-info{flex:1;min-width:0}
+.tu-act-amt{font-size:13px;font-weight:800}
+.tu-act-meta{font-size:10px;color:var(--muted);margin-top:1px}
+.tu-act-reason{font-size:10px;color:#991b1b;margin-top:2px;font-style:italic}
+
+/* Topup History list (modal) */
+.topup-list{max-height:50vh;overflow-y:auto;margin:12px -4px;padding:0 4px}
+.topup-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--surface2);margin-bottom:6px}
+.topup-item-icon{width:36px;height:36px;border-radius:50%;background:rgba(16,185,129,.15);color:#059669;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.topup-item-info{flex:1;min-width:0}
+.topup-item-amount{font-size:14px;font-weight:800;color:#059669}
+.topup-item-meta{font-size:10px;color:var(--muted);margin-top:1px}
+.topup-item-note{font-size:11px;color:var(--text);margin-top:2px;font-style:italic}
+.topup-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--surface2);margin-bottom:6px}
+.topup-item-icon{width:36px;height:36px;border-radius:50%;background:rgba(16,185,129,.15);color:#059669;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.topup-item-info{flex:1;min-width:0}
+.topup-item-amount{font-size:14px;font-weight:800;color:#059669}
+.topup-item-meta{font-size:10px;color:var(--muted);margin-top:1px}
+.topup-item-note{font-size:11px;color:var(--text);margin-top:2px;font-style:italic}
+
+/* Settings sheet style */
+.reserve-settings{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px}
+.reserve-settings.open{display:flex}
+.reserve-settings-panel{background:var(--surface);border-radius:18px;max-width:380px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+
+/* Source badge ใน list */
+.source-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700;margin-left:4px}
+.source-badge.cashier{background:rgba(37,99,235,.12);color:#1d4ed8}
+.source-badge.reserve{background:rgba(245,158,11,.18);color:#92400e}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 0}
+.modal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:14px;font-weight:700;color:var(--navy)}
+.modal-close{width:30px;height:30px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);cursor:pointer;font-size:13px;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.modal-body{overflow-y:auto;flex:1;padding:16px}
+.modal-footer{padding:14px 16px;border-top:1px solid var(--border);flex-shrink:0}
+.btn-modal-close{width:100%;background:var(--navy);color:#fff;border:none;border-radius:var(--r-sm);padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+
+/* Modal detail */
+.detail-hero{background:linear-gradient(135deg,#b71c1c,var(--danger));border-radius:var(--r);padding:20px;color:#fff;margin-bottom:12px;text-align:center}
+.detail-amount{font-size:36px;font-weight:700}
+.detail-date{font-size:12px;opacity:.7;margin-top:4px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.detail-cell{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px}
+.detail-cell-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px}
+.detail-cell-val{font-size:13px;font-weight:700;color:var(--text)}
+.detail-item-box{background:var(--danger-bg);border-left:3px solid var(--danger);border-radius:var(--r-sm);padding:12px;margin-bottom:10px;font-size:13px;color:var(--text);font-style:italic;line-height:1.5}
+.detail-img{width:100%;border-radius:var(--r-sm);border:2px solid var(--border);object-fit:contain;max-height:250px;margin-top:8px}
+
+/* ══ BOTTOM NAV ══ */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:60px;padding-bottom:env(safe-area-inset-bottom);background:#fff;border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -2px 12px rgba(26,43,94,.08)}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;font-family:inherit;color:var(--light);cursor:pointer;transition:all .15s;padding:5px 2px}
+.bnav-btn.active{color:var(--danger)}
+.bnav-btn:active{transform:scale(.9)}
+.bnav-btn.center-btn{position:relative;top:-12px}
+.center-inner{width:48px;height:48px;background:var(--danger);border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(229,57,53,.4);border:3px solid #f0f4f8}
+.bi{font-size:20px;line-height:1}
+.bl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;top:66px;left:50%;transform:translateX(-50%);z-index:500;border-radius:var(--r);padding:11px 20px;font-weight:700;font-size:13px;color:#fff;display:flex;align-items:center;gap:7px;box-shadow:var(--shadow-md);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:90vw}
+.toast.show{opacity:1}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+.toast.info{background:var(--navy)}
+
+/* ══ DESKTOP ══ */
+@media(min-width:640px){
+  body{padding-bottom:0}
+  .bottom-nav{display:none}
+  .tab-desktop{display:flex;gap:4px}
+  .tab-desktop .tab-btn{padding:7px 16px;border-radius:var(--r-sm);border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s}
+  .tab-desktop .tab-btn.active{background:var(--danger);color:#fff}
+  .tab-desktop .tab-btn:hover:not(.active){background:var(--danger-bg);color:var(--danger)}
+  .main{padding:24px 20px}
+  .modal-box{border-radius:var(--r);margin:auto}
+  .modal-overlay{align-items:center}
+  .charts-grid{grid-template-columns:1fr 1fr}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- 💰 Reserve Wallet Settings -->
+<div class="reserve-settings" id="reserve-settings" onclick="if(event.target===this)closeReserveSettings()">
+  <div class="reserve-settings-panel">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+      <div style="font-size:28px">💰</div>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--text)">กระเป๋าเงินสำรอง</div>
+        <div style="font-size:11px;color:var(--muted);font-weight:500">ตั้งค่ายอดเริ่มต้นและรอบการรีเซ็ต</div>
+      </div>
+    </div>
+    
+    <div style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">💵 ยอดเริ่มต้น (บาท)</label>
+      <input type="number" id="reserve-initial-input" value="1000" min="0" step="100" class="field-input" style="font-size:18px;font-weight:700">
+    </div>
+
+    <div style="margin-bottom:18px">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">📅 รอบการนับ</label>
+      <select id="reserve-cycle-input" class="field-input" style="font-size:13px">
+        <option value="month">รายเดือน (รีเซ็ตเดือนนี้)</option>
+        <option value="all">ตลอดเวลา (สะสมต่อเนื่อง)</option>
+      </select>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5">
+        💡 <strong>รายเดือน:</strong> นับเฉพาะที่หยิบในเดือนที่เลือก<br>
+        💡 <strong>ตลอดเวลา:</strong> นับสะสมทั้งหมดที่เคยหยิบจากสำรอง
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <button onclick="closeReserveSettings()" class="btn-secondary" style="flex:1;padding:11px;border:1px solid var(--border);background:var(--surface2);border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted)">ยกเลิก</button>
+      <button onclick="saveReserveSettings()" class="btn-submit" style="flex:1;padding:11px;font-size:13px">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- 💵 Top-up Modal — ตั้งเบิกเติมเงิน -->
+<div class="reserve-settings" id="topup-modal" onclick="if(event.target===this)closeTopupModal()">
+  <div class="reserve-settings-panel">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div style="font-size:28px">💵</div>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--text)">ตั้งเบิกเติมเงินสำรอง</div>
+        <div style="font-size:11px;color:var(--muted);font-weight:500">เติมจากแคชเชียร์เข้ากระเป๋าสำรอง</div>
+      </div>
+    </div>
+
+    <!-- Status snapshot -->
+    <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:12px;margin:14px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:11px;color:#92400e;font-weight:600">ยอดคงเหลือปัจจุบัน</span>
+        <span style="font-size:18px;font-weight:800;color:#7c2d12" id="topup-current">฿0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:#92400e;font-weight:600">ยอดเต็ม</span>
+        <span style="font-size:13px;font-weight:700;color:#92400e" id="topup-target">฿1,000</span>
+      </div>
+      <div style="height:1px;background:#fcd34d;margin:8px 0"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:#059669;font-weight:700">ต้องเติม</span>
+        <span style="font-size:20px;font-weight:900;color:#059669" id="topup-suggested">฿0</span>
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">💵 จำนวนเงินที่เติม (บาท)</label>
+      <input type="number" id="topup-amount-input" min="1" step="1" class="field-input" style="font-size:20px;font-weight:800;color:#059669;text-align:center" placeholder="0">
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button type="button" onclick="setTopupAmount('suggest')" style="flex:1;padding:6px;background:#dcfce7;color:#059669;border:none;border-radius:8px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">⚡ ตามที่ขาด</button>
+        <button type="button" onclick="setTopupAmount(500)" style="flex:1;padding:6px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">฿500</button>
+        <button type="button" onclick="setTopupAmount(1000)" style="flex:1;padding:6px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">฿1,000</button>
+        <button type="button" onclick="setTopupAmount(2000)" style="flex:1;padding:6px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">฿2,000</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">👤 ผู้เบิก</label>
+      <input type="text" id="topup-staff-input" placeholder="ระบุชื่อพนักงาน" class="field-input" style="font-size:14px">
+    </div>
+
+    <div style="margin-bottom:18px">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">📝 หมายเหตุ (ไม่บังคับ)</label>
+      <input type="text" id="topup-note-input" placeholder="เช่น เติมประจำเดือน, ใกล้หมด" class="field-input" style="font-size:13px">
+    </div>
+
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 12px;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start">
+      <span style="font-size:14px;flex-shrink:0">💡</span>
+      <div style="font-size:10px;color:#1e40af;line-height:1.6">
+        ระบบจะหักเงินจาก<strong>แคชเชียร์</strong> และเพิ่มเข้า<strong>กระเป๋าสำรอง</strong> โดยอัตโนมัติ — มีบันทึกประวัติทุกครั้ง
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <button onclick="closeTopupModal()" class="btn-secondary" style="flex:1;padding:11px;border:1px solid var(--border);background:var(--surface2);border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted)">ยกเลิก</button>
+      <button onclick="submitTopup()" id="topup-submit-btn" style="flex:2;padding:11px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 10px rgba(16,185,129,.3)">💵 ยืนยันเบิกเติมเงิน</button>
+    </div>
+  </div>
+</div>
+
+<!-- 📜 Top-up History Modal -->
+<div class="reserve-settings" id="topup-history" onclick="if(event.target===this)closeTopupHistory()">
+  <div class="reserve-settings-panel" style="max-width:420px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div style="font-size:28px">📜</div>
+      <div style="flex:1">
+        <div style="font-size:16px;font-weight:800;color:var(--text)">ประวัติการเติมเงิน</div>
+        <div style="font-size:11px;color:var(--muted);font-weight:500" id="topup-history-stat">ทั้งหมด 0 ครั้ง · ฿0</div>
+      </div>
+    </div>
+    
+    <div id="topup-history-list" class="topup-list">
+      <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">ยังไม่มีประวัติการเติมเงิน</div>
+    </div>
+
+    <button onclick="closeTopupHistory()" class="btn-secondary" style="width:100%;padding:11px;border:1px solid var(--border);background:var(--surface2);border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);margin-top:8px">ปิด</button>
+  </div>
+</div>
+
+<!-- 📊 Topup Dashboard Modal -->
+<div class="tu-dashboard" id="tu-dashboard" onclick="if(event.target===this)closeTopupDashboard()">
+  <div class="tu-dash-panel">
+    <div class="tu-dash-header">
+      <button class="tu-dash-close" onclick="closeTopupDashboard()">✕</button>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:24px">📊</div>
+        <div>
+          <div style="font-size:16px;font-weight:800">รายงานการเบิกเติมเงิน</div>
+          <div style="font-size:11px;opacity:.85;margin-top:1px" id="tu-dash-scope-label">เดือนปัจจุบัน</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tu-dash-body">
+      <!-- Filter -->
+      <div class="tu-filter">
+        <button class="tu-filter-btn" onclick="setTopupFilter('month')" id="tu-fbtn-month">📅 เดือนนี้</button>
+        <button class="tu-filter-btn" onclick="setTopupFilter('30d')" id="tu-fbtn-30d">30 วัน</button>
+        <button class="tu-filter-btn" onclick="setTopupFilter('all')" id="tu-fbtn-all">ทั้งหมด</button>
+        <button class="tu-filter-btn" onclick="toggleCustomRange()" id="tu-fbtn-custom">📆 กำหนดเอง</button>
+      </div>
+      
+      <!-- Custom date range (hidden by default) -->
+      <div id="tu-custom-range" style="display:none;background:var(--surface2);padding:10px;border-radius:10px;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px">ช่วงเวลา</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="date" id="tu-date-from" onchange="setTopupFilter('custom')">
+          <span style="color:var(--muted);font-size:11px">ถึง</span>
+          <input type="date" id="tu-date-to" onchange="setTopupFilter('custom')">
+        </div>
+      </div>
+
+      <!-- 4 KPI Cards -->
+      <div class="tu-kpi-grid">
+        <div class="tu-kpi amber">
+          <div class="tu-kpi-lbl">⏳ รออนุมัติ</div>
+          <div class="tu-kpi-val" id="tu-kpi-pending">฿0</div>
+          <div class="tu-kpi-sub" id="tu-kpi-pending-sub">0 รายการ</div>
+        </div>
+        <div class="tu-kpi emerald">
+          <div class="tu-kpi-lbl">✅ อนุมัติแล้ว</div>
+          <div class="tu-kpi-val" id="tu-kpi-approved">฿0</div>
+          <div class="tu-kpi-sub" id="tu-kpi-approved-sub">0 ครั้ง</div>
+        </div>
+        <div class="tu-kpi red">
+          <div class="tu-kpi-lbl">❌ ปฏิเสธ</div>
+          <div class="tu-kpi-val" id="tu-kpi-rejected">฿0</div>
+          <div class="tu-kpi-sub" id="tu-kpi-rejected-sub">0 ครั้ง</div>
+        </div>
+        <div class="tu-kpi violet">
+          <div class="tu-kpi-lbl">📊 เฉลี่ย/ครั้ง</div>
+          <div class="tu-kpi-val" id="tu-kpi-avg">฿0</div>
+          <div class="tu-kpi-sub" id="tu-kpi-avg-sub">avg approved</div>
+        </div>
+      </div>
+
+      <!-- Bar Chart 30 Days -->
+      <div class="tu-chart-wrap">
+        <div class="tu-chart-title">📈 แนวโน้มการเติมเงิน 30 วันย้อนหลัง</div>
+        <div class="tu-bar-chart" id="tu-bar-chart"></div>
+        <div class="tu-x-axis" id="tu-x-axis"></div>
+      </div>
+
+      <!-- Activity List -->
+      <div style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:800;color:var(--text)">📋 รายการทั้งหมด <span id="tu-activity-count" style="color:var(--muted);font-weight:600">(0)</span></div>
+          <select id="tu-status-filter" onchange="renderTopupDashboard()" style="font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);font-family:inherit">
+            <option value="all">ทั้งหมด</option>
+            <option value="PENDING">⏳ รออนุมัติ</option>
+            <option value="APPROVED">✅ อนุมัติ</option>
+            <option value="REJECTED">❌ ปฏิเสธ</option>
+          </select>
+        </div>
+        <div id="tu-activity-list" class="tu-activity"></div>
+      </div>
+
+      <!-- Owner vs User notice -->
+      <div id="tu-scope-notice" style="margin-top:12px;padding:8px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:10px;color:#1e40af;font-weight:600;display:flex;gap:6px;align-items:center">
+        <span>ℹ️</span>
+        <span id="tu-scope-text">กำลังแสดงรายการของคุณเท่านั้น</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-icon">🧾</div>
+    <div>
+      <div class="topbar-title">Expenses</div>
+      <div class="topbar-sub">บันทึกรายจ่าย</div>
+    </div>
+  </div>
+  <div class="tab-desktop">
+    <button class="tab-btn active" onclick="switchTab('entry',this)">📋 บันทึก</button>
+    <button class="tab-btn" onclick="switchTab('dashboard',this)">📊 สรุป</button>
+    <button class="tab-btn" onclick="switchTab('data',this)">🕐 ประวัติ</button>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <div id="user-badge" style="background:var(--surface2);padding:4px 10px;border-radius:12px;font-size:10px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:4px;cursor:pointer" onclick="showUserInfo()" title="แตะดู role">
+      <span id="user-badge-icon">👤</span>
+      <span id="user-badge-text">...</span>
+    </div>
+    <button class="btn-icon" onclick="fetchData()" title="ซิงค์">
+      <svg id="sync-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- 🔔 GLOBAL Approval Banner — เฉพาะ Owner เห็น (sticky บนทุก tab) -->
+  <div id="approval-panel" style="display:none;background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1.5px solid #dc2626;border-radius:16px;padding:16px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:20px">🔔</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:800;color:#991b1b">รายการรออนุมัติ</div>
+        <div style="font-size:10px;color:#dc2626;font-weight:600" id="approval-stat">0 รายการ · ฿0</div>
+      </div>
+    </div>
+    <div id="approval-list"></div>
+  </div>
+
+  <!-- ─── ENTRY ─── -->
+  <div class="section active" id="section-entry">
+    <div class="section-header">
+      <div class="section-title">บันทึกรายจ่าย</div>
+      <div class="section-sub">Daily Expense Entry</div>
+    </div>
+
+    <form id="expenseForm" onsubmit="handleSubmit(event)">
+
+      <!-- Amount Hero -->
+      <div class="amount-hero">
+        <div>
+          <div class="ah-label">💰 จำนวนเงิน (บาท)</div>
+          <div class="ah-amount">
+            <span class="sym">฿</span>
+            <input type="number" step="0.01" id="form-amount" required placeholder="0.00"
+              style="background:transparent;border:none;font-family:inherit;font-size:28px;font-weight:700;color:#fff;width:160px;outline:none;-webkit-appearance:none"
+              oninput="updateAmountDisplay()">
+          </div>
+        </div>
+        <div class="ah-date">
+          <div class="ah-label">📅 วันที่</div>
+          <input type="date" id="form-date" required>
+        </div>
+      </div>
+
+      <!-- Main Form -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-icon">📝</div>รายละเอียดรายจ่าย</div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="field-group">
+              <label class="field-label">🏷️ หมวดหมู่</label>
+              <select id="form-category" required onchange="handleCategoryChange(this)" class="field-input"></select>
+            </div>
+            <div class="field-group">
+              <label class="field-label">📝 รายการที่จ่าย</label>
+              <input type="text" id="form-item" required placeholder="เช่น ค่าแก๊ส, ซ่อมเครื่อง" class="field-input">
+            </div>
+          </div>
+
+          <!-- New Category Box -->
+          <div class="new-cat-box" id="new-category-container">
+            <input type="text" id="new-category-input" placeholder="พิมพ์หมวดหมู่ใหม่..." class="new-cat-input">
+            <button type="button" onclick="addNewCategory()" class="btn-add-cat">➕ เพิ่ม</button>
+          </div>
+
+          <div class="field-group" style="margin-top:12px">
+            <label class="field-label">💵 แหล่งเบิกจ่าย</label>
+            <div class="source-picker">
+              <label class="source-opt active" data-source="cashier">
+                <input type="radio" name="form-source" value="cashier" checked>
+                <div class="source-content">
+                  <div class="source-icon">🏪</div>
+                  <div class="source-text">
+                    <div class="source-name">แคชเชียร์</div>
+                    <div class="source-sub">เงินสดหน้าร้าน</div>
+                  </div>
+                </div>
+              </label>
+              <label class="source-opt" data-source="reserve">
+                <input type="radio" name="form-source" value="reserve">
+                <div class="source-content">
+                  <div class="source-icon">💰</div>
+                  <div class="source-text">
+                    <div class="source-name">กระเป๋าสำรอง</div>
+                    <div class="source-sub" id="reserve-remaining-hint">คงเหลือ ฿1,000</div>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="field-group" style="margin-top:12px">
+            <label class="field-label">👤 ผู้บันทึก</label>
+            <input type="text" id="form-staff" required placeholder="ระบุชื่อพนักงาน" class="field-input">
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Upload -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-icon">📸</div>สแกนใบเสร็จ (ไม่บังคับ)</div>
+        </div>
+        <div class="card-body">
+          <div onclick="document.getElementById('form-image').click()">
+            <div class="upload-zone" id="upload-placeholder">
+              <div class="uz-icon">📷</div>
+              <div class="uz-label">แตะเพื่อถ่ายรูป / อัพโหลด</div>
+            </div>
+            <img id="img-preview" class="img-preview">
+            <input type="file" id="form-image" accept="image/*" capture="environment" class=""
+              style="display:none" onchange="handleImage(this)">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" id="submit-btn" class="btn-submit">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        ยืนยันบันทึกรายจ่าย
+      </button>
+    </form>
+  </div>
+
+  <!-- ─── DASHBOARD ─── -->
+  <div class="section" id="section-dashboard">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap">
+      <div class="section-header" style="margin-bottom:0">
+        <div class="section-title">สรุปรายจ่าย</div>
+        <div class="section-sub">Monthly Insights</div>
+      </div>
+      <input type="month" id="month-filter" onchange="updateDashboard()" class="month-select">
+    </div>
+
+    <!-- 💰 Reserve Wallet Card -->
+    <div class="reserve-card">
+      <div class="reserve-header">
+        <span style="font-size:18px">💰</span>
+        <div style="flex:1">
+          <div class="reserve-title">กระเป๋าเงินสำรอง</div>
+          <div style="font-size:10px;color:#a16207;font-weight:600;margin-top:2px" id="reserve-cycle-label">รอบ: รายเดือน</div>
+        </div>
+        <span id="pending-badge" style="display:none;background:#dc2626;color:#fff;font-size:10px;font-weight:800;padding:3px 8px;border-radius:10px;animation:pulse 2s infinite">🔔 <span id="pending-count">0</span></span>
+      </div>
+      <div class="reserve-amount-row">
+        <span class="reserve-amount" id="reserve-remaining">฿1,000</span>
+        <span class="reserve-currency">/ ฿<span id="reserve-initial">1,000</span></span>
+      </div>
+      <div class="reserve-progress">
+        <div class="reserve-progress-bar high" id="reserve-progress-bar" style="width:100%"></div>
+      </div>
+      <div class="reserve-stats" style="margin-bottom:12px">
+        <span>📤 หยิบไปแล้ว <strong id="reserve-spent">฿0</strong></span>
+        <span>💵 เติมแล้ว <strong id="reserve-topup">฿0</strong></span>
+        <span>📋 <strong id="reserve-count">0</strong> รายการ</span>
+      </div>
+      
+      <!-- Action buttons -->
+      <div class="reserve-actions">
+        <button onclick="openTopupModal()" class="reserve-btn reserve-btn-primary">
+          <span style="font-size:16px">💵</span>
+          <span>เบิกเติมเงิน</span>
+        </button>
+        <button onclick="openTopupHistory()" class="reserve-btn reserve-btn-secondary" title="ประวัติการเติม">
+          <span style="font-size:16px">📜</span>
+        </button>
+        <button onclick="openReserveSettings()" class="reserve-btn reserve-btn-secondary" title="ตั้งค่า">
+          <span style="font-size:16px">⚙️</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 📊 Topup Summary Card -->
+    <div class="topup-summary-card" onclick="openTopupDashboard()">
+      <div class="tsc-header">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:20px">📊</span>
+          <div>
+            <div class="tsc-title">รายงานการเบิกเติมเงิน</div>
+            <div class="tsc-sub" id="tsc-sub">กดเพื่อดูรายงานเต็ม</div>
+          </div>
+        </div>
+        <span style="font-size:18px;color:var(--muted)">›</span>
+      </div>
+      <div class="tsc-stats">
+        <div class="tsc-stat">
+          <div class="tsc-stat-icon" style="background:#fef3c7;color:#92400e">⏳</div>
+          <div>
+            <div class="tsc-stat-val" id="tsc-pending-count">0</div>
+            <div class="tsc-stat-lbl">รออนุมัติ</div>
+          </div>
+        </div>
+        <div class="tsc-stat">
+          <div class="tsc-stat-icon" style="background:#d1fae5;color:#065f46">✅</div>
+          <div>
+            <div class="tsc-stat-val" id="tsc-approved-count">0</div>
+            <div class="tsc-stat-lbl">อนุมัติ</div>
+          </div>
+        </div>
+        <div class="tsc-stat">
+          <div class="tsc-stat-icon" style="background:#fee2e2;color:#991b1b">❌</div>
+          <div>
+            <div class="tsc-stat-val" id="tsc-rejected-count">0</div>
+            <div class="tsc-stat-lbl">ปฏิเสธ</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi red">
+        <div class="kpi-label">ยอดรวมเดือนนี้</div>
+        <div class="kpi-value red" id="stat-total-month">฿0</div>
+      </div>
+      <div class="kpi blue">
+        <div class="kpi-label">เฉลี่ยต่อรายการ</div>
+        <div class="kpi-value blue" id="stat-avg-month">฿0</div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-box">
+        <div class="chart-box-title">🍩 สัดส่วนตามหมวดหมู่</div>
+        <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-box-title">📈 แนวโน้มรายจ่าย</div>
+        <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── DATA / LOGS ─── -->
+  <div class="section" id="section-data">
+    <div class="section-header">
+      <div class="section-title">ประวัติรายจ่าย</div>
+      <div class="section-sub">Audit Logs</div>
+    </div>
+    <div class="card" style="padding:0">
+      <div id="logs-body"></div>
+    </div>
+  </div>
+
+</div><!-- end main -->
+
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="bottom-nav">
+  <button class="bnav-btn" id="m-tab-dashboard" onclick="switchTab('dashboard',this)">
+    <div class="bi">📊</div><div class="bl">สรุป</div>
+  </button>
+  <button class="bnav-btn center-btn active" id="m-tab-entry" onclick="switchTab('entry',this)">
+    <div class="center-inner">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="bl" style="margin-top:4px">บันทึก</div>
+  </button>
+  <button class="bnav-btn" id="m-tab-data" onclick="switchTab('data',this)">
+    <div class="bi">🕐</div><div class="bl">ประวัติ</div>
+  </button>
+</nav>
+
+<!-- ══ MODAL ══ -->
+<div class="modal-overlay" id="modal" onclick="closeModalCheck(event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">รายละเอียดรายจ่าย</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-content"></div>
+    <div class="modal-footer">
+      <button class="btn-modal-close" onclick="closeModal()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const IMGBB_API_KEY = '412005bc434fd396c0f0163133dfa205';
+// ⚠️ ใช้ Master_Backend URL (HR Management System project) — มี SAVE_TOPUP + SAVE_EXPENSE ใหม่
+const WRITE_URL = 'https://script.google.com/macros/s/AKfycbxvProkNuSUhJSGgO2M94x_ybX_S-9ZtRx75RsBKIMQgmuSw23P_-7z8XPAflKMq6XR9g/exec';
+const SHEET_ID = '1aTkdKkfMXkKutMuVJBew4k5PfPoIkQsr6pmtUAQtPlE';
+const READ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Expenses`;
+const TOPUP_READ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Topup_Records`;
+
+let expenseData = [], trendChart = null, categoryChart = null, rawImageFile = null;
+let userCats = JSON.parse(localStorage.getItem('exp_premium_cats_v2')) || ["ค่าวัตถุดิบ","ค่าเช่าที่","ค่าน้ำไฟ","ค่าแรง","อื่นๆ"];
+
+// 👤 อ่าน user info จาก localStorage (ตั้งโดย Owner Dashboard / Login)
+//    Fallback: ถ้าอยู่ใน iframe ลองอ่านจาก parent window ด้วย
+function getCurrentUser() {
+  // 1) ลองอ่านจาก localStorage ของตัวเอง (รองรับหลาย key naming convention)
+  const ls = localStorage;
+  const allKeys = ['user_name','userName','staff_name','staffName'];
+  const nickKeys = ['user_nickname','userNick','nickname','user_nick'];
+  const roleKeys = ['user_role','userRole','role','user_position','position'];
+  const idKeys = ['user_id','userId','staff_id','staffId','emp_id'];
+  
+  const readFrom = (storage) => {
+    const tryGet = (keys) => {
+      for (const k of keys) {
+        const v = storage.getItem(k);
+        if (v) return v;
+      }
+      return '';
+    };
+    return {
+      name: tryGet(allKeys),
+      nickname: tryGet(nickKeys),
+      role: tryGet(roleKeys).toLowerCase().trim(),
+      id: tryGet(idKeys)
+    };
+  };
+  
+  let info = readFrom(ls);
+  
+  // 2) ถ้าไม่เจอ role ลองอ่านจาก parent window (กรณีอยู่ใน iframe)
+  if (!info.role) {
+    try {
+      const pls = window.parent && window.parent !== window ? window.parent.localStorage : null;
+      if (pls) {
+        const pinfo = readFrom(pls);
+        if (!info.name)     info.name = pinfo.name;
+        if (!info.nickname) info.nickname = pinfo.nickname;
+        if (!info.role)     info.role = pinfo.role;
+        if (!info.id)       info.id = pinfo.id;
+      }
+    } catch(e) { /* cross-origin → ignore */ }
+  }
+  
+  // 3) Dev override — ?role=owner ใน URL เพื่อทดสอบ
+  try {
+    const urlRole = new URLSearchParams(window.location.search).get('role');
+    if (urlRole) info.role = urlRole.toLowerCase().trim();
+  } catch(e) {}
+  
+  return info;
+}
+function isOwner() { 
+  const r = getCurrentUser().role;
+  return r === 'owner' || r === 'เจ้าของ' || r === 'เจ้าของร้าน'; 
+}
+
+// 🐛 Debug helper — เรียกใน console: window.debugUser()
+window.debugUser = () => {
+  const u = getCurrentUser();
+  console.table(u);
+  console.log('isOwner():', isOwner());
+  console.log('--- localStorage (this iframe) ---');
+  Object.keys(localStorage).forEach(k => console.log('  '+k+' = '+localStorage.getItem(k)));
+  try {
+    if (window.parent && window.parent !== window) {
+      console.log('--- localStorage (parent) ---');
+      Object.keys(window.parent.localStorage).forEach(k => console.log('  '+k+' = '+window.parent.localStorage.getItem(k)));
+    }
+  } catch(e) { console.log('parent localStorage: cross-origin'); }
+  return u;
+};
+
+// 🆘 Force ให้เป็น Owner ชั่วคราว (สำหรับทดสอบ)
+window.forceOwner = (nickname = 'Owner') => {
+  localStorage.setItem('user_role', 'owner');
+  localStorage.setItem('user_nickname', nickname);
+  console.log('✅ Set role=owner — reloading...');
+  location.reload();
+};
+
+const CAT_COLORS = ['#e53935','#2979d4','#00897b','#f57c00','#7c3aed','#0288d1','#558b2f','#ad1457','#5d4037','#37474f'];
+
+window.onload = () => {
+  document.getElementById('form-date').value = new Date().toLocaleDateString('en-CA');
+  document.getElementById('month-filter').value = new Date().toISOString().substring(0,7);
+  renderCategoryDropdown();
+  setupSourcePicker();
+  updateUserBadge();
+  updateReserveUI();
+  fetchData();
+  checkBackendVersion();  // 🏓 เช็คว่า backend deploy ใหม่หรือยัง
+};
+
+// 🏓 เช็ค backend version + features
+async function checkBackendVersion() {
+  try {
+    const res = await fetch(`${WRITE_URL}?action=PING&t=${Date.now()}`);
+    const data = await res.json();
+    console.log('[Backend PING]', data);
+    
+    const hasTopup = data && data.features && data.features.topup;
+    if (!hasTopup) {
+      // Backend เก่า — แสดง warning banner
+      showBackendWarning();
+    }
+  } catch(e) {
+    console.warn('[Backend PING] failed:', e.message);
+    showBackendWarning();
+  }
+}
+
+function showBackendWarning() {
+  const old = document.getElementById('backend-warning');
+  if (old) return;
+  const warn = document.createElement('div');
+  warn.id = 'backend-warning';
+  warn.style.cssText = 'background:linear-gradient(135deg,#fef2f2,#fee2e2);border:2px solid #dc2626;border-radius:12px;padding:14px 18px;margin-bottom:14px;color:#991b1b;font-size:13px;font-weight:600;display:flex;gap:10px;align-items:flex-start';
+  warn.innerHTML = `
+    <span style="font-size:22px;flex-shrink:0">⚠️</span>
+    <div style="flex:1">
+      <div style="font-weight:800;margin-bottom:4px;font-size:14px">Backend เก่ายังไม่อัปเดต!</div>
+      <div style="font-size:11px;line-height:1.6;color:#7c2d12">
+        ฟีเจอร์ <strong>แหล่งเบิกจ่าย / เบิกเติมเงิน / อนุมัติ</strong> จะไม่ทำงานจนกว่าจะ deploy Master_Backend.gs ใหม่<br>
+        วิธีแก้: Apps Script → Manage deployments → ✏️ → New version → Deploy
+      </div>
+    </div>
+  `;
+  const main = document.querySelector('.main');
+  if (main) main.insertBefore(warn, main.firstChild);
+}
+
+// 👤 แสดง user badge ใน topbar
+function updateUserBadge() {
+  const u = getCurrentUser();
+  const badge = document.getElementById('user-badge');
+  const icon = document.getElementById('user-badge-icon');
+  const text = document.getElementById('user-badge-text');
+  if (!badge || !icon || !text) return;
+  
+  const owner = isOwner();
+  if (owner) {
+    badge.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+    badge.style.color = '#fff';
+    icon.textContent = '👑';
+    text.textContent = (u.nickname || u.name || 'Owner') + ' • OWNER';
+  } else if (u.role) {
+    badge.style.background = 'var(--surface2)';
+    badge.style.color = 'var(--muted)';
+    icon.textContent = '👤';
+    text.textContent = (u.nickname || u.name || 'User') + ' • ' + u.role;
+  } else {
+    // ⚠️ ไม่มี role
+    badge.style.background = '#fef3c7';
+    badge.style.color = '#92400e';
+    icon.textContent = '⚠️';
+    text.textContent = 'ไม่พบ role — แตะดู';
+  }
+}
+
+// ℹ️ Show user info popup (สำหรับ debug)
+function showUserInfo() {
+  const u = getCurrentUser();
+  const msg = `👤 ข้อมูลผู้ใช้ปัจจุบัน\n\n` +
+    `ชื่อ: ${u.name || '—'}\n` +
+    `เล่น: ${u.nickname || '—'}\n` +
+    `Role: ${u.role || '⚠️ ไม่พบ'}\n` +
+    `ID: ${u.id || '—'}\n\n` +
+    `isOwner(): ${isOwner() ? '✅ ใช่' : '❌ ไม่ใช่'}\n\n` +
+    (!isOwner() ? `💡 ถ้าเป็น Owner แต่ระบบไม่เจอ role:\n   1) เปิด Console (F12) พิมพ์ forceOwner()\n   2) หรือเพิ่ม ?role=owner ใน URL` : '');
+  alert(msg);
+}
+window.updateUserBadge = updateUserBadge;
+window.showUserInfo = showUserInfo;
+
+function updateAmountDisplay() {} // placeholder for future use
+
+function renderCategoryDropdown() {
+  const s = document.getElementById('form-category');
+  let h = '<option value="">เลือกหมวดหมู่</option>';
+  userCats.forEach(c => h += `<option value="${c}">${c}</option>`);
+  h += '<option value="ADD_NEW">➕ เพิ่มหมวดหมู่ใหม่...</option>';
+  s.innerHTML = h;
+}
+
+function handleCategoryChange(s) {
+  const box = document.getElementById('new-category-container');
+  if (s.value === 'ADD_NEW') box.classList.add('open');
+  else box.classList.remove('open');
+}
+
+function addNewCategory() {
+  const n = document.getElementById('new-category-input').value.trim();
+  if (!n || userCats.includes(n)) return;
+  userCats.push(n);
+  localStorage.setItem('exp_premium_cats_v2', JSON.stringify(userCats));
+  renderCategoryDropdown();
+  document.getElementById('form-category').value = n;
+  document.getElementById('new-category-container').classList.remove('open');
+  document.getElementById('new-category-input').value = '';
+  showToast('เพิ่มหมวดหมู่ "'+n+'" แล้ว', 'success');
+}
+
+function handleImage(input) {
+  if (input.files && input.files[0]) {
+    rawImageFile = input.files[0];
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('img-preview');
+      preview.src = e.target.result;
+      preview.classList.add('show');
+      document.getElementById('upload-placeholder').style.display = 'none';
+      showToast('📸 อัพโหลดรูปสำเร็จ', 'success');
+    };
+    reader.readAsDataURL(rawImageFile);
+  }
+}
+
+async function fetchData() {
+  const icon = document.getElementById('sync-icon');
+  if (icon) icon.style.animation = 'spin .6s linear infinite';
+  try {
+    // 🔀 Parallel fetch: expenses + topups
+    const [expRes, topupRes] = await Promise.all([
+      fetch(`${READ_URL}&t=${Date.now()}`).then(r => r.text()),
+      fetch(`${TOPUP_READ_URL}&t=${Date.now()}`).then(r => r.text()).catch(() => '')  // ถ้ายังไม่มี sheet → string ว่าง
+    ]);
+    
+    // ── Parse Expenses ──
+    const rows = expRes.split(/\r?\n/).slice(1);
+    expenseData = rows.map((row, idx) => {
+      const c = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(v=>v.replace(/^"|"$/g,'')) || [];
+      if (c.length < 4) return null;
+      return {
+        id: idx,
+        date: c[0], item: c[1], category: c[2],
+        amount: parseFloat(String(c[3]).replace(/,/g,'')) || 0,
+        staff: c[4] || '-', 
+        img: c[5] || '-',
+        source: (c[6] || 'cashier').toLowerCase().trim() === 'reserve' ? 'reserve' : 'cashier'
+      };
+    }).filter(Boolean);
+    
+    // ── Parse Topup_Records ──
+    //   Schema (v2): [date, amount, staff, note, timestamp, status, approver, approved_at, reject_reason, request_id]
+    if (topupRes) {
+      const topupRows = topupRes.split(/\r?\n/).slice(1);
+      topupData = topupRows.map(row => {
+        const c = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(v=>v.replace(/^"|"$/g,'')) || [];
+        if (c.length < 2) return null;
+        return {
+          date:          c[0],
+          amount:        parseFloat(String(c[1]).replace(/,/g,'')) || 0,
+          staff:         c[2] || '-',
+          note:          c[3] || '-',
+          timestamp:     c[4] || '',
+          status:        (c[5] || 'APPROVED').toUpperCase().trim(),  // legacy = APPROVED
+          approver:      c[6] || '',
+          approved_at:   c[7] || '',
+          reject_reason: c[8] || '',
+          request_id:    c[9] || ''
+        };
+      }).filter(Boolean);
+    } else {
+      topupData = [];
+    }
+    
+    updateDashboard(); renderLogs();
+    updateReserveUI();
+    renderApprovalBadge();
+    updateTopupSummaryCard();  // 📊 อัปเดต Topup summary card
+    showToast('ซิงค์ข้อมูลสำเร็จ', 'success');
+  } catch(e) { 
+    console.error('[fetchData]', e);
+    showToast('ไม่สามารถโหลดข้อมูล', 'error'); 
+  }
+  if (icon) icon.style.animation = '';
+}
+
+function updateDashboard() {
+  const filter = document.getElementById('month-filter').value;
+  const filtered = expenseData.filter(d => d.date.startsWith(filter));
+  const total = filtered.reduce((s,d)=>s+d.amount, 0);
+  const avg = filtered.length ? total/filtered.length : 0;
+  document.getElementById('stat-total-month').innerText = '฿'+total.toLocaleString(undefined,{maximumFractionDigits:0});
+  document.getElementById('stat-avg-month').innerText = '฿'+avg.toLocaleString(undefined,{maximumFractionDigits:0});
+  
+  // 💰 Update reserve wallet UI ด้วย (ถ้าตั้ง cycle = month จะกรองตามเดือนที่เลือก)
+  updateReserveUI();
+  updateTopupSummaryCard();  // 📊 อัปเดต Topup card ตามเดือนที่เลือก
+
+  // Category chart (doughnut)
+  const cats = {};
+  filtered.forEach(d => cats[d.category] = (cats[d.category]||0) + d.amount);
+  if (categoryChart) categoryChart.destroy();
+  categoryChart = new Chart(document.getElementById('categoryChart'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(cats),
+      datasets: [{ data: Object.values(cats), backgroundColor: CAT_COLORS, borderWidth: 3, borderRadius: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position:'bottom', labels:{ boxWidth:8, font:{size:10,weight:'bold'}, color:'#5a7184' } } },
+      cutout: '72%'
+    }
+  });
+
+  // Trend chart (bar)
+  const daily = {};
+  filtered.forEach(d => daily[d.date] = (daily[d.date]||0) + d.amount);
+  const labels = Object.keys(daily).sort();
+  if (trendChart) trendChart.destroy();
+  trendChart = new Chart(document.getElementById('trendChart'), {
+    type: 'bar',
+    data: {
+      labels: labels.map(l => l.split('-')[2]),
+      datasets: [{ data: labels.map(l=>daily[l]), backgroundColor: 'rgba(229,57,53,.75)', borderRadius: 5, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero:true, grid:{color:'rgba(221,230,239,.5)'}, ticks:{callback:v=>'฿'+v.toLocaleString(),font:{size:9},color:'#92a8bb'} },
+        x: { grid:{display:false}, ticks:{font:{size:10},color:'#92a8bb'} }
+      },
+      plugins: { legend:{display:false} }
+    }
+  });
+}
+
+function renderLogs() {
+  const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const sorted = [...expenseData].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('logs-body').innerHTML = sorted.length === 0
+    ? '<div style="padding:32px;text-align:center;color:#92a8bb;font-size:13px">ยังไม่มีข้อมูล</div>'
+    : sorted.map(d => {
+      const parts = d.date.split('-');
+      const day = parts[2] || '—';
+      const mon = months[parseInt(parts[1])||0] || '';
+      const sourceLabel = d.source === 'reserve' 
+        ? '<span class="source-badge reserve">💰 สำรอง</span>' 
+        : '<span class="source-badge cashier">🏪 แคชเชียร์</span>';
+      return `<div class="log-item" onclick="viewDetail(${d.id})">
+        <div class="log-date-box"><div class="log-day">${day}</div><div class="log-mon">${mon}</div></div>
+        <div class="log-info">
+          <div class="log-item-name">${d.item} ${sourceLabel}</div>
+          <div class="log-cat">${d.category} · ${d.staff}</div>
+        </div>
+        <div class="log-amount">฿${d.amount.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+        <div class="log-arrow">›</div>
+      </div>`;
+    }).join('');
+}
+
+function viewDetail(id) {
+  const d = expenseData.find(x=>x.id===id); if (!d) return;
+  const fmt = n => '฿'+n.toLocaleString(undefined,{minimumFractionDigits:2});
+  document.getElementById('modal-content').innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-amount">${fmt(d.amount)}</div>
+      <div class="detail-date">📅 ${d.date.split('-').reverse().join('/')}</div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-cell">
+        <div class="detail-cell-label">หมวดหมู่</div>
+        <div class="detail-cell-val">${d.category}</div>
+      </div>
+      <div class="detail-cell">
+        <div class="detail-cell-label">ผู้บันทึก</div>
+        <div class="detail-cell-val">${d.staff}</div>
+      </div>
+      <div class="detail-cell" style="grid-column:1/-1">
+        <div class="detail-cell-label">แหล่งเบิกจ่าย</div>
+        <div class="detail-cell-val" style="font-size:13px">
+          ${d.source === 'reserve' 
+            ? '<span style="color:#b45309">💰 กระเป๋าสำรอง</span>' 
+            : '<span style="color:#1d4ed8">🏪 แคชเชียร์</span>'}
+        </div>
+      </div>
+    </div>
+    <div class="detail-item-box">"${d.item}"</div>
+    ${d.img && d.img !== '-' ? `
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">📸 หลักฐานใบเสร็จ <span style="font-size:10px;color:var(--blue);font-weight:600">— แตะรูปเพื่อขยาย</span></div>
+        <div style="position:relative;cursor:zoom-in" onclick="openLightbox('${d.img}')">
+          <img src="${d.img}" class="detail-img" style="display:block;width:100%;border-radius:12px">
+          <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;padding:6px 10px;border-radius:20px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;backdrop-filter:blur(4px)">
+            🔍 ขยาย
+          </div>
+        </div>
+      </div>` : ''}
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+// 🔍 Lightbox — แสดงรูปภาพขยายเต็มจอ + รองรับ pinch-to-zoom + drag
+function openLightbox(src) {
+  // ลบ lightbox เก่า (ถ้ามี)
+  const old = document.getElementById('lightbox');
+  if (old) old.remove();
+
+  const lb = document.createElement('div');
+  lb.id = 'lightbox';
+  lb.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);backdrop-filter:blur(8px);z-index:99999;display:flex;align-items:center;justify-content:center;animation:lbFadeIn .25s';
+  
+  lb.innerHTML = `
+    <!-- Close button -->
+    <button onclick="closeLightbox()" style="position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);z-index:2;transition:all .2s">
+      ✕
+    </button>
+    
+    <!-- Hint -->
+    <div style="position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;background:rgba(255,255,255,.1);color:#fff;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:600;backdrop-filter:blur(8px);display:flex;align-items:center;gap:6px">
+      <span style="opacity:.8">💡</span>
+      <span>แตะ 2 นิ้วเพื่อซูม / ลากเพื่อเลื่อน</span>
+    </div>
+    
+    <!-- Zoom controls -->
+    <div style="position:absolute;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:8px;background:rgba(255,255,255,.1);padding:8px;border-radius:32px;backdrop-filter:blur(12px);z-index:2">
+      <button onclick="lbZoom(-0.25)" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;font-weight:700;cursor:pointer">−</button>
+      <button onclick="lbReset()" style="padding:0 18px;height:44px;border-radius:24px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer">รีเซ็ต</button>
+      <button onclick="lbZoom(0.25)" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;font-weight:700;cursor:pointer">+</button>
+      <a href="${src}" target="_blank" download style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:18px;text-decoration:none;display:flex;align-items:center;justify-content:center;cursor:pointer" title="เปิดในแท็บใหม่">⤴</a>
+    </div>
+    
+    <!-- Image container (สำหรับ pan/zoom) -->
+    <div id="lb-container" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none">
+      <img id="lb-img" src="${src}" style="max-width:95vw;max-height:90vh;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);transform-origin:center center;transition:transform .2s ease-out;user-select:none;pointer-events:none" alt="receipt">
+    </div>
+  `;
+  
+  document.body.appendChild(lb);
+  
+  // ESC to close
+  lb._escHandler = (e) => { if (e.key === 'Escape') closeLightbox(); };
+  document.addEventListener('keydown', lb._escHandler);
+  
+  // Click backdrop to close
+  lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+  
+  // ── Pinch-to-zoom + Drag (touch & mouse) ──
+  setupLightboxGestures();
+}
+
+// State สำหรับ pan/zoom
+let _lbScale = 1, _lbTx = 0, _lbTy = 0;
+
+function applyLbTransform() {
+  const img = document.getElementById('lb-img');
+  if (!img) return;
+  img.style.transform = `translate(${_lbTx}px, ${_lbTy}px) scale(${_lbScale})`;
+}
+
+function lbZoom(delta) {
+  _lbScale = Math.max(0.5, Math.min(5, _lbScale + delta));
+  applyLbTransform();
+}
+
+function lbReset() {
+  _lbScale = 1; _lbTx = 0; _lbTy = 0;
+  applyLbTransform();
+}
+
+function closeLightbox() {
+  const lb = document.getElementById('lightbox');
+  if (!lb) return;
+  if (lb._escHandler) document.removeEventListener('keydown', lb._escHandler);
+  lb.style.animation = 'lbFadeOut .2s';
+  setTimeout(() => lb.remove(), 200);
+  _lbScale = 1; _lbTx = 0; _lbTy = 0;
+}
+
+function setupLightboxGestures() {
+  const container = document.getElementById('lb-container');
+  if (!container) return;
+  
+  let isDragging = false, dragStartX = 0, dragStartY = 0, startTx = 0, startTy = 0;
+  let initialPinchDist = 0, initialScale = 1;
+  
+  // Mouse drag
+  container.addEventListener('mousedown', e => {
+    if (_lbScale <= 1) return;
+    isDragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    startTx = _lbTx;
+    startTy = _lbTy;
+    container.style.cursor = 'grabbing';
+  });
+  document.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    _lbTx = startTx + (e.clientX - dragStartX);
+    _lbTy = startTy + (e.clientY - dragStartY);
+    applyLbTransform();
+  });
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    if (container) container.style.cursor = '';
+  });
+  
+  // Wheel zoom
+  container.addEventListener('wheel', e => {
+    e.preventDefault();
+    lbZoom(e.deltaY < 0 ? 0.15 : -0.15);
+  }, { passive: false });
+  
+  // Touch
+  container.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      // Pinch start
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      initialPinchDist = Math.hypot(dx, dy);
+      initialScale = _lbScale;
+    } else if (e.touches.length === 1 && _lbScale > 1) {
+      // Drag start
+      isDragging = true;
+      dragStartX = e.touches[0].clientX;
+      dragStartY = e.touches[0].clientY;
+      startTx = _lbTx;
+      startTy = _lbTy;
+    }
+  }, { passive: false });
+  
+  container.addEventListener('touchmove', e => {
+    if (e.touches.length === 2) {
+      // Pinch zoom
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      _lbScale = Math.max(0.5, Math.min(5, initialScale * (dist / initialPinchDist)));
+      applyLbTransform();
+    } else if (e.touches.length === 1 && isDragging) {
+      // Drag
+      e.preventDefault();
+      _lbTx = startTx + (e.touches[0].clientX - dragStartX);
+      _lbTy = startTy + (e.touches[0].clientY - dragStartY);
+      applyLbTransform();
+    }
+  }, { passive: false });
+  
+  container.addEventListener('touchend', () => { isDragging = false; });
+  
+  // Double-tap to zoom
+  let lastTap = 0;
+  container.addEventListener('touchend', e => {
+    const now = Date.now();
+    if (now - lastTap < 300 && e.touches.length === 0) {
+      // Double tap
+      if (_lbScale > 1) { lbReset(); } else { lbZoom(1); }
+    }
+    lastTap = now;
+  });
+}
+
+// Expose to global
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;
+window.lbZoom = lbZoom;
+window.lbReset = lbReset;
+
+function switchTab(id, btn) {
+  ['entry','dashboard','data'].forEach(t => {
+    document.getElementById('section-'+t)?.classList.remove('active');
+    document.getElementById('m-tab-'+t)?.classList.remove('active');
+  });
+  document.getElementById('section-'+id)?.classList.add('active');
+  document.getElementById('m-tab-'+id)?.classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  window.scrollTo(0,0);
+  if (id === 'dashboard') updateDashboard();
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModalCheck(e) { if (e.target.id==='modal') closeModal(); }
+
+async function handleSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+
+  let finalUrl = '-';
+  if (rawImageFile) {
+    const fd = new FormData(); fd.append('image', rawImageFile);
+    try {
+      const r = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,{method:'POST',body:fd});
+      const j = await r.json(); if (j.success) finalUrl = j.data.url;
+    } catch(err) { console.error('Upload error', err); }
+  }
+
+  const sourceRadio = document.querySelector('input[name="form-source"]:checked');
+  const source = sourceRadio ? sourceRadio.value : 'cashier';
+
+  const payload = {
+    action: 'SAVE_EXPENSE',
+    date:     document.getElementById('form-date').value,
+    item:     document.getElementById('form-item').value,
+    category: document.getElementById('form-category').value,
+    amount:   parseFloat(document.getElementById('form-amount').value),
+    staff:    document.getElementById('form-staff').value,
+    image:    finalUrl,
+    source:   source  // 💰 cashier หรือ reserve
+  };
+
+  try {
+    await fetch(WRITE_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)});
+    showToast('✅ บันทึกรายจ่ายสำเร็จ!', 'success');
+    document.getElementById('expenseForm').reset();
+    rawImageFile = null;
+    document.getElementById('img-preview').classList.remove('show');
+    document.getElementById('upload-placeholder').style.display = '';
+    document.getElementById('form-date').value = new Date().toLocaleDateString('en-CA');
+    renderCategoryDropdown();
+    // 💰 รีเซ็ต source picker กลับเป็น "แคชเชียร์" (default)
+    document.querySelectorAll('.source-opt').forEach(o => o.classList.remove('active'));
+    const cashierOpt = document.querySelector('.source-opt[data-source="cashier"]');
+    const cashierRadio = document.querySelector('input[name="form-source"][value="cashier"]');
+    if (cashierOpt) cashierOpt.classList.add('active');
+    if (cashierRadio) cashierRadio.checked = true;
+    setTimeout(()=>{ fetchData(); switchTab('dashboard'); btn.disabled=false; btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ยืนยันบันทึกรายจ่าย'; }, 1500);
+  } catch(err) {
+    showToast('❌ เกิดข้อผิดพลาด', 'error');
+    btn.disabled = false;
+    btn.textContent = 'ยืนยันบันทึกรายจ่าย';
+  }
+}
+
+function showToast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  setTimeout(()=>el.classList.remove('show'), 3500);
+}
+
+// ════════════════════════════════════════════════════════════
+//  💰 RESERVE WALLET (กระเป๋าเงินสำรอง)
+// ════════════════════════════════════════════════════════════
+
+// Settings เก็บใน localStorage (per device — ต่อมาอาจย้ายไป Settings sheet)
+const RESERVE_SETTINGS_KEY = 'or_reserve_settings_v1';
+
+function loadReserveSettings() {
+  try {
+    const raw = localStorage.getItem(RESERVE_SETTINGS_KEY);
+    if (!raw) return { initial: 1000, cycle: 'month' };
+    const s = JSON.parse(raw);
+    return {
+      initial: Number(s.initial) || 1000,
+      cycle:   s.cycle === 'all' ? 'all' : 'month'
+    };
+  } catch(e) { return { initial: 1000, cycle: 'month' }; }
+}
+
+function saveReserveSettingsObj(s) {
+  try { localStorage.setItem(RESERVE_SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
+}
+
+// คำนวณยอดสำรองคงเหลือ (จาก expenseData + topupData ที่โหลดอยู่)
+function calcReserveStats() {
+  const s = loadReserveSettings();
+  const monthFilter = document.getElementById('month-filter')?.value || new Date().toISOString().substring(0,7);
+  
+  // Filter expense ที่หยิบจาก reserve
+  const reserveExpenses = expenseData.filter(d => d.source === 'reserve');
+  
+  // ถ้า cycle = month → กรองเฉพาะเดือนที่เลือก
+  const expensesInScope = s.cycle === 'all'
+    ? reserveExpenses
+    : reserveExpenses.filter(d => String(d.date).startsWith(monthFilter));
+  
+  // ✅ นับเฉพาะ topup ที่ APPROVED แล้ว (PENDING ยังไม่บวก)
+  const approvedTopups = topupData.filter(t => (t.status||'APPROVED').toUpperCase() === 'APPROVED');
+  const topupsInScope = s.cycle === 'all'
+    ? approvedTopups
+    : approvedTopups.filter(t => String(t.date).startsWith(monthFilter));
+  
+  const spent = expensesInScope.reduce((sum, d) => sum + (d.amount || 0), 0);
+  const topupTotal = topupsInScope.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+  
+  // 💡 ยอดคงเหลือ = ยอดเริ่มต้น + ที่เติมมา - ที่หยิบไป
+  //   ตัวอย่าง: เริ่ม 1000 → ใช้ไป 800 → เติม 800 → คงเหลือ = 1000 + 800 - 800 = 1000
+  const remaining = Math.max(0, s.initial + topupTotal - spent);
+  
+  // Percent = remaining / (initial หรือ "เต็มถัง" ที่กำหนดไว้)
+  //   ใช้ initial เป็น "เต็มถัง" (ไม่ใช่ initial + topup) เพื่อให้ progress สมเหตุสมผล
+  //   ถ้า remaining > initial → cap ที่ 100% (เกินยอดเต็ม = OK เกินกว่าที่ตั้งไว้)
+  const fullAmount = s.initial;
+  const percent = fullAmount > 0 ? Math.min(100, (remaining / fullAmount) * 100) : 0;
+  
+  return {
+    initial: s.initial,
+    cycle: s.cycle,
+    spent,
+    topupTotal,
+    remaining,
+    percent,
+    count: expensesInScope.length,
+    topupCount: topupsInScope.length
+  };
+}
+
+// อัปเดต UI ของการ์ดสำรอง + hint ใน picker
+function updateReserveUI() {
+  const stats = calcReserveStats();
+  const fmt = n => '฿' + Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  
+  // Card on dashboard
+  const remEl = document.getElementById('reserve-remaining');
+  const iniEl = document.getElementById('reserve-initial');
+  const spentEl = document.getElementById('reserve-spent');
+  const topupEl = document.getElementById('reserve-topup');
+  const countEl = document.getElementById('reserve-count');
+  const barEl = document.getElementById('reserve-progress-bar');
+  const cycleEl = document.getElementById('reserve-cycle-label');
+  
+  if (remEl) remEl.textContent = fmt(stats.remaining);
+  if (iniEl) iniEl.textContent = stats.initial.toLocaleString();
+  if (spentEl) spentEl.textContent = fmt(stats.spent);
+  if (topupEl) topupEl.textContent = fmt(stats.topupTotal);
+  if (countEl) countEl.textContent = stats.count;
+  if (cycleEl) cycleEl.textContent = 'รอบ: ' + (stats.cycle === 'all' ? 'ตลอดเวลา' : 'รายเดือน');
+  
+  if (barEl) {
+    barEl.style.width = stats.percent + '%';
+    barEl.className = 'reserve-progress-bar ' + (stats.percent < 25 ? 'low' : stats.percent < 60 ? 'mid' : 'high');
+  }
+  
+  // Hint ใน form picker
+  const hintEl = document.getElementById('reserve-remaining-hint');
+  if (hintEl) {
+    if (stats.remaining <= 0) {
+      hintEl.textContent = '⚠️ หมดแล้ว';
+      hintEl.style.color = '#dc2626';
+    } else if (stats.percent < 25) {
+      hintEl.textContent = `⚠️ เหลือ ${fmt(stats.remaining)}`;
+      hintEl.style.color = '#ea580c';
+    } else {
+      hintEl.textContent = `คงเหลือ ${fmt(stats.remaining)}`;
+      hintEl.style.color = '';
+    }
+  }
+}
+
+function openReserveSettings() {
+  const s = loadReserveSettings();
+  document.getElementById('reserve-initial-input').value = s.initial;
+  document.getElementById('reserve-cycle-input').value = s.cycle;
+  document.getElementById('reserve-settings').classList.add('open');
+}
+
+function closeReserveSettings() {
+  document.getElementById('reserve-settings').classList.remove('open');
+}
+
+function saveReserveSettings() {
+  const initial = Math.max(0, Number(document.getElementById('reserve-initial-input').value) || 1000);
+  const cycle = document.getElementById('reserve-cycle-input').value;
+  saveReserveSettingsObj({ initial, cycle });
+  updateReserveUI();
+  closeReserveSettings();
+  showToast('✅ บันทึกการตั้งค่าสำเร็จ', 'success');
+}
+
+// Source picker — radio buttons UI feedback
+function setupSourcePicker() {
+  document.querySelectorAll('.source-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.source-opt').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      const radio = opt.querySelector('input[type=radio]');
+      if (radio) radio.checked = true;
+      
+      // ถ้าเลือก reserve และยอดเหลือ <= 0 → warn
+      if (radio.value === 'reserve') {
+        const stats = calcReserveStats();
+        if (stats.remaining <= 0) {
+          showToast('⚠️ กระเป๋าสำรองหมดแล้ว — เลือกแคชเชียร์แทน หรือเพิ่มยอดในการตั้งค่า', 'error');
+        }
+      }
+    });
+  });
+}
+
+// Expose to global
+window.openReserveSettings = openReserveSettings;
+window.closeReserveSettings = closeReserveSettings;
+window.saveReserveSettings = saveReserveSettings;
+
+// ════════════════════════════════════════════════════════════
+//  💵 TOP-UP RESERVE (ตั้งเบิกเติมเงิน)
+// ════════════════════════════════════════════════════════════
+//
+//  Flow:
+//    1. User กดปุ่ม "เบิกเติมเงิน" → openTopupModal()
+//    2. กรอกจำนวน + ผู้เบิก + หมายเหตุ
+//    3. submitTopup() → POST 1 ครั้ง สร้าง 2 records:
+//       (a) Expenses (cashier, "เติมกระเป๋าสำรอง", -amount)   ← จ่ายออกจากแคชเชียร์
+//       (b) Topup_Records (amount, staff, date)                ← บันทึกเข้า log การเติม
+//    4. calcReserveStats() จะนำ topupTotal มาบวกเข้ายอดสำรองโดยอัตโนมัติ
+//       remaining = initial + topupTotal - spent
+
+let topupData = [];  // [{date, amount, staff, note, timestamp}]
+
+function openTopupModal() {
+  const stats = calcReserveStats();
+  
+  // แสดง snapshot
+  const fmt = n => '฿' + Number(n).toLocaleString(undefined, {maximumFractionDigits:0});
+  document.getElementById('topup-current').textContent = fmt(stats.remaining);
+  document.getElementById('topup-target').textContent = fmt(stats.initial);
+  
+  // คำนวณยอดที่ขาด (target - remaining)
+  const suggested = Math.max(0, stats.initial - stats.remaining);
+  document.getElementById('topup-suggested').textContent = fmt(suggested);
+  
+  // เก็บค่าที่ขาดไว้ใน data attribute เพื่อใช้ใน setTopupAmount('suggest')
+  document.getElementById('topup-modal').dataset.suggested = suggested;
+  
+  // Pre-fill: จำนวนตามที่ขาด + ชื่อ user ปัจจุบัน
+  document.getElementById('topup-amount-input').value = suggested > 0 ? suggested : '';
+  const u = getCurrentUser();
+  document.getElementById('topup-staff-input').value = u.nickname || u.name || '';
+  document.getElementById('topup-note-input').value = '';
+  
+  document.getElementById('topup-modal').classList.add('open');
+}
+
+function closeTopupModal() {
+  document.getElementById('topup-modal').classList.remove('open');
+}
+
+function setTopupAmount(val) {
+  const input = document.getElementById('topup-amount-input');
+  if (val === 'suggest') {
+    const suggested = Number(document.getElementById('topup-modal').dataset.suggested) || 0;
+    input.value = suggested;
+  } else {
+    input.value = val;
+  }
+  input.focus();
+}
+
+async function submitTopup() {
+  const amount = Number(document.getElementById('topup-amount-input').value) || 0;
+  const staff = document.getElementById('topup-staff-input').value.trim();
+  const note = document.getElementById('topup-note-input').value.trim();
+  
+  // Validation
+  if (amount <= 0) {
+    showToast('⚠️ กรุณาระบุจำนวนเงินที่ต้องการเติม', 'error');
+    document.getElementById('topup-amount-input').focus();
+    return;
+  }
+  if (!staff) {
+    showToast('⚠️ กรุณาระบุชื่อผู้เบิก', 'error');
+    document.getElementById('topup-staff-input').focus();
+    return;
+  }
+  
+  // Confirm before submit
+  if (!confirm(`💵 ยืนยันเบิกเติมเงิน?\n\n• จำนวน: ฿${amount.toLocaleString()}\n• หักจาก: 🏪 แคชเชียร์\n• เข้าสู่: 💰 กระเป๋าสำรอง\n• ผู้เบิก: ${staff}\n\nกดตกลงเพื่อยืนยัน`)) return;
+  
+  const btn = document.getElementById('topup-submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ กำลังบันทึก...';
+  
+  const today = new Date().toLocaleDateString('en-CA');
+  const payload = {
+    action: 'SAVE_TOPUP',
+    date: today,
+    amount: amount,
+    staff: staff,
+    note: note || '-'
+  };
+  
+  try {
+    await fetch(WRITE_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)});
+    
+    // 🎬 Optimistic update — เพิ่มเป็น PENDING ทันที (ยังไม่บวกเข้ายอดสำรอง)
+    topupData.push({
+      date: today,
+      amount: amount,
+      staff: staff,
+      note: note || '-',
+      timestamp: new Date().toISOString(),
+      status: 'PENDING',
+      approver: '',
+      approved_at: '',
+      reject_reason: '',
+      request_id: 'TEMP-' + Date.now()  // จะถูกแทนที่ตอน fetchData()
+    });
+    
+    showToast(`📩 ส่งคำขอเรียบร้อย — รอ Owner อนุมัติ ฿${amount.toLocaleString()}`, 'success');
+    closeTopupModal();
+    updateReserveUI();
+    renderApprovalBadge();
+    
+    // Refresh from server หลัง 2 วินาที
+    setTimeout(() => fetchData(), 2000);
+  } catch(e) {
+    showToast('❌ เกิดข้อผิดพลาด', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '💵 ยืนยันเบิกเติมเงิน';
+  }
+}
+
+function openTopupHistory() {
+  renderTopupHistory();
+  document.getElementById('topup-history').classList.add('open');
+}
+
+function closeTopupHistory() {
+  document.getElementById('topup-history').classList.remove('open');
+}
+
+function renderTopupHistory() {
+  const stats = calcReserveStats();
+  
+  // กรองตาม cycle เหมือนกับ calcReserveStats
+  const monthFilter = document.getElementById('month-filter')?.value || new Date().toISOString().substring(0,7);
+  const inScope = stats.cycle === 'all'
+    ? topupData
+    : topupData.filter(t => String(t.date).startsWith(monthFilter));
+  
+  // Sort: ล่าสุดอยู่บน
+  const sorted = [...inScope].sort((a,b) => String(b.date).localeCompare(String(a.date)));
+  
+  const totalAmount = sorted.reduce((s,t) => s + (Number(t.amount)||0), 0);
+  const fmt = n => '฿' + Number(n).toLocaleString(undefined, {maximumFractionDigits:0});
+  
+  document.getElementById('topup-history-stat').textContent = 
+    `${sorted.length} ครั้ง · รวม ${fmt(totalAmount)}`;
+  
+  const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  
+  document.getElementById('topup-history-list').innerHTML = sorted.length === 0
+    ? '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">ยังไม่มีประวัติการเติมเงิน</div>'
+    : sorted.map(t => {
+      const parts = String(t.date).split('-');
+      const day = parts[2] || '—';
+      const mon = months[parseInt(parts[1])||0] || '';
+      const yr = parts[0] || '';
+      const status = (t.status || 'APPROVED').toUpperCase();
+      
+      // กำหนดสีและ icon ตามสถานะ
+      const statusConfig = {
+        'PENDING':  { badge: '⏳ รออนุมัติ',  cls: 'pending',  iconBg: 'rgba(245,158,11,.15)', iconColor: '#d97706', icon: '⏳' },
+        'APPROVED': { badge: '✅ อนุมัติแล้ว', cls: 'approved', iconBg: 'rgba(16,185,129,.15)', iconColor: '#059669', icon: '💵' },
+        'REJECTED': { badge: '❌ ปฏิเสธ',     cls: 'rejected', iconBg: 'rgba(220,38,38,.15)',  iconColor: '#dc2626', icon: '❌' }
+      };
+      const cfg = statusConfig[status] || statusConfig['APPROVED'];
+      const amtColor = status === 'REJECTED' ? 'color:#9ca3af;text-decoration:line-through' : (status === 'PENDING' ? 'color:#d97706' : 'color:#059669');
+      const sign = status === 'REJECTED' ? '' : '+';
+      
+      return `<div class="topup-item">
+        <div class="topup-item-icon" style="background:${cfg.iconBg};color:${cfg.iconColor}">${cfg.icon}</div>
+        <div class="topup-item-info">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <div class="topup-item-amount" style="${amtColor}">${sign}${fmt(t.amount)}</div>
+            <span class="tu-badge ${cfg.cls}">${cfg.badge}</span>
+          </div>
+          <div class="topup-item-meta">📅 ${day} ${mon} ${yr} · 👤 ${t.staff||'-'}</div>
+          ${t.note && t.note !== '-' ? `<div class="topup-item-note">📝 ${t.note}</div>` : ''}
+          ${status === 'APPROVED' && t.approver ? `<div class="topup-item-note" style="color:#059669">✅ อนุมัติโดย ${t.approver}</div>` : ''}
+          ${status === 'REJECTED' && t.reject_reason ? `<div class="topup-item-note" style="color:#dc2626">❌ ${t.reject_reason} (โดย ${t.approver||'-'})</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+}
+
+// Expose to global
+window.openTopupModal = openTopupModal;
+window.closeTopupModal = closeTopupModal;
+window.submitTopup = submitTopup;
+window.setTopupAmount = setTopupAmount;
+window.openTopupHistory = openTopupHistory;
+window.closeTopupHistory = closeTopupHistory;
+
+// ════════════════════════════════════════════════════════════
+//  🔔 APPROVAL WORKFLOW (Owner only)
+// ════════════════════════════════════════════════════════════
+
+function renderApprovalBadge() {
+  // หา PENDING requests (รออนุมัติ)
+  const pending = topupData.filter(t => (t.status||'').toUpperCase() === 'PENDING');
+  const badgeEl = document.getElementById('pending-badge');
+  const countEl = document.getElementById('pending-count');
+  const panel = document.getElementById('approval-panel');
+  
+  if (pending.length === 0) {
+    if (badgeEl) badgeEl.style.display = 'none';
+    if (panel) panel.style.display = 'none';
+    return;
+  }
+  
+  // มี pending — แสดง badge เฉพาะถ้าเป็น Owner
+  if (badgeEl) {
+    if (isOwner()) {
+      badgeEl.style.display = 'inline-flex';
+      if (countEl) countEl.textContent = pending.length;
+    } else {
+      badgeEl.style.display = 'none';
+    }
+  }
+  
+  // Approval panel — เฉพาะ Owner
+  if (panel) {
+    if (!isOwner()) {
+      panel.style.display = 'none';
+      return;
+    }
+    panel.style.display = 'block';
+    const totalAmt = pending.reduce((s,p)=>s + (Number(p.amount)||0), 0);
+    const fmt = n => '฿' + Number(n).toLocaleString(undefined, {maximumFractionDigits:0});
+    document.getElementById('approval-stat').textContent = 
+      `${pending.length} รายการ · รวม ${fmt(totalAmt)}`;
+    
+    // Sort: ล่าสุดอยู่บน
+    const sorted = [...pending].sort((a,b) => String(b.timestamp).localeCompare(String(a.timestamp)));
+    
+    const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    document.getElementById('approval-list').innerHTML = sorted.map(p => {
+      const parts = String(p.date).split('-');
+      const day = parts[2] || '—';
+      const mon = months[parseInt(parts[1])||0] || '';
+      const tsStr = p.timestamp ? String(p.timestamp).slice(11,16) : '';
+      return `<div class="approval-card">
+        <div class="approval-card-row">
+          <div class="approval-amount">+${fmt(p.amount)}</div>
+          <div class="approval-meta">
+            <div class="approval-staff">👤 ${p.staff || '-'}</div>
+            <div class="approval-info">📅 ${day} ${mon} ${tsStr ? '• '+tsStr : ''} ${p.note && p.note !== '-' ? '• '+p.note : ''}</div>
+          </div>
+        </div>
+        <div class="approval-actions">
+          <button class="btn-approve" onclick="approveTopup('${p.request_id}', ${p.amount})">
+            <span style="font-size:14px">✅</span>
+            <span>อนุมัติ</span>
+          </button>
+          <button class="btn-reject" onclick="rejectTopup('${p.request_id}', ${p.amount})">
+            <span style="font-size:14px">❌</span>
+            <span>ปฏิเสธ</span>
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+async function approveTopup(requestId, amount) {
+  if (!isOwner()) {
+    showToast('⛔ เฉพาะ Owner เท่านั้น', 'error');
+    return;
+  }
+  if (!requestId || String(requestId).startsWith('TEMP-')) {
+    showToast('⏳ ระบบยังไม่ sync — กรุณารอแล้วลองใหม่', 'error');
+    return;
+  }
+  if (!confirm(`✅ อนุมัติเบิกเติม ฿${Number(amount).toLocaleString()}?\n\nระบบจะหักจากแคชเชียร์ และเพิ่มเข้ากระเป๋าสำรองทันที`)) return;
+  
+  const u = getCurrentUser();
+  const payload = {
+    action: 'APPROVE_TOPUP',
+    requestId: requestId,
+    approver: u.nickname || u.name || 'Owner',
+    approverRole: u.role
+  };
+  
+  try {
+    await fetch(WRITE_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)});
+    
+    // 🎬 Optimistic — update status ใน topupData
+    const t = topupData.find(x => x.request_id === requestId);
+    if (t) {
+      t.status = 'APPROVED';
+      t.approver = u.nickname || u.name || 'Owner';
+      t.approved_at = new Date().toISOString();
+    }
+    
+    showToast(`✅ อนุมัติ ฿${Number(amount).toLocaleString()} สำเร็จ`, 'success');
+    updateReserveUI();
+    renderApprovalBadge();
+    
+    setTimeout(() => fetchData(), 2000);
+  } catch(e) {
+    showToast('❌ เกิดข้อผิดพลาด', 'error');
+  }
+}
+
+async function rejectTopup(requestId, amount) {
+  if (!isOwner()) {
+    showToast('⛔ เฉพาะ Owner เท่านั้น', 'error');
+    return;
+  }
+  if (!requestId || String(requestId).startsWith('TEMP-')) {
+    showToast('⏳ ระบบยังไม่ sync — กรุณารอแล้วลองใหม่', 'error');
+    return;
+  }
+  const reason = prompt(`❌ ปฏิเสธเบิกเติม ฿${Number(amount).toLocaleString()}\n\nกรุณาระบุเหตุผล:`, '');
+  if (reason === null) return;  // ยกเลิก
+  if (!reason.trim()) {
+    showToast('⚠️ ต้องระบุเหตุผลในการปฏิเสธ', 'error');
+    return;
+  }
+  
+  const u = getCurrentUser();
+  const payload = {
+    action: 'REJECT_TOPUP',
+    requestId: requestId,
+    approver: u.nickname || u.name || 'Owner',
+    approverRole: u.role,
+    reason: reason.trim()
+  };
+  
+  try {
+    await fetch(WRITE_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)});
+    
+    // 🎬 Optimistic
+    const t = topupData.find(x => x.request_id === requestId);
+    if (t) {
+      t.status = 'REJECTED';
+      t.approver = u.nickname || u.name || 'Owner';
+      t.approved_at = new Date().toISOString();
+      t.reject_reason = reason.trim();
+    }
+    
+    showToast(`❌ ปฏิเสธรายการ ฿${Number(amount).toLocaleString()}`, 'info');
+    renderApprovalBadge();
+    
+    setTimeout(() => fetchData(), 2000);
+  } catch(e) {
+    showToast('❌ เกิดข้อผิดพลาด', 'error');
+  }
+}
+
+window.approveTopup = approveTopup;
+window.rejectTopup = rejectTopup;
+window.renderApprovalBadge = renderApprovalBadge;
+
+// ════════════════════════════════════════════════════════════
+//  📊 TOPUP DASHBOARD
+// ════════════════════════════════════════════════════════════
+
+let _topupFilter = { mode: 'month', from: null, to: null };
+
+function updateTopupSummaryCard() {
+  // ตัวการ์ดบน Dashboard ใช้ filter เดียวกับ month picker
+  const monthFilter = document.getElementById('month-filter')?.value || new Date().toISOString().substring(0,7);
+  const u = getCurrentUser();
+  const owner = isOwner();
+  
+  // Filter: ตัวคน + เดือน
+  const inScope = topupData.filter(t => {
+    if (!owner) {
+      // User เห็นเฉพาะของตัวเอง — match by nickname หรือ name
+      const myName = (u.nickname || u.name || '').trim().toLowerCase();
+      const tStaff = String(t.staff||'').trim().toLowerCase();
+      if (myName && tStaff !== myName) return false;
+    }
+    return String(t.date||'').startsWith(monthFilter);
+  });
+  
+  const pending = inScope.filter(t => (t.status||'').toUpperCase() === 'PENDING').length;
+  const approved = inScope.filter(t => (t.status||'').toUpperCase() === 'APPROVED').length;
+  const rejected = inScope.filter(t => (t.status||'').toUpperCase() === 'REJECTED').length;
+  
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setText('tsc-pending-count', pending);
+  setText('tsc-approved-count', approved);
+  setText('tsc-rejected-count', rejected);
+  
+  const sub = document.getElementById('tsc-sub');
+  if (sub) sub.textContent = owner ? 'ทั้งหมด • กดดูรายงาน' : 'ของคุณ • กดดูรายงาน';
+}
+
+function openTopupDashboard() {
+  // เริ่มต้น: ใช้ filter ตาม month picker
+  const monthFilter = document.getElementById('month-filter')?.value || new Date().toISOString().substring(0,7);
+  _topupFilter = { mode: 'month', monthValue: monthFilter, from: null, to: null };
+  
+  // กำหนด date range ของ custom-range = เดือนปัจจุบัน
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString('en-CA');
+  const lastDay = new Date(now.getFullYear(), now.getMonth()+1, 0).toLocaleDateString('en-CA');
+  document.getElementById('tu-date-from').value = firstDay;
+  document.getElementById('tu-date-to').value = lastDay;
+  
+  // ซ่อน custom range, active "เดือนนี้"
+  document.getElementById('tu-custom-range').style.display = 'none';
+  document.querySelectorAll('.tu-filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tu-fbtn-month').classList.add('active');
+  
+  document.getElementById('tu-dashboard').classList.add('open');
+  renderTopupDashboard();
+}
+
+function closeTopupDashboard() {
+  document.getElementById('tu-dashboard').classList.remove('open');
+}
+
+function setTopupFilter(mode) {
+  _topupFilter.mode = mode;
+  
+  // ซ่อน/แสดง custom-range
+  document.getElementById('tu-custom-range').style.display = mode === 'custom' ? 'block' : 'none';
+  
+  // Update active button
+  document.querySelectorAll('.tu-filter-btn').forEach(b => b.classList.remove('active'));
+  const btnId = mode === '30d' ? 'tu-fbtn-30d' : mode === 'all' ? 'tu-fbtn-all' : mode === 'custom' ? 'tu-fbtn-custom' : 'tu-fbtn-month';
+  document.getElementById(btnId).classList.add('active');
+  
+  // ถ้า custom — อ่านค่าจาก input
+  if (mode === 'custom') {
+    _topupFilter.from = document.getElementById('tu-date-from').value;
+    _topupFilter.to = document.getElementById('tu-date-to').value;
+  }
+  
+  renderTopupDashboard();
+}
+
+function toggleCustomRange() {
+  setTopupFilter('custom');
+}
+
+function getTopupFilteredData() {
+  const u = getCurrentUser();
+  const owner = isOwner();
+  
+  let inScope = topupData.slice();
+  
+  // 🔒 User-level filter — เห็นเฉพาะของตัวเองถ้าไม่ใช่ Owner
+  if (!owner) {
+    const myName = (u.nickname || u.name || '').trim().toLowerCase();
+    inScope = inScope.filter(t => {
+      const tStaff = String(t.staff||'').trim().toLowerCase();
+      return tStaff === myName;
+    });
+  }
+  
+  // 📅 Time filter
+  const mode = _topupFilter.mode;
+  if (mode === 'month') {
+    const mv = _topupFilter.monthValue || document.getElementById('month-filter')?.value || new Date().toISOString().substring(0,7);
+    inScope = inScope.filter(t => String(t.date||'').startsWith(mv));
+  } else if (mode === '30d') {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    const cutoffStr = cutoff.toLocaleDateString('en-CA');
+    inScope = inScope.filter(t => String(t.date||'') >= cutoffStr);
+  } else if (mode === 'custom') {
+    const from = _topupFilter.from || '';
+    const to = _topupFilter.to || '';
+    inScope = inScope.filter(t => {
+      const d = String(t.date||'').slice(0,10);
+      if (from && d < from) return false;
+      if (to && d > to) return false;
+      return true;
+    });
+  }
+  // mode === 'all' → ไม่ filter
+  
+  return inScope;
+}
+
+function renderTopupDashboard() {
+  const u = getCurrentUser();
+  const owner = isOwner();
+  const filtered = getTopupFilteredData();
+  
+  // ── Scope label ──
+  const scopeLabel = document.getElementById('tu-dash-scope-label');
+  const scopeText = document.getElementById('tu-scope-text');
+  let lbl = '';
+  if (_topupFilter.mode === 'month') {
+    const [y,m] = (_topupFilter.monthValue||'').split('-');
+    const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    lbl = (months[parseInt(m)]||'') + ' ' + y;
+  } else if (_topupFilter.mode === '30d') {
+    lbl = '30 วันย้อนหลัง';
+  } else if (_topupFilter.mode === 'all') {
+    lbl = 'ทั้งหมด';
+  } else {
+    lbl = (_topupFilter.from || '?') + ' → ' + (_topupFilter.to || '?');
+  }
+  if (scopeLabel) scopeLabel.textContent = lbl;
+  if (scopeText) scopeText.textContent = owner ? '👑 Owner — เห็นรายการของทุกคน' : '👤 แสดงรายการของคุณ ('+(u.nickname||u.name||'-')+') เท่านั้น';
+  
+  // ── KPI Cards ──
+  const fmt = n => '฿' + Number(n).toLocaleString(undefined, {maximumFractionDigits:0});
+  const pending = filtered.filter(t => (t.status||'').toUpperCase() === 'PENDING');
+  const approved = filtered.filter(t => (t.status||'').toUpperCase() === 'APPROVED');
+  const rejected = filtered.filter(t => (t.status||'').toUpperCase() === 'REJECTED');
+  
+  const sumAmt = arr => arr.reduce((s,t) => s + (Number(t.amount)||0), 0);
+  const pendingSum = sumAmt(pending);
+  const approvedSum = sumAmt(approved);
+  const rejectedSum = sumAmt(rejected);
+  const avgApproved = approved.length ? approvedSum / approved.length : 0;
+  
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setText('tu-kpi-pending', fmt(pendingSum));
+  setText('tu-kpi-pending-sub', pending.length + ' รายการ');
+  setText('tu-kpi-approved', fmt(approvedSum));
+  setText('tu-kpi-approved-sub', approved.length + ' ครั้ง');
+  setText('tu-kpi-rejected', fmt(rejectedSum));
+  setText('tu-kpi-rejected-sub', rejected.length + ' ครั้ง');
+  setText('tu-kpi-avg', fmt(avgApproved));
+  
+  // ── Bar Chart 30 days ──
+  // นับยอด topup ของแต่ละวัน (รวม PENDING + APPROVED + REJECTED แต่ใช้สีต่าง)
+  // ใช้ "ทั้งหมด" ของ scope ปัจจุบัน — ถ้าไม่ใช่ 30 วัน ก็แสดง 30 วันล่าสุดของ filtered
+  const today = new Date();
+  const days = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    days.push({
+      date: d.toLocaleDateString('en-CA'),
+      label: d.getDate(),
+      total: 0,
+      approved: 0,
+      rejected: 0,
+      pending: 0
+    });
+  }
+  
+  // ✏️ บันทึก: ใช้ filtered ปัจจุบัน — ถ้า user เลือก "ทั้งหมด" จะรวมข้อมูลเก่า ก็ filter เฉพาะ 30 วันออกมาแสดงใน chart
+  filtered.forEach(t => {
+    const dateKey = String(t.date||'').slice(0,10);
+    const day = days.find(d => d.date === dateKey);
+    if (day) {
+      const amt = Number(t.amount) || 0;
+      day.total += amt;
+      const st = (t.status||'').toUpperCase();
+      if (st === 'APPROVED') day.approved += amt;
+      else if (st === 'REJECTED') day.rejected += amt;
+      else day.pending += amt;
+    }
+  });
+  
+  // หา max เพื่อ scale bar
+  const maxVal = Math.max(1, ...days.map(d => d.total));
+  
+  const chartEl = document.getElementById('tu-bar-chart');
+  const xAxisEl = document.getElementById('tu-x-axis');
+  if (chartEl) {
+    chartEl.innerHTML = days.map(d => {
+      const h = (d.total / maxVal) * 100;
+      const isEmpty = d.total === 0;
+      const cls = isEmpty ? 'empty' : (d.rejected > d.approved ? 'rejected' : '');
+      const tip = isEmpty 
+        ? `${d.date}: ไม่มีรายการ` 
+        : `${d.date}: ฿${d.total.toLocaleString()} (✅${d.approved}, ⏳${d.pending}, ❌${d.rejected})`;
+      return `<div class="tu-bar ${cls}" style="height:${Math.max(2, h)}%" title="${tip}"></div>`;
+    }).join('');
+  }
+  if (xAxisEl) {
+    // แสดง label ทุก 5 วัน
+    xAxisEl.innerHTML = days.map((d, i) => 
+      (i % 5 === 0 || i === days.length-1) ? `<span>${d.label}</span>` : '<span></span>'
+    ).join('');
+  }
+  
+  // ── Activity List ──
+  const statusFilterEl = document.getElementById('tu-status-filter');
+  const statusFilter = statusFilterEl ? statusFilterEl.value : 'all';
+  let activityList = filtered;
+  if (statusFilter !== 'all') {
+    activityList = filtered.filter(t => (t.status||'').toUpperCase() === statusFilter);
+  }
+  
+  // Sort: ล่าสุดบนสุด (by timestamp ถ้ามี, ไม่งั้น date)
+  activityList = activityList.slice().sort((a,b) => {
+    const ta = String(a.timestamp || a.date || '');
+    const tb = String(b.timestamp || b.date || '');
+    return tb.localeCompare(ta);
+  });
+  
+  setText('tu-activity-count', '(' + activityList.length + ')');
+  
+  const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const listEl = document.getElementById('tu-activity-list');
+  if (listEl) {
+    if (activityList.length === 0) {
+      listEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">ไม่มีรายการในช่วงนี้</div>';
+    } else {
+      const statusConfig = {
+        'PENDING':  { iconBg: 'rgba(245,158,11,.15)', iconColor: '#d97706', icon: '⏳', color: '#d97706', sign: '+' },
+        'APPROVED': { iconBg: 'rgba(16,185,129,.15)', iconColor: '#059669', icon: '✅', color: '#059669', sign: '+' },
+        'REJECTED': { iconBg: 'rgba(220,38,38,.15)',  iconColor: '#dc2626', icon: '❌', color: '#9ca3af', sign: '' }
+      };
+      listEl.innerHTML = activityList.map(t => {
+        const parts = String(t.date||'').split('-');
+        const day = parts[2] || '—';
+        const mon = months[parseInt(parts[1])||0] || '';
+        const status = (t.status||'APPROVED').toUpperCase();
+        const cfg = statusConfig[status] || statusConfig.APPROVED;
+        const tStyle = status === 'REJECTED' ? 'text-decoration:line-through' : '';
+        const tsStr = t.timestamp ? String(t.timestamp).slice(11,16) : '';
+        return `<div class="tu-activity-item">
+          <div class="tu-act-icon" style="background:${cfg.iconBg};color:${cfg.iconColor}">${cfg.icon}</div>
+          <div class="tu-act-info">
+            <div class="tu-act-amt" style="color:${cfg.color};${tStyle}">${cfg.sign}${fmt(t.amount)}</div>
+            <div class="tu-act-meta">📅 ${day} ${mon} ${tsStr ? '• '+tsStr : ''} · 👤 ${t.staff||'-'}${t.approver ? ' · ✓ '+t.approver : ''}</div>
+            ${t.note && t.note !== '-' ? `<div class="tu-act-meta" style="color:#475569;margin-top:2px">📝 ${t.note}</div>` : ''}
+            ${status === 'REJECTED' && t.reject_reason ? `<div class="tu-act-reason">❌ ${t.reject_reason}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+}
+
+window.openTopupDashboard = openTopupDashboard;
+window.closeTopupDashboard = closeTopupDashboard;
+window.setTopupFilter = setTopupFilter;
+window.toggleCustomRange = toggleCustomRange;
+window.renderTopupDashboard = renderTopupDashboard;
+window.updateTopupSummaryCard = updateTopupSummaryCard;
+</script>
+</body>
+</html>
