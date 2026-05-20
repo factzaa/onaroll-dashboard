@@ -90,6 +90,38 @@ textarea.field-input{min-height:90px;resize:none;line-height:1.6}
 /* ══ DASHBOARD ══ */
 .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .kpi{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+
+/* 🆕 Secondary KPIs (smaller, with icon) */
+.kpi-secondary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.kpi-mini{background:#fff;border:1.5px solid var(--border);border-radius:var(--r);padding:12px;display:flex;gap:10px;align-items:center}
+.kpi-mini-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.kpi-mini-info{flex:1;min-width:0}
+.kpi-mini-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
+.kpi-mini-value{font-size:15px;font-weight:800;color:var(--text);line-height:1.1}
+.kpi-mini-sub{font-size:9px;color:var(--muted);margin-top:1px;font-weight:600}
+
+/* Payment Breakdown */
+.payment-breakdown{display:grid;grid-template-columns:1fr;gap:14px;align-items:center}
+@media(min-width:560px){.payment-breakdown{grid-template-columns:160px 1fr}}
+.payment-chart-wrap{position:relative;height:160px;display:flex;align-items:center;justify-content:center}
+.payment-list{display:flex;flex-direction:column;gap:6px}
+.payment-item{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--surface);border-radius:8px}
+.payment-item-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.payment-item-name{flex:1;font-size:12px;font-weight:600;color:var(--text)}
+.payment-item-val{font-size:12px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums}
+.payment-item-pct{font-size:10px;color:var(--muted);font-weight:600;margin-left:6px}
+
+/* Top Days List */
+.top-day-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.top-day-item:last-child{border-bottom:none}
+.top-day-rank{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#1e40af);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.top-day-rank.gold{background:linear-gradient(135deg,#fbbf24,#d97706)}
+.top-day-rank.silver{background:linear-gradient(135deg,#94a3b8,#475569)}
+.top-day-rank.bronze{background:linear-gradient(135deg,#fb923c,#c2410c)}
+.top-day-info{flex:1;min-width:0}
+.top-day-date{font-size:12px;font-weight:700;color:var(--text)}
+.top-day-meta{font-size:10px;color:var(--muted);margin-top:1px}
+.top-day-amt{font-size:14px;font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .kpi.blue::before{background:var(--blue)}
 .kpi.orange::before{background:var(--warn)}
@@ -185,6 +217,7 @@ textarea.field-input{min-height:90px;resize:none;line-height:1.6}
   .modal-overlay{align-items:center}
   .pay-grid{grid-template-columns:repeat(3,1fr)}
   .kpi-grid{grid-template-columns:repeat(4,1fr)}
+  .kpi-secondary-grid{grid-template-columns:repeat(4,1fr)}
 }
 </style>
 <link rel="manifest" href="manifest.json">
@@ -324,7 +357,7 @@ textarea.field-input{min-height:90px;resize:none;line-height:1.6}
       <input type="month" id="month-filter" onchange="updateDashboard()" class="month-select">
     </div>
 
-    <!-- KPI -->
+    <!-- KPI Primary (4 ใบเดิม) -->
     <div class="kpi-grid">
       <div class="kpi blue">
         <div class="kpi-label">ยอดสุทธิรวม</div>
@@ -344,13 +377,84 @@ textarea.field-input{min-height:90px;resize:none;line-height:1.6}
       </div>
     </div>
 
-    <!-- Chart -->
-    <div class="card">
+    <!-- 🆕 KPI Secondary — ส่วนลด, ยอดเงินออกหน้าเครื่อง, %บัตร, จำนวนวัน -->
+    <div class="kpi-secondary-grid">
+      <div class="kpi-mini" style="border-color:#fca5a5;background:linear-gradient(135deg,#fef2f2,#fee2e2)">
+        <div class="kpi-mini-icon" style="background:#fee2e2;color:#dc2626">🏷️</div>
+        <div class="kpi-mini-info">
+          <div class="kpi-mini-label">ส่วนลดรวม</div>
+          <div class="kpi-mini-value" style="color:#dc2626" id="stat-disc-total">฿0</div>
+          <div class="kpi-mini-sub" id="stat-disc-pct">0% ของยอด</div>
+        </div>
+      </div>
+      <div class="kpi-mini" style="border-color:#fcd34d;background:linear-gradient(135deg,#fffbeb,#fef3c7)">
+        <div class="kpi-mini-icon" style="background:#fef3c7;color:#d97706">💳</div>
+        <div class="kpi-mini-info">
+          <div class="kpi-mini-label">บัตร (Visa+Master)</div>
+          <div class="kpi-mini-value" style="color:#d97706" id="stat-card-total">฿0</div>
+          <div class="kpi-mini-sub" id="stat-card-pct">0% ของยอด</div>
+        </div>
+      </div>
+      <div class="kpi-mini" style="border-color:#6ee7b7;background:linear-gradient(135deg,#ecfdf5,#d1fae5)">
+        <div class="kpi-mini-icon" style="background:#d1fae5;color:#059669">🔄</div>
+        <div class="kpi-mini-info">
+          <div class="kpi-mini-label">โอนรวม</div>
+          <div class="kpi-mini-value" style="color:#059669" id="stat-trans-total">฿0</div>
+          <div class="kpi-mini-sub" id="stat-trans-pct">0% ของยอด</div>
+        </div>
+      </div>
+      <div class="kpi-mini" style="border-color:#c4b5fd;background:linear-gradient(135deg,#f5f3ff,#ede9fe)">
+        <div class="kpi-mini-icon" style="background:#ede9fe;color:#7c3aed">📊</div>
+        <div class="kpi-mini-info">
+          <div class="kpi-mini-label">ยอดเงินออกหน้าเครื่อง</div>
+          <div class="kpi-mini-value" style="color:#7c3aed" id="stat-cashout-total">฿0</div>
+          <div class="kpi-mini-sub" id="stat-cashout-sub">รวม diff</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🆕 Payment Method Breakdown (Donut + List) -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon">💰</div>สัดส่วนการรับเงิน</div>
+      </div>
+      <div class="card-body">
+        <div class="payment-breakdown">
+          <div class="payment-chart-wrap">
+            <canvas id="paymentChart"></canvas>
+          </div>
+          <div class="payment-list" id="payment-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- กราฟยอดขายรายวัน -->
+    <div class="card" style="margin-bottom:14px">
       <div class="card-header">
         <div class="card-title"><div class="card-icon">📈</div>กราฟยอดขายรายวัน</div>
       </div>
       <div class="card-body" style="padding-top:8px">
         <div style="height:220px"><canvas id="salesChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 🆕 Day of Week Performance -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon">📅</div>ยอดขายตามวันในสัปดาห์</div>
+      </div>
+      <div class="card-body">
+        <div style="height:200px"><canvas id="dowChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 🆕 Top 5 Days -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon">🏆</div>TOP 5 วันยอดขายสูงสุด</div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div id="top-days-list"></div>
       </div>
     </div>
 
@@ -479,23 +583,66 @@ async function fetchData() {
 function updateDashboard() {
   const filter = document.getElementById('month-filter').value;
   const filtered = salesData.filter(d => d.date.startsWith(filter));
-  const total = filtered.reduce((s,d)=>s+d.total,0);
-  const cash = filtered.reduce((s,d)=>s+d.cash,0);
-  const avg = filtered.length ? total/filtered.length : 0;
-  const dayFreq = {};
+  
+  // ── Sums ──
+  const sum = (key) => filtered.reduce((s,d) => s + (Number(d[key])||0), 0);
+  const total    = sum('total');
+  const cash     = sum('cash');
+  const trans    = sum('trans');
+  const visa     = sum('visa');
+  const master   = sum('master');
+  const others   = sum('others');
+  const disc     = sum('disc');
+  const cashOut  = sum('cash_out');
+  const card     = visa + master;
+  const avg      = filtered.length ? total/filtered.length : 0;
+  
+  // % helpers
+  const pct = (part) => total > 0 ? ((part/total)*100).toFixed(1) : '0';
+  
+  // ── Day of Week analysis ──
+  const dayFreq = {};      // sum by Thai day name
+  const dayCount = {};     // count of records per day
+  const fullDays = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
   filtered.forEach(d => {
-    const dayName = new Date(d.date).toLocaleDateString('th-TH',{weekday:'long'});
-    dayFreq[dayName] = (dayFreq[dayName]||0)+d.total;
+    const dayIdx = new Date(d.date).getDay();
+    const dayName = fullDays[dayIdx];
+    dayFreq[dayName] = (dayFreq[dayName]||0) + d.total;
+    dayCount[dayName] = (dayCount[dayName]||0) + 1;
   });
-  const peakDay = Object.keys(dayFreq).length ? Object.keys(dayFreq).reduce((a,b)=>dayFreq[a]>dayFreq[b]?a:b) : '—';
-  document.getElementById('stat-total-month').innerText = '฿'+total.toLocaleString(undefined,{maximumFractionDigits:0});
-  document.getElementById('stat-cash-month').innerText = '฿'+cash.toLocaleString(undefined,{maximumFractionDigits:0});
-  document.getElementById('stat-avg-month').innerText = '฿'+avg.toLocaleString(undefined,{maximumFractionDigits:0});
-  document.getElementById('stat-peak-day').innerText = peakDay;
+  // หา peak day from average (ไม่ใช่ sum) — ยุติธรรมกว่า
+  const dayAvg = {};
+  fullDays.forEach(dn => { 
+    dayAvg[dn] = dayCount[dn] ? dayFreq[dn]/dayCount[dn] : 0; 
+  });
+  const peakDay = filtered.length > 0 
+    ? fullDays.reduce((a,b) => dayAvg[a] > dayAvg[b] ? a : b)
+    : '—';
+  
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  const fmt = n => '฿' + Number(n).toLocaleString(undefined, {maximumFractionDigits:0});
+  
+  // ── Primary KPIs ──
+  setText('stat-total-month', fmt(total));
+  setText('stat-cash-month', fmt(cash));
+  setText('stat-avg-month', fmt(avg));
+  setText('stat-peak-day', peakDay);
+  
+  // ── Secondary KPIs ──
+  setText('stat-disc-total', fmt(disc));
+  setText('stat-disc-pct', pct(disc) + '% ของยอด');
+  setText('stat-card-total', fmt(card));
+  setText('stat-card-pct', pct(card) + '% ของยอด');
+  setText('stat-trans-total', fmt(trans));
+  setText('stat-trans-pct', pct(trans) + '% ของยอด');
+  setText('stat-cashout-total', fmt(cashOut));
+  setText('stat-cashout-sub', filtered.length + ' วัน');
 
-  const daily = {}; filtered.forEach(d => daily[d.date]=(daily[d.date]||0)+d.total);
+  // ── Daily line chart ──
+  const daily = {}; 
+  filtered.forEach(d => daily[d.date] = (daily[d.date]||0) + d.total);
   const labels = Object.keys(daily).sort();
-  if(salesChart) salesChart.destroy();
+  if (salesChart) salesChart.destroy();
   const ctx = document.getElementById('salesChart').getContext('2d');
   salesChart = new Chart(ctx, {
     type:'line',
@@ -515,6 +662,179 @@ function updateDashboard() {
       }
     }
   });
+  
+  // ── Payment Breakdown (Donut Chart) ──
+  renderPaymentBreakdown({ cash, trans, visa, master, others });
+  
+  // ── Day of Week Chart (Bar) ──
+  renderDayOfWeekChart(fullDays, dayFreq, dayCount);
+  
+  // ── Top 5 Days ──
+  renderTopDays(filtered);
+}
+
+// 💰 Donut chart for payment methods
+let paymentChart = null;
+function renderPaymentBreakdown(data) {
+  const { cash, trans, visa, master, others } = data;
+  const total = cash + trans + visa + master + others;
+  
+  const colors = {
+    cash:   { color: '#f97316', label: '💵 เงินสด' },
+    trans:  { color: '#10b981', label: '🔄 โอน' },
+    visa:   { color: '#1e40af', label: '💳 Visa' },
+    master: { color: '#dc2626', label: '💳 Master' },
+    others: { color: '#7c3aed', label: '✨ อื่นๆ' }
+  };
+  
+  const items = [
+    { key: 'cash',   value: cash },
+    { key: 'trans',  value: trans },
+    { key: 'visa',   value: visa },
+    { key: 'master', value: master },
+    { key: 'others', value: others }
+  ].filter(x => x.value > 0).sort((a,b) => b.value - a.value);
+  
+  // Donut
+  const canvas = document.getElementById('paymentChart');
+  if (canvas) {
+    if (paymentChart) paymentChart.destroy();
+    if (items.length === 0) {
+      canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+    } else {
+      paymentChart = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+          labels: items.map(x => colors[x.key].label),
+          datasets: [{
+            data: items.map(x => x.value),
+            backgroundColor: items.map(x => colors[x.key].color),
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { 
+              callbacks: { 
+                label: c => c.label + ': ฿' + c.parsed.toLocaleString() + ' (' + ((c.parsed/total)*100).toFixed(1) + '%)'
+              }
+            }
+          },
+          cutout: '60%'
+        }
+      });
+    }
+  }
+  
+  // List
+  const listEl = document.getElementById('payment-list');
+  if (listEl) {
+    if (items.length === 0) {
+      listEl.innerHTML = '<div style="padding:12px;text-align:center;color:var(--muted);font-size:11px">ไม่มีข้อมูล</div>';
+    } else {
+      const fmt = n => '฿' + Number(n).toLocaleString(undefined, {maximumFractionDigits:0});
+      listEl.innerHTML = items.map(x => {
+        const pct = total > 0 ? ((x.value/total)*100).toFixed(1) : '0';
+        return `<div class="payment-item">
+          <div class="payment-item-dot" style="background:${colors[x.key].color}"></div>
+          <div class="payment-item-name">${colors[x.key].label}</div>
+          <div class="payment-item-val">${fmt(x.value)}</div>
+          <div class="payment-item-pct">${pct}%</div>
+        </div>`;
+      }).join('');
+    }
+  }
+}
+
+// 📅 Day of Week Performance Bar Chart
+let dowChart = null;
+function renderDayOfWeekChart(dayNames, sumByDay, countByDay) {
+  const canvas = document.getElementById('dowChart');
+  if (!canvas) return;
+  if (dowChart) dowChart.destroy();
+  
+  const shortNames = ['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
+  const avgByDay = dayNames.map(dn => countByDay[dn] ? (sumByDay[dn]||0)/countByDay[dn] : 0);
+  const totalByDay = dayNames.map(dn => sumByDay[dn] || 0);
+  
+  // หา max เพื่อ highlight
+  const maxAvg = Math.max(...avgByDay, 0);
+  
+  dowChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: shortNames,
+      datasets: [{
+        label: 'เฉลี่ย/วัน',
+        data: avgByDay,
+        backgroundColor: avgByDay.map(v => v === maxAvg && v > 0 ? '#10b981' : '#3b82f6'),
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: c => {
+              const dn = dayNames[c.dataIndex];
+              const cnt = countByDay[dn] || 0;
+              const sum = sumByDay[dn] || 0;
+              return [
+                'เฉลี่ย: ฿' + c.parsed.y.toLocaleString(undefined,{maximumFractionDigits:0}),
+                'รวม: ฿' + sum.toLocaleString(undefined,{maximumFractionDigits:0}),
+                'จำนวน: ' + cnt + ' วัน'
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#92a8bb' } },
+        y: { grid: { color: 'rgba(221,230,239,.5)' }, ticks: { callback: v => '฿' + Number(v).toLocaleString(), font: { size: 10 }, color: '#92a8bb' } }
+      }
+    }
+  });
+}
+
+// 🏆 Top 5 Days
+function renderTopDays(filtered) {
+  const listEl = document.getElementById('top-days-list');
+  if (!listEl) return;
+  
+  const sorted = [...filtered].sort((a,b) => (b.total||0) - (a.total||0)).slice(0, 5);
+  
+  if (sorted.length === 0) {
+    listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">ไม่มีข้อมูลในเดือนนี้</div>';
+    return;
+  }
+  
+  const fmt = n => '฿' + Number(n).toLocaleString(undefined, {maximumFractionDigits:0});
+  const fullDays = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+  const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  
+  listEl.innerHTML = sorted.map((d, i) => {
+    const dt = new Date(d.date);
+    const dayName = fullDays[dt.getDay()];
+    const parts = String(d.date).split('-');
+    const day = parts[2] || '—';
+    const mon = months[parseInt(parts[1])||0] || '';
+    const rankCls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const cashPct = d.total > 0 ? ((d.cash/d.total)*100).toFixed(0) : 0;
+    return `<div class="top-day-item">
+      <div class="top-day-rank ${rankCls}">${i+1}</div>
+      <div class="top-day-info">
+        <div class="top-day-date">${parseInt(day)} ${mon} (${dayName})</div>
+        <div class="top-day-meta">💵 ${cashPct}% เงินสด · 👤 ${d.staff||'-'}</div>
+      </div>
+      <div class="top-day-amt">${fmt(d.total)}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderLogs() {
