@@ -197,8 +197,81 @@ select.field-input{cursor:pointer}
 .reserve-btn-secondary{flex:0 0 44px;background:rgba(146,64,14,.12);color:#7c2d12}
 .reserve-btn-secondary:hover{background:rgba(146,64,14,.2)}
 
-/* Topup History list */
+/* Topup Summary Card */
+.topup-summary-card{background:linear-gradient(135deg,#f5f3ff 0%,#ede9fe 100%);border:1.5px solid #c4b5fd;border-radius:14px;padding:14px 16px;margin-bottom:14px;cursor:pointer;transition:all .2s}
+.topup-summary-card:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(124,58,237,.15)}
+.tsc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.tsc-title{font-size:13px;font-weight:800;color:#5b21b6}
+.tsc-sub{font-size:10px;color:#7c3aed;font-weight:600;margin-top:1px}
+.tsc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tsc-stat{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.7);border-radius:10px;padding:8px 10px}
+.tsc-stat-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.tsc-stat-val{font-size:16px;font-weight:800;color:var(--text);line-height:1}
+.tsc-stat-lbl{font-size:9px;color:var(--muted);font-weight:600;margin-top:2px}
+
+/* Topup Dashboard Modal */
+.tu-dashboard{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:9998;display:none;align-items:flex-end;justify-content:center}
+.tu-dashboard.open{display:flex;animation:lbFadeIn .2s}
+.tu-dash-panel{background:var(--surface);border-radius:18px 18px 0 0;max-width:560px;width:100%;max-height:92vh;overflow-y:auto;padding:0;animation:slideUp .3s}
+@media(min-width:640px){.tu-dashboard{align-items:center}.tu-dash-panel{border-radius:18px;max-height:88vh}}
+.tu-dash-header{position:sticky;top:0;background:linear-gradient(135deg,#5b21b6 0%,#7c3aed 100%);color:#fff;padding:18px 20px;border-radius:18px 18px 0 0;z-index:1}
+@media(min-width:640px){.tu-dash-header{border-radius:18px 18px 0 0}}
+.tu-dash-body{padding:16px 18px 24px}
+.tu-dash-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer}
+
+/* KPI Grid (4-card) for dashboard */
+.tu-kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.tu-kpi{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px}
+.tu-kpi.amber{background:linear-gradient(135deg,#fffbeb,#fef3c7);border-color:#fcd34d}
+.tu-kpi.emerald{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#6ee7b7}
+.tu-kpi.red{background:linear-gradient(135deg,#fef2f2,#fee2e2);border-color:#fca5a5}
+.tu-kpi.violet{background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-color:#c4b5fd}
+.tu-kpi-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.tu-kpi.amber .tu-kpi-lbl{color:#92400e}
+.tu-kpi.emerald .tu-kpi-lbl{color:#065f46}
+.tu-kpi.red .tu-kpi-lbl{color:#991b1b}
+.tu-kpi.violet .tu-kpi-lbl{color:#5b21b6}
+.tu-kpi-val{font-size:18px;font-weight:900;color:var(--text)}
+.tu-kpi.amber .tu-kpi-val{color:#7c2d12}
+.tu-kpi.emerald .tu-kpi-val{color:#059669}
+.tu-kpi.red .tu-kpi-val{color:#dc2626}
+.tu-kpi.violet .tu-kpi-val{color:#5b21b6}
+.tu-kpi-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* Bar chart 30 days */
+.tu-chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px}
+.tu-chart-title{font-size:12px;font-weight:800;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.tu-bar-chart{display:flex;align-items:flex-end;gap:2px;height:100px;padding:0 2px}
+.tu-bar{flex:1;background:linear-gradient(180deg,#7c3aed,#5b21b6);border-radius:3px 3px 0 0;min-height:2px;position:relative;transition:all .2s;cursor:pointer}
+.tu-bar:hover{filter:brightness(1.15)}
+.tu-bar.empty{background:var(--border);opacity:.3}
+.tu-bar.rejected{background:linear-gradient(180deg,#fca5a5,#dc2626)}
+.tu-x-axis{display:flex;justify-content:space-between;font-size:8px;color:var(--muted);margin-top:4px;padding:0 2px;font-weight:600}
+
+/* Filter row */
+.tu-filter{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tu-filter input[type=date],.tu-filter input[type=month]{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:var(--surface)}
+.tu-filter-btn{padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;color:var(--text)}
+.tu-filter-btn.active{background:#5b21b6;color:#fff;border-color:#5b21b6}
+
+/* Activity list */
+.tu-activity{max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.tu-activity-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.tu-activity-item:last-child{border-bottom:none}
+.tu-act-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.tu-act-info{flex:1;min-width:0}
+.tu-act-amt{font-size:13px;font-weight:800}
+.tu-act-meta{font-size:10px;color:var(--muted);margin-top:1px}
+.tu-act-reason{font-size:10px;color:#991b1b;margin-top:2px;font-style:italic}
+
+/* Topup History list (modal) */
 .topup-list{max-height:50vh;overflow-y:auto;margin:12px -4px;padding:0 4px}
+.topup-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--surface2);margin-bottom:6px}
+.topup-item-icon{width:36px;height:36px;border-radius:50%;background:rgba(16,185,129,.15);color:#059669;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.topup-item-info{flex:1;min-width:0}
+.topup-item-amount{font-size:14px;font-weight:800;color:#059669}
+.topup-item-meta{font-size:10px;color:var(--muted);margin-top:1px}
+.topup-item-note{font-size:11px;color:var(--text);margin-top:2px;font-style:italic}
 .topup-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--surface2);margin-bottom:6px}
 .topup-item-icon{width:36px;height:36px;border-radius:50%;background:rgba(16,185,129,.15);color:#059669;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 .topup-item-info{flex:1;min-width:0}
@@ -383,6 +456,93 @@ select.field-input{cursor:pointer}
     </div>
 
     <button onclick="closeTopupHistory()" class="btn-secondary" style="width:100%;padding:11px;border:1px solid var(--border);background:var(--surface2);border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);margin-top:8px">ปิด</button>
+  </div>
+</div>
+
+<!-- 📊 Topup Dashboard Modal -->
+<div class="tu-dashboard" id="tu-dashboard" onclick="if(event.target===this)closeTopupDashboard()">
+  <div class="tu-dash-panel">
+    <div class="tu-dash-header">
+      <button class="tu-dash-close" onclick="closeTopupDashboard()">✕</button>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:24px">📊</div>
+        <div>
+          <div style="font-size:16px;font-weight:800">รายงานการเบิกเติมเงิน</div>
+          <div style="font-size:11px;opacity:.85;margin-top:1px" id="tu-dash-scope-label">เดือนปัจจุบัน</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tu-dash-body">
+      <!-- Filter -->
+      <div class="tu-filter">
+        <button class="tu-filter-btn" onclick="setTopupFilter('month')" id="tu-fbtn-month">📅 เดือนนี้</button>
+        <button class="tu-filter-btn" onclick="setTopupFilter('30d')" id="tu-fbtn-30d">30 วัน</button>
+        <button class="tu-filter-btn" onclick="setTopupFilter('all')" id="tu-fbtn-all">ทั้งหมด</button>
+        <button class="tu-filter-btn" onclick="toggleCustomRange()" id="tu-fbtn-custom">📆 กำหนดเอง</button>
+      </div>
+      
+      <!-- Custom date range (hidden by default) -->
+      <div id="tu-custom-range" style="display:none;background:var(--surface2);padding:10px;border-radius:10px;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px">ช่วงเวลา</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="date" id="tu-date-from" onchange="setTopupFilter('custom')">
+          <span style="color:var(--muted);font-size:11px">ถึง</span>
+          <input type="date" id="tu-date-to" onchange="setTopupFilter('custom')">
+        </div>
+      </div>
+
+      <!-- 4 KPI Cards -->
+      <div class="tu-kpi-grid">
+        <div class="tu-kpi amber">
+          <div class="tu-kpi-lbl">⏳ รออนุมัติ</div>
+          <div class="tu-kpi-val" id="tu-kpi-pending">฿0</div>
+          <div class="tu-kpi-sub" id="tu-kpi-pending-sub">0 รายการ</div>
+        </div>
+        <div class="tu-kpi emerald">
+          <div class="tu-kpi-lbl">✅ อนุมัติแล้ว</div>
+          <div class="tu-kpi-val" id="tu-kpi-approved">฿0</div>
+          <div class="tu-kpi-sub" id="tu-kpi-approved-sub">0 ครั้ง</div>
+        </div>
+        <div class="tu-kpi red">
+          <div class="tu-kpi-lbl">❌ ปฏิเสธ</div>
+          <div class="tu-kpi-val" id="tu-kpi-rejected">฿0</div>
+          <div class="tu-kpi-sub" id="tu-kpi-rejected-sub">0 ครั้ง</div>
+        </div>
+        <div class="tu-kpi violet">
+          <div class="tu-kpi-lbl">📊 เฉลี่ย/ครั้ง</div>
+          <div class="tu-kpi-val" id="tu-kpi-avg">฿0</div>
+          <div class="tu-kpi-sub" id="tu-kpi-avg-sub">avg approved</div>
+        </div>
+      </div>
+
+      <!-- Bar Chart 30 Days -->
+      <div class="tu-chart-wrap">
+        <div class="tu-chart-title">📈 แนวโน้มการเติมเงิน 30 วันย้อนหลัง</div>
+        <div class="tu-bar-chart" id="tu-bar-chart"></div>
+        <div class="tu-x-axis" id="tu-x-axis"></div>
+      </div>
+
+      <!-- Activity List -->
+      <div style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:800;color:var(--text)">📋 รายการทั้งหมด <span id="tu-activity-count" style="color:var(--muted);font-weight:600">(0)</span></div>
+          <select id="tu-status-filter" onchange="renderTopupDashboard()" style="font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);font-family:inherit">
+            <option value="all">ทั้งหมด</option>
+            <option value="PENDING">⏳ รออนุมัติ</option>
+            <option value="APPROVED">✅ อนุมัติ</option>
+            <option value="REJECTED">❌ ปฏิเสธ</option>
+          </select>
+        </div>
+        <div id="tu-activity-list" class="tu-activity"></div>
+      </div>
+
+      <!-- Owner vs User notice -->
+      <div id="tu-scope-notice" style="margin-top:12px;padding:8px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:10px;color:#1e40af;font-weight:600;display:flex;gap:6px;align-items:center">
+        <span>ℹ️</span>
+        <span id="tu-scope-text">กำลังแสดงรายการของคุณเท่านั้น</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -580,6 +740,43 @@ select.field-input{cursor:pointer}
         <button onclick="openReserveSettings()" class="reserve-btn reserve-btn-secondary" title="ตั้งค่า">
           <span style="font-size:16px">⚙️</span>
         </button>
+      </div>
+    </div>
+
+    <!-- 📊 Topup Summary Card -->
+    <div class="topup-summary-card" onclick="openTopupDashboard()">
+      <div class="tsc-header">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:20px">📊</span>
+          <div>
+            <div class="tsc-title">รายงานการเบิกเติมเงิน</div>
+            <div class="tsc-sub" id="tsc-sub">กดเพื่อดูรายงานเต็ม</div>
+          </div>
+        </div>
+        <span style="font-size:18px;color:var(--muted)">›</span>
+      </div>
+      <div class="tsc-stats">
+        <div class="tsc-stat">
+          <div class="tsc-stat-icon" style="background:#fef3c7;color:#92400e">⏳</div>
+          <div>
+            <div class="tsc-stat-val" id="tsc-pending-count">0</div>
+            <div class="tsc-stat-lbl">รออนุมัติ</div>
+          </div>
+        </div>
+        <div class="tsc-stat">
+          <div class="tsc-stat-icon" style="background:#d1fae5;color:#065f46">✅</div>
+          <div>
+            <div class="tsc-stat-val" id="tsc-approved-count">0</div>
+            <div class="tsc-stat-lbl">อนุมัติ</div>
+          </div>
+        </div>
+        <div class="tsc-stat">
+          <div class="tsc-stat-icon" style="background:#fee2e2;color:#991b1b">❌</div>
+          <div>
+            <div class="tsc-stat-val" id="tsc-rejected-count">0</div>
+            <div class="tsc-stat-lbl">ปฏิเสธ</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -928,7 +1125,8 @@ async function fetchData() {
     
     updateDashboard(); renderLogs();
     updateReserveUI();
-    renderApprovalBadge();  // 🔔 อัปเดต badge "รออนุมัติ"
+    renderApprovalBadge();
+    updateTopupSummaryCard();  // 📊 อัปเดต Topup summary card
     showToast('ซิงค์ข้อมูลสำเร็จ', 'success');
   } catch(e) { 
     console.error('[fetchData]', e);
@@ -947,6 +1145,7 @@ function updateDashboard() {
   
   // 💰 Update reserve wallet UI ด้วย (ถ้าตั้ง cycle = month จะกรองตามเดือนที่เลือก)
   updateReserveUI();
+  updateTopupSummaryCard();  // 📊 อัปเดต Topup card ตามเดือนที่เลือก
 
   // Category chart (doughnut)
   const cats = {};
@@ -1798,6 +1997,287 @@ async function rejectTopup(requestId, amount) {
 window.approveTopup = approveTopup;
 window.rejectTopup = rejectTopup;
 window.renderApprovalBadge = renderApprovalBadge;
+
+// ════════════════════════════════════════════════════════════
+//  📊 TOPUP DASHBOARD
+// ════════════════════════════════════════════════════════════
+
+let _topupFilter = { mode: 'month', from: null, to: null };
+
+function updateTopupSummaryCard() {
+  // ตัวการ์ดบน Dashboard ใช้ filter เดียวกับ month picker
+  const monthFilter = document.getElementById('month-filter')?.value || new Date().toISOString().substring(0,7);
+  const u = getCurrentUser();
+  const owner = isOwner();
+  
+  // Filter: ตัวคน + เดือน
+  const inScope = topupData.filter(t => {
+    if (!owner) {
+      // User เห็นเฉพาะของตัวเอง — match by nickname หรือ name
+      const myName = (u.nickname || u.name || '').trim().toLowerCase();
+      const tStaff = String(t.staff||'').trim().toLowerCase();
+      if (myName && tStaff !== myName) return false;
+    }
+    return String(t.date||'').startsWith(monthFilter);
+  });
+  
+  const pending = inScope.filter(t => (t.status||'').toUpperCase() === 'PENDING').length;
+  const approved = inScope.filter(t => (t.status||'').toUpperCase() === 'APPROVED').length;
+  const rejected = inScope.filter(t => (t.status||'').toUpperCase() === 'REJECTED').length;
+  
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setText('tsc-pending-count', pending);
+  setText('tsc-approved-count', approved);
+  setText('tsc-rejected-count', rejected);
+  
+  const sub = document.getElementById('tsc-sub');
+  if (sub) sub.textContent = owner ? 'ทั้งหมด • กดดูรายงาน' : 'ของคุณ • กดดูรายงาน';
+}
+
+function openTopupDashboard() {
+  // เริ่มต้น: ใช้ filter ตาม month picker
+  const monthFilter = document.getElementById('month-filter')?.value || new Date().toISOString().substring(0,7);
+  _topupFilter = { mode: 'month', monthValue: monthFilter, from: null, to: null };
+  
+  // กำหนด date range ของ custom-range = เดือนปัจจุบัน
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString('en-CA');
+  const lastDay = new Date(now.getFullYear(), now.getMonth()+1, 0).toLocaleDateString('en-CA');
+  document.getElementById('tu-date-from').value = firstDay;
+  document.getElementById('tu-date-to').value = lastDay;
+  
+  // ซ่อน custom range, active "เดือนนี้"
+  document.getElementById('tu-custom-range').style.display = 'none';
+  document.querySelectorAll('.tu-filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tu-fbtn-month').classList.add('active');
+  
+  document.getElementById('tu-dashboard').classList.add('open');
+  renderTopupDashboard();
+}
+
+function closeTopupDashboard() {
+  document.getElementById('tu-dashboard').classList.remove('open');
+}
+
+function setTopupFilter(mode) {
+  _topupFilter.mode = mode;
+  
+  // ซ่อน/แสดง custom-range
+  document.getElementById('tu-custom-range').style.display = mode === 'custom' ? 'block' : 'none';
+  
+  // Update active button
+  document.querySelectorAll('.tu-filter-btn').forEach(b => b.classList.remove('active'));
+  const btnId = mode === '30d' ? 'tu-fbtn-30d' : mode === 'all' ? 'tu-fbtn-all' : mode === 'custom' ? 'tu-fbtn-custom' : 'tu-fbtn-month';
+  document.getElementById(btnId).classList.add('active');
+  
+  // ถ้า custom — อ่านค่าจาก input
+  if (mode === 'custom') {
+    _topupFilter.from = document.getElementById('tu-date-from').value;
+    _topupFilter.to = document.getElementById('tu-date-to').value;
+  }
+  
+  renderTopupDashboard();
+}
+
+function toggleCustomRange() {
+  setTopupFilter('custom');
+}
+
+function getTopupFilteredData() {
+  const u = getCurrentUser();
+  const owner = isOwner();
+  
+  let inScope = topupData.slice();
+  
+  // 🔒 User-level filter — เห็นเฉพาะของตัวเองถ้าไม่ใช่ Owner
+  if (!owner) {
+    const myName = (u.nickname || u.name || '').trim().toLowerCase();
+    inScope = inScope.filter(t => {
+      const tStaff = String(t.staff||'').trim().toLowerCase();
+      return tStaff === myName;
+    });
+  }
+  
+  // 📅 Time filter
+  const mode = _topupFilter.mode;
+  if (mode === 'month') {
+    const mv = _topupFilter.monthValue || document.getElementById('month-filter')?.value || new Date().toISOString().substring(0,7);
+    inScope = inScope.filter(t => String(t.date||'').startsWith(mv));
+  } else if (mode === '30d') {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    const cutoffStr = cutoff.toLocaleDateString('en-CA');
+    inScope = inScope.filter(t => String(t.date||'') >= cutoffStr);
+  } else if (mode === 'custom') {
+    const from = _topupFilter.from || '';
+    const to = _topupFilter.to || '';
+    inScope = inScope.filter(t => {
+      const d = String(t.date||'').slice(0,10);
+      if (from && d < from) return false;
+      if (to && d > to) return false;
+      return true;
+    });
+  }
+  // mode === 'all' → ไม่ filter
+  
+  return inScope;
+}
+
+function renderTopupDashboard() {
+  const u = getCurrentUser();
+  const owner = isOwner();
+  const filtered = getTopupFilteredData();
+  
+  // ── Scope label ──
+  const scopeLabel = document.getElementById('tu-dash-scope-label');
+  const scopeText = document.getElementById('tu-scope-text');
+  let lbl = '';
+  if (_topupFilter.mode === 'month') {
+    const [y,m] = (_topupFilter.monthValue||'').split('-');
+    const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    lbl = (months[parseInt(m)]||'') + ' ' + y;
+  } else if (_topupFilter.mode === '30d') {
+    lbl = '30 วันย้อนหลัง';
+  } else if (_topupFilter.mode === 'all') {
+    lbl = 'ทั้งหมด';
+  } else {
+    lbl = (_topupFilter.from || '?') + ' → ' + (_topupFilter.to || '?');
+  }
+  if (scopeLabel) scopeLabel.textContent = lbl;
+  if (scopeText) scopeText.textContent = owner ? '👑 Owner — เห็นรายการของทุกคน' : '👤 แสดงรายการของคุณ ('+(u.nickname||u.name||'-')+') เท่านั้น';
+  
+  // ── KPI Cards ──
+  const fmt = n => '฿' + Number(n).toLocaleString(undefined, {maximumFractionDigits:0});
+  const pending = filtered.filter(t => (t.status||'').toUpperCase() === 'PENDING');
+  const approved = filtered.filter(t => (t.status||'').toUpperCase() === 'APPROVED');
+  const rejected = filtered.filter(t => (t.status||'').toUpperCase() === 'REJECTED');
+  
+  const sumAmt = arr => arr.reduce((s,t) => s + (Number(t.amount)||0), 0);
+  const pendingSum = sumAmt(pending);
+  const approvedSum = sumAmt(approved);
+  const rejectedSum = sumAmt(rejected);
+  const avgApproved = approved.length ? approvedSum / approved.length : 0;
+  
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setText('tu-kpi-pending', fmt(pendingSum));
+  setText('tu-kpi-pending-sub', pending.length + ' รายการ');
+  setText('tu-kpi-approved', fmt(approvedSum));
+  setText('tu-kpi-approved-sub', approved.length + ' ครั้ง');
+  setText('tu-kpi-rejected', fmt(rejectedSum));
+  setText('tu-kpi-rejected-sub', rejected.length + ' ครั้ง');
+  setText('tu-kpi-avg', fmt(avgApproved));
+  
+  // ── Bar Chart 30 days ──
+  // นับยอด topup ของแต่ละวัน (รวม PENDING + APPROVED + REJECTED แต่ใช้สีต่าง)
+  // ใช้ "ทั้งหมด" ของ scope ปัจจุบัน — ถ้าไม่ใช่ 30 วัน ก็แสดง 30 วันล่าสุดของ filtered
+  const today = new Date();
+  const days = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    days.push({
+      date: d.toLocaleDateString('en-CA'),
+      label: d.getDate(),
+      total: 0,
+      approved: 0,
+      rejected: 0,
+      pending: 0
+    });
+  }
+  
+  // ✏️ บันทึก: ใช้ filtered ปัจจุบัน — ถ้า user เลือก "ทั้งหมด" จะรวมข้อมูลเก่า ก็ filter เฉพาะ 30 วันออกมาแสดงใน chart
+  filtered.forEach(t => {
+    const dateKey = String(t.date||'').slice(0,10);
+    const day = days.find(d => d.date === dateKey);
+    if (day) {
+      const amt = Number(t.amount) || 0;
+      day.total += amt;
+      const st = (t.status||'').toUpperCase();
+      if (st === 'APPROVED') day.approved += amt;
+      else if (st === 'REJECTED') day.rejected += amt;
+      else day.pending += amt;
+    }
+  });
+  
+  // หา max เพื่อ scale bar
+  const maxVal = Math.max(1, ...days.map(d => d.total));
+  
+  const chartEl = document.getElementById('tu-bar-chart');
+  const xAxisEl = document.getElementById('tu-x-axis');
+  if (chartEl) {
+    chartEl.innerHTML = days.map(d => {
+      const h = (d.total / maxVal) * 100;
+      const isEmpty = d.total === 0;
+      const cls = isEmpty ? 'empty' : (d.rejected > d.approved ? 'rejected' : '');
+      const tip = isEmpty 
+        ? `${d.date}: ไม่มีรายการ` 
+        : `${d.date}: ฿${d.total.toLocaleString()} (✅${d.approved}, ⏳${d.pending}, ❌${d.rejected})`;
+      return `<div class="tu-bar ${cls}" style="height:${Math.max(2, h)}%" title="${tip}"></div>`;
+    }).join('');
+  }
+  if (xAxisEl) {
+    // แสดง label ทุก 5 วัน
+    xAxisEl.innerHTML = days.map((d, i) => 
+      (i % 5 === 0 || i === days.length-1) ? `<span>${d.label}</span>` : '<span></span>'
+    ).join('');
+  }
+  
+  // ── Activity List ──
+  const statusFilterEl = document.getElementById('tu-status-filter');
+  const statusFilter = statusFilterEl ? statusFilterEl.value : 'all';
+  let activityList = filtered;
+  if (statusFilter !== 'all') {
+    activityList = filtered.filter(t => (t.status||'').toUpperCase() === statusFilter);
+  }
+  
+  // Sort: ล่าสุดบนสุด (by timestamp ถ้ามี, ไม่งั้น date)
+  activityList = activityList.slice().sort((a,b) => {
+    const ta = String(a.timestamp || a.date || '');
+    const tb = String(b.timestamp || b.date || '');
+    return tb.localeCompare(ta);
+  });
+  
+  setText('tu-activity-count', '(' + activityList.length + ')');
+  
+  const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const listEl = document.getElementById('tu-activity-list');
+  if (listEl) {
+    if (activityList.length === 0) {
+      listEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">ไม่มีรายการในช่วงนี้</div>';
+    } else {
+      const statusConfig = {
+        'PENDING':  { iconBg: 'rgba(245,158,11,.15)', iconColor: '#d97706', icon: '⏳', color: '#d97706', sign: '+' },
+        'APPROVED': { iconBg: 'rgba(16,185,129,.15)', iconColor: '#059669', icon: '✅', color: '#059669', sign: '+' },
+        'REJECTED': { iconBg: 'rgba(220,38,38,.15)',  iconColor: '#dc2626', icon: '❌', color: '#9ca3af', sign: '' }
+      };
+      listEl.innerHTML = activityList.map(t => {
+        const parts = String(t.date||'').split('-');
+        const day = parts[2] || '—';
+        const mon = months[parseInt(parts[1])||0] || '';
+        const status = (t.status||'APPROVED').toUpperCase();
+        const cfg = statusConfig[status] || statusConfig.APPROVED;
+        const tStyle = status === 'REJECTED' ? 'text-decoration:line-through' : '';
+        const tsStr = t.timestamp ? String(t.timestamp).slice(11,16) : '';
+        return `<div class="tu-activity-item">
+          <div class="tu-act-icon" style="background:${cfg.iconBg};color:${cfg.iconColor}">${cfg.icon}</div>
+          <div class="tu-act-info">
+            <div class="tu-act-amt" style="color:${cfg.color};${tStyle}">${cfg.sign}${fmt(t.amount)}</div>
+            <div class="tu-act-meta">📅 ${day} ${mon} ${tsStr ? '• '+tsStr : ''} · 👤 ${t.staff||'-'}${t.approver ? ' · ✓ '+t.approver : ''}</div>
+            ${t.note && t.note !== '-' ? `<div class="tu-act-meta" style="color:#475569;margin-top:2px">📝 ${t.note}</div>` : ''}
+            ${status === 'REJECTED' && t.reject_reason ? `<div class="tu-act-reason">❌ ${t.reject_reason}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+}
+
+window.openTopupDashboard = openTopupDashboard;
+window.closeTopupDashboard = closeTopupDashboard;
+window.setTopupFilter = setTopupFilter;
+window.toggleCustomRange = toggleCustomRange;
+window.renderTopupDashboard = renderTopupDashboard;
+window.updateTopupSummaryCard = updateTopupSummaryCard;
 </script>
 </body>
 </html>
