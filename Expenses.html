@@ -402,7 +402,11 @@ select.field-input{cursor:pointer}
     <button class="tab-btn" onclick="switchTab('dashboard',this)">📊 สรุป</button>
     <button class="tab-btn" onclick="switchTab('data',this)">🕐 ประวัติ</button>
   </div>
-  <div style="display:flex;gap:8px">
+  <div style="display:flex;gap:8px;align-items:center">
+    <div id="user-badge" style="background:var(--surface2);padding:4px 10px;border-radius:12px;font-size:10px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:4px;cursor:pointer" onclick="showUserInfo()" title="แตะดู role">
+      <span id="user-badge-icon">👤</span>
+      <span id="user-badge-text">...</span>
+    </div>
     <button class="btn-icon" onclick="fetchData()" title="ซิงค์">
       <svg id="sync-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
     </button>
@@ -659,22 +663,41 @@ let userCats = JSON.parse(localStorage.getItem('exp_premium_cats_v2')) || ["ค�
 // 👤 อ่าน user info จาก localStorage (ตั้งโดย Owner Dashboard / Login)
 //    Fallback: ถ้าอยู่ใน iframe ลองอ่านจาก parent window ด้วย
 function getCurrentUser() {
-  // 1) ลองอ่านจาก localStorage ของตัวเอง
+  // 1) ลองอ่านจาก localStorage ของตัวเอง (รองรับหลาย key naming convention)
   const ls = localStorage;
-  let name     = ls.getItem('user_name') || ls.getItem('userName') || '';
-  let nickname = ls.getItem('user_nickname') || ls.getItem('userNick') || '';
-  let role     = (ls.getItem('user_role') || '').toLowerCase().trim();
-  let id       = ls.getItem('user_id') || '';
+  const allKeys = ['user_name','userName','staff_name','staffName'];
+  const nickKeys = ['user_nickname','userNick','nickname','user_nick'];
+  const roleKeys = ['user_role','userRole','role','user_position','position'];
+  const idKeys = ['user_id','userId','staff_id','staffId','emp_id'];
+  
+  const readFrom = (storage) => {
+    const tryGet = (keys) => {
+      for (const k of keys) {
+        const v = storage.getItem(k);
+        if (v) return v;
+      }
+      return '';
+    };
+    return {
+      name: tryGet(allKeys),
+      nickname: tryGet(nickKeys),
+      role: tryGet(roleKeys).toLowerCase().trim(),
+      id: tryGet(idKeys)
+    };
+  };
+  
+  let info = readFrom(ls);
   
   // 2) ถ้าไม่เจอ role ลองอ่านจาก parent window (กรณีอยู่ใน iframe)
-  if (!role) {
+  if (!info.role) {
     try {
       const pls = window.parent && window.parent !== window ? window.parent.localStorage : null;
       if (pls) {
-        if (!name)     name = pls.getItem('user_name') || pls.getItem('userName') || '';
-        if (!nickname) nickname = pls.getItem('user_nickname') || pls.getItem('userNick') || '';
-        if (!role)     role = (pls.getItem('user_role') || '').toLowerCase().trim();
-        if (!id)       id = pls.getItem('user_id') || '';
+        const pinfo = readFrom(pls);
+        if (!info.name)     info.name = pinfo.name;
+        if (!info.nickname) info.nickname = pinfo.nickname;
+        if (!info.role)     info.role = pinfo.role;
+        if (!info.id)       info.id = pinfo.id;
       }
     } catch(e) { /* cross-origin → ignore */ }
   }
@@ -682,22 +705,38 @@ function getCurrentUser() {
   // 3) Dev override — ?role=owner ใน URL เพื่อทดสอบ
   try {
     const urlRole = new URLSearchParams(window.location.search).get('role');
-    if (urlRole) role = urlRole.toLowerCase().trim();
+    if (urlRole) info.role = urlRole.toLowerCase().trim();
   } catch(e) {}
   
-  return { name, nickname, role, id };
+  return info;
 }
-function isOwner() { return getCurrentUser().role === 'owner'; }
+function isOwner() { 
+  const r = getCurrentUser().role;
+  return r === 'owner' || r === 'เจ้าของ' || r === 'เจ้าของร้าน'; 
+}
 
 // 🐛 Debug helper — เรียกใน console: window.debugUser()
 window.debugUser = () => {
   const u = getCurrentUser();
   console.table(u);
   console.log('isOwner():', isOwner());
-  console.log('localStorage keys:', Object.keys(localStorage));
-  console.log('user_role:', localStorage.getItem('user_role'));
-  console.log('userRole:', localStorage.getItem('userRole'));
+  console.log('--- localStorage (this iframe) ---');
+  Object.keys(localStorage).forEach(k => console.log('  '+k+' = '+localStorage.getItem(k)));
+  try {
+    if (window.parent && window.parent !== window) {
+      console.log('--- localStorage (parent) ---');
+      Object.keys(window.parent.localStorage).forEach(k => console.log('  '+k+' = '+window.parent.localStorage.getItem(k)));
+    }
+  } catch(e) { console.log('parent localStorage: cross-origin'); }
   return u;
+};
+
+// 🆘 Force ให้เป็น Owner ชั่วคราว (สำหรับทดสอบ)
+window.forceOwner = (nickname = 'Owner') => {
+  localStorage.setItem('user_role', 'owner');
+  localStorage.setItem('user_nickname', nickname);
+  console.log('✅ Set role=owner — reloading...');
+  location.reload();
 };
 
 const CAT_COLORS = ['#e53935','#2979d4','#00897b','#f57c00','#7c3aed','#0288d1','#558b2f','#ad1457','#5d4037','#37474f'];
@@ -707,9 +746,53 @@ window.onload = () => {
   document.getElementById('month-filter').value = new Date().toISOString().substring(0,7);
   renderCategoryDropdown();
   setupSourcePicker();   // 💰 source picker click handler
+  updateUserBadge();     // 👤 แสดงข้อมูล user ใน topbar
   updateReserveUI();     // 💰 initial reserve UI (ก่อน fetch — แสดง default)
   fetchData();
 };
+
+// 👤 แสดง user badge ใน topbar
+function updateUserBadge() {
+  const u = getCurrentUser();
+  const badge = document.getElementById('user-badge');
+  const icon = document.getElementById('user-badge-icon');
+  const text = document.getElementById('user-badge-text');
+  if (!badge || !icon || !text) return;
+  
+  const owner = isOwner();
+  if (owner) {
+    badge.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+    badge.style.color = '#fff';
+    icon.textContent = '👑';
+    text.textContent = (u.nickname || u.name || 'Owner') + ' • OWNER';
+  } else if (u.role) {
+    badge.style.background = 'var(--surface2)';
+    badge.style.color = 'var(--muted)';
+    icon.textContent = '👤';
+    text.textContent = (u.nickname || u.name || 'User') + ' • ' + u.role;
+  } else {
+    // ⚠️ ไม่มี role
+    badge.style.background = '#fef3c7';
+    badge.style.color = '#92400e';
+    icon.textContent = '⚠️';
+    text.textContent = 'ไม่พบ role — แตะดู';
+  }
+}
+
+// ℹ️ Show user info popup (สำหรับ debug)
+function showUserInfo() {
+  const u = getCurrentUser();
+  const msg = `👤 ข้อมูลผู้ใช้ปัจจุบัน\n\n` +
+    `ชื่อ: ${u.name || '—'}\n` +
+    `เล่น: ${u.nickname || '—'}\n` +
+    `Role: ${u.role || '⚠️ ไม่พบ'}\n` +
+    `ID: ${u.id || '—'}\n\n` +
+    `isOwner(): ${isOwner() ? '✅ ใช่' : '❌ ไม่ใช่'}\n\n` +
+    (!isOwner() ? `💡 ถ้าเป็น Owner แต่ระบบไม่เจอ role:\n   1) เปิด Console (F12) พิมพ์ forceOwner()\n   2) หรือเพิ่ม ?role=owner ใน URL` : '');
+  alert(msg);
+}
+window.updateUserBadge = updateUserBadge;
+window.showUserInfo = showUserInfo;
 
 function updateAmountDisplay() {} // placeholder for future use
 
