@@ -128,7 +128,11 @@ html,body{min-height:100%;background:#f0f4f8;font-family:'Kanit',sans-serif;colo
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
 .note-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 14px}
 .note-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px}
+.note-hint{display:none;background:var(--green-l);border:1px solid var(--green-b);border-radius:var(--r-sm);padding:9px 12px;font-size:12px;font-weight:600;color:var(--green);line-height:1.55;margin-bottom:10px}
+.note-hint.show{display:block}
 .note-inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;font-family:'Kanit',sans-serif;font-size:14px;color:var(--navy);outline:none;resize:none;min-height:72px;margin-bottom:10px}
+/* 🆕 badge บอกว่าคำร้องนี้จะลบสายอัตโนมัติเมื่ออนุมัติ */
+.pet-clearlate{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:3px 10px;border-radius:var(--r-full);background:var(--green-l);color:var(--green);font-size:10px;font-weight:700;border:1px solid var(--green-b)}
 .note-inp:focus{border-color:var(--blue)}
 .note-btns{display:flex;gap:8px}
 .note-cancel{flex:1;padding:11px;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--bg);color:var(--muted);font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
@@ -243,6 +247,7 @@ html,body{min-height:100%;background:#f0f4f8;font-family:'Kanit',sans-serif;colo
   <div class="note-sheet">
     <div class="note-handle"></div>
     <div class="note-title" id="note-title">ระบุหมายเหตุ</div>
+    <div class="note-hint" id="note-hint"></div>
     <textarea class="note-inp" id="note-inp" placeholder="ระบุหมายเหตุ (ถ้ามี)..."></textarea>
     <div class="note-btns">
       <button class="note-cancel" onclick="closeNote()">ยกเลิก</button>
@@ -640,18 +645,37 @@ async function fetchPetitions() {
         renderPetitions(d.pendingPetitions||[]);
     } catch(e) { el.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>โหลดไม่สำเร็จ</div>'; }
 }
+// 🆕 helper: ตรวจว่าเป็นคำร้อง "ขอแก้ไขเวลา" หรือไม่ (รองรับทั้ง value อังกฤษ + label ไทยเก่า)
+function isCorrectionType(type) {
+    var t = String(type||'').trim().toLowerCase();
+    return t === 'correction' || t.indexOf('แก้ไขเวลา') !== -1 || t.indexOf('แก้เวลา') !== -1;
+}
+// 🆕 helper: แปลงค่า Type → label ไทยอ่านง่าย (ตรงกับ dropdown ใน Employee_Portal)
+function petTypeLabel(type) {
+    var map = {
+        'sick leave':'🤒 ลาป่วย','personal leave':'📋 ลากิจ','annual leave':'🌴 ลาพักร้อน',
+        'ot request':'⏰ ขอทำ OT','schedule change':'📅 ขอปรับตารางงาน',
+        'correction':'✏️ ขอแก้ไขเวลา','other':'💬 อื่นๆ'
+    };
+    return map[String(type||'').trim().toLowerCase()] || (type||'Petition');
+}
+
+var _petList = [];   // 🆕 เก็บคำร้องของรอบไว้ lookup ตอนอนุมัติ
 function renderPetitions(items) {
+    _petList = items || [];
     var el = document.getElementById('pet-list');
     var badge = document.getElementById('badge-pet');
     badge.textContent = items.length;
     badge.classList.toggle('show', items.length>0);
     if (!items.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>ไม่มีคำร้องรออนุมัติ</div>'; return; }
     el.innerHTML = items.map(function(p,i) {
+        var isCorr = isCorrectionType(p.Type);
         return '<div class="pet-card" style="animation-delay:'+i*0.05+'s">'
             +'<div class="pet-status-row"><div>'
-            +'<div class="pet-type">'+(p.Type||'Petition')+'</div>'
+            +'<div class="pet-type">'+petTypeLabel(p.Type)+'</div>'
             +'<div class="pet-name">'+(p.Name||'—')+'</div>'
             +'<div class="pet-id">'+(p.Employee_ID||p.empId||'')+'</div>'
+            +(isCorr?'<div class="pet-clearlate">↺ อนุมัติแล้วลบสายของวันนั้นอัตโนมัติ</div>':'')
             +'</div><div style="font-size:10px;color:var(--muted);white-space:nowrap;margin-left:8px">📅 '+(p.Date||'—')+'</div></div>'
             +'<div class="pet-reason">"'+(p.Reason||p.reason||'—')+'"</div>'
             +'<div class="pet-actions">'
@@ -662,20 +686,56 @@ function renderPetitions(items) {
 }
 var _pend = null;
 function doApprove(rowIndex, status) {
-    _pend = {rowIndex, status};
+    // 🆕 หา petition จาก rowIndex → รู้ type / empId / วันที่ที่ขอแก้
+    var pet = _petList.filter(function(p){ return String(p.rowIndex)===String(rowIndex); })[0] || {};
+    var clearLate = (status==='Approved' && isCorrectionType(pet.Type));
+    _pend = {
+        rowIndex: rowIndex,
+        status: status,
+        type: pet.Type || '',
+        empId: pet.Employee_ID || pet.empId || '',
+        targetDate: String(pet.Date || '').slice(0,10),
+        clearLate: clearLate
+    };
     document.getElementById('note-title').textContent = status==='Approved'?'✅ อนุมัติคำร้อง':'❌ ไม่อนุมัติคำร้อง';
+    // 🆕 แจ้งให้ผู้จัดการรู้ว่าการอนุมัติคำร้องนี้จะลบนาทีสายให้อัตโนมัติ
+    var hint = document.getElementById('note-hint');
+    if (clearLate) {
+        hint.innerHTML = '↺ เมื่อกดยืนยัน ระบบจะลบ "นาทีสาย" ของ '
+            + (pet.Name || _pend.empId || 'พนักงาน')
+            + ' ในวันที่ <b>' + (_pend.targetDate || '—') + '</b> '
+            + 'ออกจากชีท Attendance เพื่อไม่ให้นับเป็นการมาสาย';
+        hint.classList.add('show');
+    } else {
+        hint.classList.remove('show'); hint.innerHTML='';
+    }
     document.getElementById('note-inp').value='';
     document.getElementById('note-modal').classList.add('open');
     document.getElementById('note-ok-btn').onclick = confirmApprove;
     setTimeout(function(){ document.getElementById('note-inp').focus(); },300);
 }
-function closeNote() { document.getElementById('note-modal').classList.remove('open'); _pend=null; }
+function closeNote() {
+    document.getElementById('note-modal').classList.remove('open');
+    document.getElementById('note-hint').classList.remove('show');
+    _pend=null;
+}
 async function confirmApprove() {
     if (!_pend) return;
     var note = document.getElementById('note-inp').value.trim()||'-';
+    // 🆕 ส่ง type/empId/targetDate/clearLate ไปด้วย (backend ใช้เป็น fallback ได้)
+    var body = {
+        action:'APPROVE_PETITION',
+        rowIndex:_pend.rowIndex,
+        status:_pend.status,
+        managerNote:note,
+        type:_pend.type,
+        empId:_pend.empId,
+        targetDate:_pend.targetDate,
+        clearLate:_pend.clearLate
+    };
     closeNote(); gload(true,'กำลังอัปเดต...');
     try {
-        await fetch(API,{method:'POST',body:JSON.stringify({action:'APPROVE_PETITION',rowIndex:_pend.rowIndex,status:_pend.status,managerNote:note})});
+        await fetch(API,{method:'POST',body:JSON.stringify(body)});
         await fetchPetitions();
     } catch(e){ alert('Error: '+e.message); }
     gload(false);
