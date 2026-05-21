@@ -335,6 +335,10 @@ const empName  = localStorage.getItem('user_name') || 'พนักงาน';
 const userPos  = localStorage.getItem('user_pos')  || '—';
 const userRole = localStorage.getItem('user_role') || 'user';
 const now      = new Date();
+// 🔧 FIX: format วันที่แบบ local (GMT+7) — ห้ามใช้ toISOString() (เลื่อนวันถอยหลัง 1 วัน)
+function fmtLocal(d) {
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
 // ── คำนวณรอบเงินเดือน: 21 เดือนก่อน → 20 เดือนปัจจุบัน ──
 function getPayrollCycle(d) {
     var y = d.getFullYear(), m = d.getMonth(), day = d.getDate();
@@ -350,11 +354,11 @@ function getPayrollCycle(d) {
         start = new Date(y, m, 21);
         end   = new Date(ey, em, 20);
     }
-    return { start: start.toISOString().split('T')[0], end: end.toISOString().split('T')[0] };
+    return { start: fmtLocal(start), end: fmtLocal(end) };
 }
 const _cycle   = getPayrollCycle(now);
 const firstDay = _cycle.start;
-const today    = now.toISOString().split('T')[0];
+const today    = fmtLocal(now);
 const cycleEnd = _cycle.end;
 
 // ══ INIT ══
