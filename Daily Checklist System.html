@@ -96,6 +96,21 @@ input,textarea,select{font-size:16px!important}
 .u-status-tag{font-size:10px;font-weight:700;padding:5px 10px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;text-align:center;flex:1}
 .u-status-tag.st-DONE{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
 .u-status-tag.st-OVERDUE{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+/* 🆕 review states + controls */
+.u-status-tag.st-REVIEW{background:#fff3e0;color:#c2410c;border:1px solid #fed7aa}
+.u-status-tag.st-APPROVED{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
+.u-photos.done img{cursor:zoom-in}
+.u-btn-approve{flex:1.4;padding:10px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(16,185,129,.3)}
+.u-btn-approve:active{transform:scale(.97)}
+.u-btn-fix{flex:1;padding:10px;background:#fff;color:#dc2626;border:1.5px solid #fca5a5;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.u-btn-fix:active{transform:scale(.97);background:#fef2f2}
+.u-fix-banner{display:flex;align-items:flex-start;gap:6px;background:#fff7ed;border:1px solid #fed7aa;border-left:3px solid #ea580c;border-radius:8px;padding:9px 11px;margin:8px 0;font-size:12px;color:#9a3412;line-height:1.5}
+.u-fix-banner b{color:#c2410c}
+.u-fix-note{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font-family:inherit;font-size:13px;color:var(--text);resize:none;margin:8px 0 0;outline:none;box-sizing:border-box}
+.u-fix-note:focus{border-color:var(--blue)}
+.u-btn-resubmit{width:100%;margin-top:8px;padding:11px;background:linear-gradient(135deg,#ea580c,#c2410c);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(234,88,12,.3)}
+.u-btn-resubmit:active{transform:scale(.98)}
+.u-review-by{font-size:10px;color:var(--muted);margin:6px 0 2px}
 
 /* ══ MAIN ══ */
 .main{max-width:640px;margin:0 auto;padding:16px 14px}
@@ -160,7 +175,7 @@ input,textarea,select{font-size:16px!important}
 .badge-done{background:var(--success-bg);color:var(--success);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;display:inline-block}
 .badge-fix{background:var(--warn-bg);color:var(--warn);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;display:inline-block}
 .badge-pending{background:#eef2f7;color:var(--muted);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;display:inline-block}
-.thumb-square{width:44px;height:44px;min-width:44px;border-radius:10px;object-fit:cover;border:2px solid var(--border);flex-shrink:0}
+.thumb-square{width:44px;height:44px;min-width:44px;border-radius:10px;object-fit:cover;border:2px solid var(--border);flex-shrink:0;cursor:zoom-in}
 
 /* Checklist zone grouping */
 .zone-group{margin-bottom:18px}
@@ -216,7 +231,9 @@ input,textarea,select{font-size:16px!important}
 .image-gallery{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}
 .image-gallery::-webkit-scrollbar{display:none}
 .gallery-item{flex:0 0 85%;aspect-ratio:1;scroll-snap-align:center;border-radius:var(--r-sm);overflow:hidden;background:var(--surface2);border:2px solid var(--border)}
-.gallery-item img{width:100%;height:100%;object-fit:cover}
+.gallery-item img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+@keyframes lbFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes lbFadeOut{from{opacity:1}to{opacity:0}}
 .gallery-dots{display:flex;justify-content:center;gap:5px;margin-top:7px}
 .dot{width:5px;height:5px;border-radius:50%;background:var(--border);transition:all .25s}
 .dot.active{background:var(--blue);width:14px;border-radius:3px}
@@ -1077,7 +1094,7 @@ input,textarea,select{font-size:16px!important}
                             <h4 class="font-black text-slate-700 text-xs leading-tight line-clamp-1 font-black">${getSmartVal(r, 'Task_Name', 'รายการงาน') || r.งาน || "Unknown Task"}</h4>
                             <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">👤 ${getSmartVal(r, 'Staff_Name', 'พนักงาน') || "-"}</p>
                         </div>
-                        ${thumbUrl ? `<img src="${thumbUrl}" class="thumb-square font-black">` : ''}
+                        ${thumbUrl ? `<img src="${thumbUrl}" class="thumb-square font-black" onclick="event.stopPropagation(); openLightbox('${thumbUrl}')">` : ''}
                     </div>`;
                 }).join('');
         }
@@ -1196,6 +1213,7 @@ input,textarea,select{font-size:16px!important}
                         if (dots[i]) dots[i].style.display = 'none';
                     };
                     wrap.appendChild(img);
+                    img.addEventListener('click', function(){ if (window.openLightbox && img.src) openLightbox(img.src); });
                     gallery.appendChild(wrap);
                     // stagger load 150ms ต่อรูป ไม่แย่ง bandwidth
                     // ล้าง URL ก่อน — กันกรณี URL มี quote หรือ > ปะปน
@@ -1499,7 +1517,7 @@ window.renderTimeline = function(latestDataMap, allDailyData) {
                 <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${getSmartVal(r,'Task_Name','รายการงาน')||'Unknown Task'}</div>
                 <div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:600">👤 ${getSmartVal(r,'Staff_Name','พนักงาน')||'-'}</div>
             </div>
-            ${thumb?`<img src="${thumb}" class="thumb-square">`:''}
+            ${thumb?`<img src="${thumb}" class="thumb-square" onclick="event.stopPropagation(); openLightbox('${thumb}')">`:''}
         </div>`;
     }).join('');
 };
@@ -1568,10 +1586,16 @@ function myActiveUrgents() {
 
 function updateUrgentBadge() {
     const list = myActiveUrgents();
+    const role = (localStorage.getItem('user_role')||'').toLowerCase();
+    let count = list.length;
+    if (role === 'owner') {
+        const reviewN = (urgentTasks||[]).filter(u => u.status==='DONE' && String(u.review_status||'').toUpperCase()==='PENDING_REVIEW').length;
+        count += reviewN;
+    }
     const badge = document.getElementById('urgent-badge');
     if (!badge) return;
-    if (list.length > 0) {
-        badge.textContent = list.length;
+    if (count > 0) {
+        badge.textContent = count;
         badge.classList.remove('hidden');
     } else {
         badge.classList.add('hidden');
@@ -1639,20 +1663,76 @@ function formatTimeHHMM(val) {
 }
 
 function urgentTaskCard(u) {
-    const photos = urgentPhotos[u.urgent_id] || [];
+    const role = (localStorage.getItem('user_role')||'').toLowerCase();
+    const isOwner = role === 'owner';
+    const staged = urgentPhotos[u.urgent_id] || [];          // รูปที่กำลังจะแนบ (ยังไม่ส่ง)
     const requirePhoto = String(u.require_photo||'NO').toUpperCase() === 'YES';
-    const canDone = !requirePhoto || photos.length > 0;
+    const canDone = !requirePhoto || staged.length > 0;
     const ds = urgentDueState(u);
     const isOver = ds === 'over';
-    // 🕐 แปลง due_time ที่อาจเป็น ISO/1899-epoch ให้เป็น "HH:mm"
     const dueTimeText = formatTimeHHMM(u.due_time);
     const dueText = u.assign_type === 'RECURRING'
         ? `🔁 ${formatDateThai(u.recur_start)} → ${formatDateThai(u.recur_end)}`
         : `⏰ ${formatDateThai(u.due_date)}${dueTimeText ? ' • '+dueTimeText : ''}`;
-    const isDone = u.status === 'DONE';
-    const isCancel = u.status === 'CANCELLED';
 
-    return `<div class="u-card p-${u.priority||'NORMAL'} ${isOver?'is-overdue':''}">
+    const rev = String(u.review_status||'').toUpperCase();
+    const isCancel = u.status === 'CANCELLED';
+    const isDone   = u.status === 'DONE';
+    // โหมดการ์ด
+    let mode;
+    if (isCancel) mode = 'cancel';
+    else if (rev === 'FIX_REQUIRED') mode = 'fix';
+    else if (!isDone) mode = 'todo';
+    else if (rev === 'APPROVED') mode = 'approved';
+    else mode = 'review';                                    // DONE + รอตรวจ
+
+    // รูปงานที่ส่งแล้ว (งานเดิม + งานแก้)
+    const donePhotos = String(u.photo_url||'').split(',').map(s=>s.trim()).filter(s=>s.startsWith('http'));
+    const fixPhotos  = String(u.fix_photo_url||'').split(',').map(s=>s.trim()).filter(s=>s.startsWith('http'));
+    const allDone = donePhotos.concat(fixPhotos);
+    const strip = (arr) => arr.length ? `<div class="u-photos done">${arr.map(s=>`<img src="${s}" onclick="openLightbox('${s}')">`).join('')}</div>` : '';
+    const stagedStrip = `<div class="u-photos">${staged.filter(s=>s.startsWith('http')).map(s=>`<img src="${s}">`).join('')}<div class="u-add-photo" onclick="openUrgentCamera('${u.urgent_id}')">+</div></div>`;
+
+    let bodyHtml = '';
+    if (mode === 'todo') {
+        bodyHtml = `
+            ${requirePhoto ? `<div class="u-photo-req">📷 ต้องแนบรูปก่อนกดเสร็จ</div>` : ''}
+            ${stagedStrip}
+            <div class="u-actions">
+                <button class="u-btn-done" onclick="markUrgentDoneStaff('${u.urgent_id}')" ${canDone?'':'disabled'}>
+                    ✓ ${canDone ? 'ทำเสร็จแล้ว' : 'ต้องแนบรูปก่อน'}
+                </button>
+            </div>`;
+    } else if (mode === 'review') {
+        bodyHtml = `
+            ${strip(allDone)}
+            <div class="u-review-by">👤 ทำโดย ${escapeHtml(u.completed_by||'-')} • ${escapeHtml(String(u.completed_at||'').slice(0,16))}</div>
+            ${isOwner ? `
+            <div class="u-actions">
+                <button class="u-btn-fix" onclick="reviewUrgentOwner('${u.urgent_id}','FIX_REQUIRED')">🔧 ให้แก้ไข</button>
+                <button class="u-btn-approve" onclick="reviewUrgentOwner('${u.urgent_id}','APPROVED')">✅ รับทราบ/ผ่าน</button>
+            </div>`
+            : `<div class="u-actions"><div class="u-status-tag st-REVIEW">⏳ รอหัวหน้าตรวจ</div></div>`}`;
+    } else if (mode === 'fix') {
+        bodyHtml = `
+            <div class="u-fix-banner">🔧 <div><b>หัวหน้าให้แก้ไข:</b> ${escapeHtml(u.review_note||'-')}${u.reviewer?` <span style="opacity:.7">— ${escapeHtml(u.reviewer)}</span>`:''}</div></div>
+            ${strip(allDone)}
+            ${isOwner
+                ? `<div class="u-actions"><div class="u-status-tag st-REVIEW">⏳ รอพนักงานแก้ไข</div></div>`
+                : `${requirePhoto ? `<div class="u-photo-req">📷 แนบรูปการแก้ไขก่อนส่ง</div>` : ''}
+                   ${stagedStrip}
+                   <textarea class="u-fix-note" id="ufix-${u.urgent_id}" rows="2" placeholder="ระบุสิ่งที่แก้ไข (ถ้ามี)..."></textarea>
+                   <button class="u-btn-resubmit" onclick="resubmitUrgentStaff('${u.urgent_id}')">✅ ยืนยันการแก้ไขและส่งใหม่</button>`}`;
+    } else if (mode === 'approved') {
+        bodyHtml = `
+            ${strip(allDone)}
+            <div class="u-review-by">👤 ${escapeHtml(u.completed_by||'-')} • ✔ รับทราบโดย ${escapeHtml(u.reviewer||'-')}</div>
+            <div class="u-actions"><div class="u-status-tag st-APPROVED">✅ หัวหน้ารับทราบแล้ว</div></div>`;
+    } else {
+        bodyHtml = `<div class="u-actions"><div class="u-status-tag st-OVERDUE">✕ ยกเลิก</div></div>`;
+    }
+
+    return `<div class="u-card p-${u.priority||'NORMAL'} ${(isOver && mode==='todo')?'is-overdue':''}">
         <div class="u-card-head">
             <span class="u-pri p-${u.priority||'NORMAL'}">${u.priority==='HIGH'?'🔴 ด่วน':u.priority==='LOW'?'🟢 ทั่วไป':'🟡 ปกติ'}</span>
             <span class="u-due ${ds==='over'?'is-over':ds==='soon'?'is-soon':''}">${dueText}</span>
@@ -1660,22 +1740,7 @@ function urgentTaskCard(u) {
         </div>
         <div class="u-name">${escapeHtml(u.task_name||'-')}</div>
         ${u.task_description?`<div class="u-desc">${escapeHtml(u.task_description)}</div>`:''}
-        ${requirePhoto && !isDone ? `<div class="u-photo-req">📷 ต้องแนบรูปก่อนกดเสร็จ</div>` : ''}
-        ${!isDone && !isCancel ? `
-            <div class="u-photos">
-                ${photos.filter(s => s.startsWith('http')).map(s => `<img src="${s}">`).join('')}
-                <div class="u-add-photo" onclick="openUrgentCamera('${u.urgent_id}')">+</div>
-            </div>
-            <div class="u-actions">
-                <button class="u-btn-done" onclick="markUrgentDoneStaff('${u.urgent_id}')" ${canDone?'':'disabled'}>
-                    ✓ ${canDone ? 'ทำเสร็จแล้ว' : (requirePhoto ? 'ต้องแนบรูปก่อน' : 'ทำเสร็จแล้ว')}
-                </button>
-            </div>
-        ` : `
-            <div class="u-actions">
-                <div class="u-status-tag st-${u.status}">${isDone ? '✓ เสร็จเรียบร้อยแล้ว' : '✕ ยกเลิก'}</div>
-            </div>
-        `}
+        ${bodyHtml}
     </div>`;
 }
 
@@ -1696,40 +1761,50 @@ function renderUrgent() {
     const container = document.getElementById('urgent-container');
     const empty = document.getElementById('urgent-empty');
     if (!container) return;
-
-    // แยก: รอทำ vs ทำแล้ววันนี้ (ของฉัน)
+    const role = (localStorage.getItem('user_role')||'').toLowerCase();
+    const isOwner = role === 'owner';
     const today = todayStrLocal();
-    const mine = (urgentTasks||[]).filter(isUrgentForMe).filter(isUrgentActiveToday);
-    const pending = mine.filter(u => u.status !== 'DONE' && u.status !== 'CANCELLED');
-    const doneToday = mine.filter(u => u.status === 'DONE' && (u.completed_at||'').slice(0,10) === today);
+    const norm = v => String(v||'').toUpperCase();
 
-    if (!pending.length && !doneToday.length) {
+    // 🆕 Owner: คิว "รอตรวจ" ทุกวัน (ไม่ขึ้นกับ activeToday)
+    const reviewQueue = isOwner
+        ? (urgentTasks||[]).filter(u => u.status==='DONE' && norm(u.review_status)==='PENDING_REVIEW')
+        : [];
+
+    const mine = (urgentTasks||[]).filter(isUrgentForMe).filter(isUrgentActiveToday);
+    const fixList = mine.filter(u => u.status!=='CANCELLED' && norm(u.review_status)==='FIX_REQUIRED');
+    const pending = mine.filter(u => u.status!=='DONE' && u.status!=='CANCELLED' && norm(u.review_status)!=='FIX_REQUIRED');
+    const doneToday = mine.filter(u => {
+        if (u.status!=='DONE') return false;
+        if ((u.completed_at||'').slice(0,10) !== today) return false;
+        if (isOwner && norm(u.review_status)==='PENDING_REVIEW') return false; // อยู่ในคิวรอตรวจแล้ว
+        return true;
+    });
+
+    if (!reviewQueue.length && !fixList.length && !pending.length && !doneToday.length) {
         container.innerHTML = '';
         empty.classList.remove('hidden');
         return;
     }
     empty.classList.add('hidden');
 
-    // sort: OVERDUE > SOON > NORMAL, ในแต่ละกลุ่ม sort by due
     const stateRank = { over: 0, soon: 1, normal: 2 };
-    pending.sort((a, b) => {
-        const ra = stateRank[urgentDueState(a)] ?? 9;
-        const rb = stateRank[urgentDueState(b)] ?? 9;
+    const byDue = (a, b) => {
+        const ra = stateRank[urgentDueState(a)] ?? 9, rb = stateRank[urgentDueState(b)] ?? 9;
         if (ra !== rb) return ra - rb;
         const ad = normalizeDate(a.assign_type==='RECURRING'?a.recur_end:a.due_date)||'9999';
         const bd = normalizeDate(b.assign_type==='RECURRING'?b.recur_end:b.due_date)||'9999';
         return ad.localeCompare(bd);
-    });
+    };
+    pending.sort(byDue);
+
+    const head = (color, label, anim) => `<h3 style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 4px 10px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;background:${color};border-radius:50%;${anim?'animation:pulseRed 2s infinite':''}"></span> ${label}</h3>`;
 
     let html = '';
-    if (pending.length) {
-        html += `<h3 style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:4px 4px 10px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;background:#e53935;border-radius:50%;animation:pulseRed 2s infinite"></span> รอทำ (${pending.length})</h3>`;
-        html += pending.map(urgentTaskCard).join('');
-    }
-    if (doneToday.length) {
-        html += `<h3 style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 4px 10px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;background:#10b981;border-radius:50%"></span> เสร็จแล้ววันนี้ (${doneToday.length})</h3>`;
-        html += doneToday.map(urgentTaskCard).join('');
-    }
+    if (reviewQueue.length) { html += head('#f57c00', `🔍 รอตรวจ (${reviewQueue.length})`, true);  html += reviewQueue.map(urgentTaskCard).join(''); }
+    if (fixList.length)     { html += head('#ea580c', `ต้องแก้ไข (${fixList.length})`, true);       html += fixList.map(urgentTaskCard).join(''); }
+    if (pending.length)     { html += head('#e53935', `รอทำ (${pending.length})`, true);            html += pending.map(urgentTaskCard).join(''); }
+    if (doneToday.length)   { html += head('#10b981', `เสร็จแล้ววันนี้ (${doneToday.length})`, false); html += doneToday.map(urgentTaskCard).join(''); }
     container.innerHTML = html;
 }
 
@@ -1805,6 +1880,159 @@ async function markUrgentDoneStaff(urgentId) {
         showToast('❌ บันทึกล้มเหลว', 'error');
     }
 }
+
+// 🆕 Owner: รับทราบ (APPROVED) หรือ ให้แก้ไข (FIX_REQUIRED) งานด่วน
+async function reviewUrgentOwner(urgentId, decision) {
+    const u = (urgentTasks||[]).find(x => x.urgent_id === urgentId);
+    if (!u) return;
+    let reviewNote = '';
+    if (decision === 'FIX_REQUIRED') {
+        reviewNote = prompt('ระบุสิ่งที่ต้องแก้ไข (เหตุผล):', '');
+        if (reviewNote === null) return;            // กดยกเลิก
+        reviewNote = reviewNote.trim();
+        if (!reviewNote) { showToast('🚨 กรุณาระบุเหตุผล', 'error'); return; }
+    } else {
+        if (!confirm('ยืนยันรับทราบ/อนุมัติงาน "'+(u.task_name||'')+'"?')) return;
+    }
+    showToast('⏳ กำลังบันทึก...');
+    try {
+        await fetch(API_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({
+            action:'REVIEW_URGENT', urgent_id:urgentId, decision:decision,
+            reviewer:userName, review_note:reviewNote
+        })});
+        if (decision === 'APPROVED') { u.review_status='APPROVED'; u.reviewer=userName; }
+        else { u.status='PENDING'; u.review_status='FIX_REQUIRED'; u.reviewer=userName; u.review_note=reviewNote; }
+        renderUrgent(); updateUrgentBadge();
+        showToast(decision==='APPROVED' ? '✅ รับทราบงานแล้ว' : '🔧 ส่งกลับให้แก้ไขแล้ว');
+        setTimeout(fetchData, 1500);
+    } catch(e) { showToast('❌ บันทึกไม่สำเร็จ', 'error'); }
+}
+
+// 🆕 พนักงาน: ส่งงานที่แก้ไขแล้ว → กลับไปรอตรวจอีกครั้ง
+async function resubmitUrgentStaff(urgentId) {
+    const u = (urgentTasks||[]).find(x => x.urgent_id === urgentId);
+    if (!u) return;
+    const photos = urgentPhotos[urgentId] || [];
+    if (!photos.length) { showToast('🚨 กรุณาแนบรูปการแก้ไขก่อนส่ง', 'error'); return; }
+    const noteEl = document.getElementById('ufix-'+urgentId);
+    const note = noteEl ? noteEl.value.trim() : '';
+    if (!confirm('ยืนยันส่งงานที่แก้ไขแล้วของ "'+(u.task_name||'')+'"?')) return;
+    showToast('⏳ กำลังส่งงานแก้ไข...');
+    try {
+        await fetch(API_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({
+            action:'RESUBMIT_URGENT', urgent_id:urgentId, actor:userEmpId, actor_name:userName,
+            photo_url: photos.join(','), note: note
+        })});
+        u.status='DONE'; u.review_status='PENDING_REVIEW';
+        u.fix_photo_url = (u.fix_photo_url ? u.fix_photo_url+',' : '') + photos.join(',');
+        u.fix_note = note;
+        u.completed_at = new Date().toISOString().slice(0,19).replace('T',' ');
+        delete urgentPhotos[urgentId];
+        renderUrgent(); updateUrgentBadge();
+        showToast('✅ ส่งงานแก้ไขแล้ว รอหัวหน้าตรวจ');
+        setTimeout(fetchData, 1500);
+    } catch(e) { showToast('❌ ส่งไม่สำเร็จ', 'error'); }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// 🔍 IMAGE LIGHTBOX — ขยายรูปตรวจงาน (pinch-zoom / wheel / drag / double-tap)
+//    pattern เดียวกับ Receipt Lightbox ใน Expenses.html
+// ════════════════════════════════════════════════════════════════════
+function openLightbox(src) {
+  if (!src) return;
+  const old = document.getElementById('lightbox');
+  if (old) old.remove();
+
+  const lb = document.createElement('div');
+  lb.id = 'lightbox';
+  lb.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);backdrop-filter:blur(8px);z-index:99999;display:flex;align-items:center;justify-content:center;animation:lbFadeIn .25s';
+
+  lb.innerHTML = `
+    <button onclick="closeLightbox()" style="position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);z-index:2;transition:all .2s">✕</button>
+    <div style="position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;background:rgba(255,255,255,.1);color:#fff;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:600;backdrop-filter:blur(8px);display:flex;align-items:center;gap:6px">
+      <span style="opacity:.8">💡</span><span>แตะ 2 นิ้วเพื่อซูม / ลากเพื่อเลื่อน</span>
+    </div>
+    <div style="position:absolute;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:8px;background:rgba(255,255,255,.1);padding:8px;border-radius:32px;backdrop-filter:blur(12px);z-index:2">
+      <button onclick="lbZoom(-0.25)" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;font-weight:700;cursor:pointer">−</button>
+      <button onclick="lbReset()" style="padding:0 18px;height:44px;border-radius:24px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer">รีเซ็ต</button>
+      <button onclick="lbZoom(0.25)" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;font-weight:700;cursor:pointer">+</button>
+      <a href="${src}" target="_blank" rel="noopener" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:18px;text-decoration:none;display:flex;align-items:center;justify-content:center;cursor:pointer" title="เปิดในแท็บใหม่">⤴</a>
+    </div>
+    <div id="lb-container" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none">
+      <img id="lb-img" src="${src}" style="max-width:95vw;max-height:90vh;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);transform-origin:center center;transition:transform .2s ease-out;user-select:none;pointer-events:none" alt="งานตรวจ">
+    </div>
+  `;
+
+  document.body.appendChild(lb);
+  lb._escHandler = (e) => { if (e.key === 'Escape') closeLightbox(); };
+  document.addEventListener('keydown', lb._escHandler);
+  lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+  setupLightboxGestures();
+}
+
+let _lbScale = 1, _lbTx = 0, _lbTy = 0;
+function applyLbTransform() {
+  const img = document.getElementById('lb-img');
+  if (!img) return;
+  img.style.transform = `translate(${_lbTx}px, ${_lbTy}px) scale(${_lbScale})`;
+}
+function lbZoom(delta) { _lbScale = Math.max(0.5, Math.min(5, _lbScale + delta)); applyLbTransform(); }
+function lbReset() { _lbScale = 1; _lbTx = 0; _lbTy = 0; applyLbTransform(); }
+function closeLightbox() {
+  const lb = document.getElementById('lightbox');
+  if (!lb) return;
+  if (lb._escHandler) document.removeEventListener('keydown', lb._escHandler);
+  lb.style.animation = 'lbFadeOut .2s';
+  setTimeout(() => lb.remove(), 200);
+  _lbScale = 1; _lbTx = 0; _lbTy = 0;
+}
+function setupLightboxGestures() {
+  const container = document.getElementById('lb-container');
+  if (!container) return;
+  let isDragging = false, dragStartX = 0, dragStartY = 0, startTx = 0, startTy = 0;
+  let initialPinchDist = 0, initialScale = 1;
+  container.addEventListener('mousedown', e => {
+    if (_lbScale <= 1) return;
+    isDragging = true; dragStartX = e.clientX; dragStartY = e.clientY; startTx = _lbTx; startTy = _lbTy;
+    container.style.cursor = 'grabbing';
+  });
+  document.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    _lbTx = startTx + (e.clientX - dragStartX); _lbTy = startTy + (e.clientY - dragStartY); applyLbTransform();
+  });
+  document.addEventListener('mouseup', () => { isDragging = false; if (container) container.style.cursor = ''; });
+  container.addEventListener('wheel', e => { e.preventDefault(); lbZoom(e.deltaY < 0 ? 0.15 : -0.15); }, { passive: false });
+  container.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX, dy = e.touches[0].clientY - e.touches[1].clientY;
+      initialPinchDist = Math.hypot(dx, dy); initialScale = _lbScale;
+    } else if (e.touches.length === 1 && _lbScale > 1) {
+      isDragging = true; dragStartX = e.touches[0].clientX; dragStartY = e.touches[0].clientY; startTx = _lbTx; startTy = _lbTy;
+    }
+  }, { passive: false });
+  container.addEventListener('touchmove', e => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX, dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      _lbScale = Math.max(0.5, Math.min(5, initialScale * (dist / initialPinchDist))); applyLbTransform();
+    } else if (e.touches.length === 1 && isDragging) {
+      e.preventDefault();
+      _lbTx = startTx + (e.touches[0].clientX - dragStartX); _lbTy = startTy + (e.touches[0].clientY - dragStartY); applyLbTransform();
+    }
+  }, { passive: false });
+  container.addEventListener('touchend', () => { isDragging = false; });
+  let lastTap = 0;
+  container.addEventListener('touchend', e => {
+    const now = Date.now();
+    if (now - lastTap < 300 && e.touches.length === 0) { if (_lbScale > 1) lbReset(); else lbZoom(1); }
+    lastTap = now;
+  });
+}
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;
+window.lbZoom = lbZoom;
+window.lbReset = lbReset;
 </script>
 </body>
 </html>
