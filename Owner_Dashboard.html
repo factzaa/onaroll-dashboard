@@ -229,9 +229,10 @@ html,body{height:100%;overflow:hidden;font-family:'Kanit',sans-serif;background:
 
 <script>
 // ── USER จาก localStorage (set โดย index.html login) ──
-var _role = (localStorage.getItem('user_role') || 'owner').toLowerCase();
-var _name = localStorage.getItem('user_name') || 'Owner';
-var _id   = localStorage.getItem('user_id')   || 'OWNER';
+// 🔒 Security: default = 'user' (สิทธิ์ต่ำสุด) — ถ้าไม่มี role ใน localStorage จะไม่เห็นเมนูที่จำกัดสิทธิ์
+var _role = (localStorage.getItem('user_role') || 'user').toLowerCase();
+var _name = localStorage.getItem('user_name') || 'ผู้ใช้';
+var _id   = localStorage.getItem('user_id')   || '-';
 var _pos  = localStorage.getItem('user_pos')  || 'เจ้าของร้าน';
 // owner/admin เข้าได้ตรงๆ — role อื่นที่ไม่ใช่ admin/manager/user redirect กลับ
 if (_role !== 'owner' && _role !== 'admin' && _role !== 'manager' && _role !== 'user') {
@@ -251,7 +252,7 @@ var NAV_ALL = [
     {src:'Expenses.html',title:'รายจ่าย',icon:'🧾',sub:'Expenses', roles:['owner','admin','manager']},
   ]},
   {s:'จัดการพนักงาน', items:[
-    {src:'OR_Payroll_System.html',title:'เงินเดือน',icon:'💵',sub:'Payroll', roles:['owner','admin']},
+    {src:'OR_Payroll_System.html',title:'เงินเดือน',icon:'💵',sub:'Payroll', roles:['owner']},
     {src:'HR Management.html',title:'จัดการพนักงาน',icon:'👥',sub:'HR', roles:['owner','admin','manager']},
     {src:'Weekly Scheduler.html',title:'จัด Job',icon:'📅',sub:'Scheduler', roles:['owner','admin','manager']},
   ]},
@@ -298,7 +299,7 @@ document.querySelectorAll('[data-src="index_dashboard"]').forEach(function(b){b.
 // ── Quick cards (กรอง role) ──
 var QUICK_ALL = [
   {src:'OR_Dashboard_Live.html',   icon:'📊', label:'แดชบอร์ด',        sub:'Analytics',      roles:['owner','admin','manager']},
-  {src:'OR_Payroll_System.html',   icon:'💵', label:'เงินเดือน',        sub:'Payroll',         roles:['owner','admin']},
+  {src:'OR_Payroll_System.html',   icon:'💵', label:'เงินเดือน',        sub:'Payroll',         roles:['owner']},
   {src:'Manager_Console.html',     icon:'🛡️', label:'Manager',          sub:'Console',         roles:['owner','admin','manager']},
   {src:'Sales Tracking.html',      icon:'💰', label:'ยอดขาย',           sub:'Sales',           roles:['owner','admin','manager']},
   {src:'HR Management.html',       icon:'👥', label:'HR',               sub:'จัดการพนักงาน',   roles:['owner','admin','manager']},
@@ -327,7 +328,7 @@ var MORE_ALL = [
   {src:'Expenses.html',              icon:'🧾', label:'รายจ่าย',        roles:['owner','admin','manager']},
   {src:'HR Management.html',         icon:'👥', label:'HR',              roles:['owner','admin','manager']},
   {src:'Weekly Scheduler.html',      icon:'📅', label:'จัด Job',        roles:['owner','admin','manager']},
-  {src:'OR_Payroll_System.html',     icon:'💵', label:'เงินเดือน',      roles:['owner','admin']},
+  {src:'OR_Payroll_System.html',     icon:'💵', label:'เงินเดือน',      roles:['owner']},
   {src:'SOP Master and Training.html',icon:'📖',label:'SOP',            roles:['owner','admin','manager','user']},
   {src:'Daily Checklist System.html',icon:'✅', label:'Checklist',      roles:['owner','admin','manager','user']},
   {src:'Employee Portal.html',       icon:'👤', label:'My Portal',      roles:['owner','admin','manager','user']},
@@ -352,7 +353,7 @@ var BNAV_ALL = [
   {key:'OR_Dashboard_Live.html',        icon:'📊', label:'แดชบอร์ด', roles:['owner','admin','manager'],        title:'แดชบอร์ดหลัก'},
   {key:'Manager_Console.html',          icon:'🛡️', label:'Manager',   roles:['owner','admin','manager'],        title:'Manager Console'},
   {key:'Daily Checklist System.html',   icon:'✅', label:'Checklist', roles:['owner','admin','manager','user'], title:'Checklist'},
-  {key:'OR_Payroll_System.html',        icon:'💵', label:'เงินเดือน', roles:['owner','admin'],                  title:'เงินเดือน'},
+  {key:'OR_Payroll_System.html',        icon:'💵', label:'เงินเดือน', roles:['owner'],                  title:'เงินเดือน'},
   {key:'more',                          icon:'⋯',  label:'เพิ่มเติม', roles:['owner','admin','manager','user'], title:'เพิ่มเติม'},
 ];
 
