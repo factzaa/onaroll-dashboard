@@ -490,7 +490,7 @@ input,textarea,select{font-size:16px!important}
 
         let masterTasks = [], todayRecordsMap = {}, fullHistory = [];
         let activeTab = 'Dashboard', currentStatusFilter = 'all', currentStaffFilter = null, myChart = null;
-        let pendingPhotos = {}, fixPhotos = [], currentTaskId = "";
+        let pendingPhotos = {}, fixPhotos = [], currentTaskId = "", currentRecord = null;
         let urgentTasks = [], urgentPhotos = {}; // 🔥 urgent state
 
         const userName = localStorage.getItem('user_name') || "Verified Staff";
@@ -969,6 +969,44 @@ input,textarea,select{font-size:16px!important}
             document.head.appendChild(s);
         }
 
+        // 🆕 รวมงานด่วนเข้าแดชบอร์ด — แปลงงานด่วนเป็น record รูปแบบเดียวกับ checklist ปกติ
+        //    map review_status/status ของงานด่วน → Status ที่แดชบอร์ดเข้าใจ
+        function urgentToDashRecords(selectedDate) {
+            const norm = v => String(v||'').toUpperCase();
+            const out = [];
+            (urgentTasks||[]).forEach(u => {
+                if (u.status === 'CANCELLED') return;
+                // งานด่วนต้อง active ในวันที่เลือก (ตรงวันครบกำหนด หรืออยู่ในช่วง recurring)
+                let activeOnDate = false;
+                if (u.assign_type === 'RECURRING') {
+                    const s = normalizeDate(u.recur_start), e = normalizeDate(u.recur_end);
+                    if (s && e) activeOnDate = (selectedDate >= s && selectedDate <= e);
+                } else {
+                    activeOnDate = (normalizeDate(u.due_date) === selectedDate);
+                }
+                // ถ้าทำเสร็จไปแล้ว ให้ยึดวันที่กดเสร็จด้วย (กรณีทำข้ามวัน)
+                const doneDate = (u.completed_at||'').slice(0,10);
+                if (!activeOnDate && doneDate !== selectedDate) return;
+
+                // map สถานะ → Status ของแดชบอร์ด
+                let st;
+                if (norm(u.review_status) === 'FIX_REQUIRED') st = 'Fix Required';
+                else if (u.status === 'DONE') st = 'Completed';   // รวมรอตรวจ + อนุมัติแล้ว = เสร็จ
+                else st = 'Pending';
+
+                out.push({
+                    _isUrgent: true,
+                    Checklist_ID: u.urgent_id, id: u.urgent_id,
+                    Task_Name: '⚡ ' + (u.task_name||'-'), รายการงาน: '⚡ ' + (u.task_name||'-'),
+                    Staff_Name: u.completed_by || '-', พนักงาน: u.completed_by || '-',
+                    Status: st, สถานะ: st,
+                    Timestamp: u.completed_at || '', เวลา: u.completed_at || '',
+                    Photo_URL: u.photo_url || '', รูปภาพ: u.photo_url || ''
+                });
+            });
+            return out;
+        }
+
         function renderDashboard() {
             try {
                 const selectedDate = document.getElementById('dash-date-picker').value;
@@ -1013,14 +1051,28 @@ input,textarea,select{font-size:16px!important}
                 
                 const done = Object.values(latestToday).filter(x => normalize(getSmartVal(x, 'Status', 'สถานะ')) === "Completed").length;
                 const fix  = Object.values(latestToday).filter(x => normalize(getSmartVal(x, 'Status', 'สถานะ')) === "Fix Required").length;
-                
-                const percent = activeMasterCount > 0 ? Math.min(100, Math.round((done / activeMasterCount) * 100)) : 0;
-                
+
+                // 🆕 รวมงานด่วนเข้าตัวนับ + latestToday (ใช้ key 'urg:' กัน safeId ชนกับ checklist ปกติ)
+                const urgentRecs = urgentToDashRecords(selectedDate);
+                let urgentDone = 0, urgentFix = 0, urgentPending = 0;
+                urgentRecs.forEach(u => {
+                    latestToday['urg:' + u.Checklist_ID] = u;
+                    const s = normalize(u.Status);
+                    if (s === 'Completed') urgentDone++;
+                    else if (s === 'Fix Required') urgentFix++;
+                    else urgentPending++;
+                });
+                const totalDone = done + urgentDone;
+                const totalFix  = fix + urgentFix;
+                const totalActive = activeMasterCount + urgentRecs.length;
+
+                const percent = totalActive > 0 ? Math.min(100, Math.round((totalDone / totalActive) * 100)) : 0;
+
                 document.getElementById('header-percent').innerText = percent + "%";
                 document.getElementById('header-progress-bar').style.width = percent + "%";
-                document.getElementById('count-done').innerText = done.toString().padStart(2, '0');
-                document.getElementById('count-fix').innerText = fix.toString().padStart(2, '0');
-                document.getElementById('count-pending').innerText = Math.max(0, activeMasterCount - done - fix).toString().padStart(2, '0');
+                document.getElementById('count-done').innerText = totalDone.toString().padStart(2, '0');
+                document.getElementById('count-fix').innerText = totalFix.toString().padStart(2, '0');
+                document.getElementById('count-pending').innerText = Math.max(0, totalActive - totalDone - totalFix).toString().padStart(2, '0');
                 
                 updateFilterUI(); 
                 renderTimeline(latestToday, daily); 
@@ -1104,7 +1156,7 @@ input,textarea,select{font-size:16px!important}
                     const photoUrlRaw = getSmartVal(r, 'Photo_URL', 'รูปภาพ') || "";
                     const thumbUrl = (photoUrlRaw.startsWith('http')) ? photoUrlRaw.split(',')[0] : "";
 
-                    return `<div class="task-capsule ${borderClass} font-black" onclick="${isPending ? "showToast('🚨 งานนี้ยังไม่มีการบันทึก')" : `openActionModal('${getSmartVal(r, 'Checklist_ID', 'id')}')`}">
+                    return `<div class="task-capsule ${borderClass} font-black" onclick="${r._isUrgent ? `changeTab('Urgent')` : (isPending ? "showToast('🚨 งานนี้ยังไม่มีการบันทึก')" : `openActionModal('${getSmartVal(r, 'Checklist_ID', 'id')}')`)}">
                         <div class="flex-1 pr-2 font-black">
                             <div class="flex items-center gap-2 mb-0.5">
                                 <span class="px-2 py-0.5 rounded-lg text-[7px] font-black uppercase ${badgeClass}">${status}</span>
@@ -1174,6 +1226,7 @@ input,textarea,select{font-size:16px!important}
             })[0];
 
             if(!r) { showToast("⚠️ ไม่พบข้อมูลงานชิ้นนี้", "error"); return; }
+            currentRecord = r;   // 🆕 เก็บ record ที่เลือก (ใหม่สุด/ถูกคน) ให้ saveManagerReview ใช้ต่อ
 
             document.getElementById('modal-task-title').innerText = getSmartVal(r, 'Task_Name', 'รายการงาน') || "-";
             document.getElementById('modal-staff-name').innerText = getSmartVal(r, 'Staff_Name', 'พนักงาน') || "-";
@@ -1252,7 +1305,9 @@ input,textarea,select{font-size:16px!important}
         }
 
         async function saveManagerReview(status) {
-            const r = fullHistory.find(x => getSafeId(getSmartVal(x, 'Checklist_ID', 'id')) === getSafeId(currentTaskId));
+            // 🆕 ใช้ record เดียวกับที่โมดัลแสดง (currentRecord) — กันได้ staffName ผิดคน
+            const r = currentRecord || fullHistory.find(x => getSafeId(getSmartVal(x, 'Checklist_ID', 'id')) === getSafeId(currentTaskId));
+            if (!r) { showToast("⚠️ ไม่พบข้อมูลงาน", "error"); return; }
             showToast("⏳ บันทึกข้อมูล...");
             const payload = { action: 'MANAGER_REVIEW', staffName: getSmartVal(r, 'Staff_Name', 'พนักงาน'), position: getSmartVal(r, 'Position', 'ตำแหน่ง'), status, comment: document.getElementById('manager-input').value, rating: document.getElementById('manager-rating').value, item: { id: currentTaskId, taskName: getSmartVal(r, 'Task_Name', 'รายการงาน'), timeBlock: getSmartVal(r, 'Time_Block', 'Group'), zone: getSmartVal(r, 'Zone', 'โซน'), photoUrl: getSmartVal(r, 'Photo_URL', 'รูปภาพ') } };
             await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
