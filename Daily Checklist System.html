@@ -477,6 +477,10 @@ input,textarea,select{font-size:16px!important}
         // ── CACHE (3 min TTL) ──
         const CACHE_KEY = 'or_checklist_v2';
         const CACHE_TTL = 3 * 60 * 1000;
+
+        // 🔒 กันกดซ้ำระหว่างกำลังนำส่ง (double-tap / กดรัว)
+        //    เก็บ safeId ที่ request ยังค้างอยู่ — กดซ้ำตอนนี้จะถูกปฏิเสธทันที
+        const _inFlightSubmits = new Set();
         function _saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), masterTasks, todayRecordsMap, fullHistory, urgentTasks })); } catch(e) {} }
         function _loadCache() { try { const o = JSON.parse(localStorage.getItem(CACHE_KEY)||'null'); if(!o||Date.now()-o.ts>CACHE_TTL) return false; masterTasks=o.masterTasks||[]; todayRecordsMap=o.todayRecordsMap||{}; fullHistory=o.fullHistory||[]; urgentTasks=o.urgentTasks||[]; return true; } catch(e){ return false; } }
 
@@ -758,6 +762,16 @@ input,textarea,select{font-size:16px!important}
 
         async function submitNormalTask(id, name, block, zone) {
             const safeId = getSafeId(id);
+
+            // 🔒 GUARD 0: กันกดซ้ำระหว่างกำลังนำส่ง (ก่อน await ใด ๆ — สำคัญสุด)
+            //   ถ้างานนี้กำลังส่งอยู่ → แจ้งเตือนแล้วหยุดทันที ไม่ยิงซ้ำ
+            if (_inFlightSubmits.has(safeId)) {
+                showToast('⏳ ระบบกำลังนำส่งข้อมูล กรุณารอสักครู่...');
+                return;
+            }
+            _inFlightSubmits.add(safeId);
+
+            try {
             const photos = pendingPhotos[safeId] || [];
             
             // 🛡️ GUARD 1: เช็คซ้ำกับ todayRecordsMap (ข้อมูลในแอป)
@@ -869,6 +883,11 @@ input,textarea,select{font-size:16px!important}
             showToast("✅ บันทึกสำเร็จ!");
             // sync จาก backend หลัง 2.5 วินาที (จะเห็น recordedBy ของจริงจาก server)
             setTimeout(() => fetchData(), 2500);
+            } finally {
+                // 🔓 ปลดล็อก — optimistic update เขียน todayRecordsMap แล้ว
+                //    การกดครั้งถัดไปจะถูก GUARD 1 จับแทน (กันซ้ำต่อเนื่อง)
+                _inFlightSubmits.delete(safeId);
+            }
         }
         
         // ── Modal: ตัวเองทำงานนี้ไปแล้ว (กดซ้ำ) ──────────────────────────
@@ -1849,7 +1868,11 @@ async function markUrgentDoneStaff(urgentId) {
         showToast('🚨 งานนี้ต้องแนบรูปก่อนกดเสร็จ', 'error');
         return;
     }
+    // 🔒 กันกดซ้ำระหว่างนำส่ง
+    const lockKey = 'urgent:' + urgentId;
+    if (_inFlightSubmits.has(lockKey)) { showToast('⏳ ระบบกำลังนำส่งข้อมูล กรุณารอสักครู่...'); return; }
     if (!confirm('ยืนยันว่างาน "' + (u.task_name||'') + '" เสร็จแล้ว?')) return;
+    _inFlightSubmits.add(lockKey);
 
     showToast('⏳ กำลังบันทึก...');
     try {
@@ -1878,6 +1901,8 @@ async function markUrgentDoneStaff(urgentId) {
         setTimeout(fetchData, 1500);
     } catch(e) {
         showToast('❌ บันทึกล้มเหลว', 'error');
+    } finally {
+        _inFlightSubmits.delete(lockKey);
     }
 }
 
@@ -1916,7 +1941,11 @@ async function resubmitUrgentStaff(urgentId) {
     if (!photos.length) { showToast('🚨 กรุณาแนบรูปการแก้ไขก่อนส่ง', 'error'); return; }
     const noteEl = document.getElementById('ufix-'+urgentId);
     const note = noteEl ? noteEl.value.trim() : '';
+    // 🔒 กันกดซ้ำระหว่างนำส่ง
+    const lockKey = 'resubmit:' + urgentId;
+    if (_inFlightSubmits.has(lockKey)) { showToast('⏳ ระบบกำลังนำส่งข้อมูล กรุณารอสักครู่...'); return; }
     if (!confirm('ยืนยันส่งงานที่แก้ไขแล้วของ "'+(u.task_name||'')+'"?')) return;
+    _inFlightSubmits.add(lockKey);
     showToast('⏳ กำลังส่งงานแก้ไข...');
     try {
         await fetch(API_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({
@@ -1932,6 +1961,7 @@ async function resubmitUrgentStaff(urgentId) {
         showToast('✅ ส่งงานแก้ไขแล้ว รอหัวหน้าตรวจ');
         setTimeout(fetchData, 1500);
     } catch(e) { showToast('❌ ส่งไม่สำเร็จ', 'error'); }
+    finally { _inFlightSubmits.delete(lockKey); }
 }
 
 // ════════════════════════════════════════════════════════════════════
