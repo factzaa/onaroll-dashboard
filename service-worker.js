@@ -7,7 +7,7 @@
  * ⚠️ เมื่ออัปเดตไฟล์: เปลี่ยน CACHE_VERSION ด้านล่าง browser จะ install version ใหม่อัตโนมัติ
  */
 
-const CACHE_VERSION = 'onaroll-v1.4.3';
+const CACHE_VERSION = 'onaroll-v1.4.4';
 const STATIC_CACHE  = CACHE_VERSION + '-static';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
 
